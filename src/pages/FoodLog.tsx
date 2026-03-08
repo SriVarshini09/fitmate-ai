@@ -22,9 +22,9 @@ const MEALS = [
 ];
 
 const sampleFoods: FoodEntry[] = [
-  { id: "1", name: "Oatmeal with Banana", calories: 320, protein: 12, carbs: 58, fat: 6, meal: "breakfast" },
-  { id: "2", name: "Greek Yogurt", calories: 150, protein: 15, carbs: 12, fat: 4, meal: "breakfast" },
-  { id: "3", name: "Grilled Chicken Salad", calories: 420, protein: 38, carbs: 15, fat: 22, meal: "lunch" },
+  { id: "1", name: "Oatmeal with Banana", calories: 320, protein: 12, carbs: 58, fat: 6, fiber: 5, meal: "breakfast" },
+  { id: "2", name: "Greek Yogurt", calories: 150, protein: 15, carbs: 12, fat: 4, fiber: 0, meal: "breakfast" },
+  { id: "3", name: "Grilled Chicken Salad", calories: 420, protein: 38, carbs: 15, fat: 22, fiber: 4, meal: "lunch" },
 ];
 
 const FoodLog = () => {
