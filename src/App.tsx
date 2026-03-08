@@ -10,6 +10,7 @@ import FoodLog from "./pages/FoodLog";
 import Community from "./pages/Community";
 import AiChat from "./pages/AiChat";
 import Badges from "./pages/Badges";
+import CycleTracker from "./pages/CycleTracker";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/ai-chat" element={<AiChat />} />
             <Route path="/badges" element={<Badges />} />
+            <Route path="/cycle" element={<CycleTracker />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
