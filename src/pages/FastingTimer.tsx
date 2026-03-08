@@ -133,11 +133,14 @@ const FastingTimer = () => {
       caloriesBurned,
     };
 
-    setLogs([newLog, ...logs]);
+    const updatedLogs = [newLog, ...logs];
+    setLogs(updatedLogs);
+    saveLogs(updatedLogs);
     setIsFasting(false);
     setFastStartTime(null);
     setElapsedSeconds(0);
     setShowEndConfirm(false);
+    clearFastingState();
 
     if (completed) {
       toast.success(`🎉 ${fastingHours}h fast completed!`, {
