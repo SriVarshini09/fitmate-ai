@@ -613,6 +613,81 @@ const Onboarding = () => {
               <button
                 onClick={() => {
                   localStorage.setItem("vitalflow_onboarding", JSON.stringify(data));
+
+                  // Auto-generate goals from onboarding data
+                  const goals: any[] = [];
+                  const now = new Date().toISOString();
+                  const w = Number(data.weight) || 70;
+                  const gw = Number(data.goalWeight) || w;
+                  const sex = data.sex || "male";
+                  const goal = data.goal || "maintain";
+                  const activity = data.activityLevel || "moderate";
+                  const bmr = calcBMR(sex, w, Number(data.height) || 170, Number(data.age) || 25);
+                  const tdee = calcTDEE(bmr, activity);
+                  const targetCal = calcTargetCalories(tdee, goal);
+
+                  // Weight goal
+                  if (w !== gw) {
+                    goals.push({
+                      id: Date.now().toString(),
+                      title: goal === "lose" ? `Lose ${(w - gw).toFixed(1)} kg` : `Gain ${(gw - w).toFixed(1)} kg`,
+                      categories: ["weight"],
+                      target: gw,
+                      current: w,
+                      unit: "kg",
+                      direction: goal === "lose" ? "decrease" : goal === "gain" ? "increase" : "maintain",
+                      deadline: "",
+                      createdAt: now,
+                    });
+                  }
+
+                  // Calorie target goal
+                  goals.push({
+                    id: (Date.now() + 1).toString(),
+                    title: `Hit ${targetCal} kcal daily`,
+                    categories: ["nutrition"],
+                    target: targetCal,
+                    current: 0,
+                    unit: "kcal",
+                    direction: "maintain",
+                    deadline: "",
+                    createdAt: now,
+                  });
+
+                  // Water goal
+                  const waterTarget = Math.round(w * 0.033 * 10) / 10;
+                  goals.push({
+                    id: (Date.now() + 2).toString(),
+                    title: `Drink ${waterTarget}L water daily`,
+                    categories: ["water"],
+                    target: waterTarget,
+                    current: 0,
+                    unit: "L",
+                    direction: "increase",
+                    deadline: "",
+                    createdAt: now,
+                  });
+
+                  // Steps goal
+                  const stepsTarget = activity === "sedentary" ? 6000 : activity === "light" ? 8000 : 10000;
+                  goals.push({
+                    id: (Date.now() + 3).toString(),
+                    title: `Walk ${stepsTarget.toLocaleString()} steps daily`,
+                    categories: ["steps"],
+                    target: stepsTarget,
+                    current: 0,
+                    unit: "steps",
+                    direction: "increase",
+                    deadline: "",
+                    createdAt: now,
+                  });
+
+                  // Only save if no existing goals (don't overwrite)
+                  const existing = localStorage.getItem("vitalflow_goals");
+                  if (!existing || JSON.parse(existing).length === 0) {
+                    localStorage.setItem("vitalflow_goals", JSON.stringify(goals));
+                  }
+
                   navigate("/dashboard");
                 }}
                 className="group px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 glow-primary"
