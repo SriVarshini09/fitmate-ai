@@ -321,7 +321,7 @@ const FastingTimer = () => {
         <h3 className="text-sm font-semibold font-display text-foreground mb-3">History</h3>
         <div className="space-y-2">
           {logs.map((log) => (
-            <motion.div key={log.id} className="glass-card p-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div key={log.id} className="glass-card p-4 space-y-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${log.completed ? "bg-success/15" : "bg-warning/15"}`}>
@@ -330,17 +330,31 @@ const FastingTimer = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-xs font-semibold font-display text-foreground">{log.targetHours}h Fast</p>
-                      {log.completed && <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-success/15 text-success">✓</span>}
+                      {log.completed && <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-success/15 text-success">✓ Complete</span>}
                     </div>
                     <p className="text-[10px] text-muted-foreground font-body">{formatDateShort(log.startTime)}</p>
                   </div>
                 </div>
-                <div className="text-right">
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center p-2 rounded-lg bg-secondary/40">
                   <p className="text-xs font-bold font-display text-foreground">{log.actualHours}h</p>
-                  <p className="text-[9px] text-muted-foreground font-body">{log.caloriesBurned} kcal</p>
+                  <p className="text-[8px] text-muted-foreground font-body">Duration</p>
+                </div>
+                <div className="text-center p-2 rounded-lg bg-secondary/40">
+                  <p className="text-xs font-bold font-display text-warning">{log.caloriesBurned}</p>
+                  <p className="text-[8px] text-muted-foreground font-body">kcal Burned</p>
+                </div>
+                <div className="text-center p-2 rounded-lg bg-secondary/40">
+                  <p className="text-xs font-bold font-display text-primary">{Math.min(100, Math.round((log.actualHours / log.targetHours) * 100))}%</p>
+                  <p className="text-[8px] text-muted-foreground font-body">Completed</p>
                 </div>
               </div>
-              <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden">
+
+              {/* Progress bar */}
+              <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${log.completed ? "bg-success/60" : "bg-warning/60"}`}
                   style={{ width: `${Math.min(100, (log.actualHours / log.targetHours) * 100)}%` }} />
               </div>
