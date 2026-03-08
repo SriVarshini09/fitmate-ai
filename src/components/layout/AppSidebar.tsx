@@ -1,10 +1,11 @@
 import {
   Home, UtensilsCrossed, BarChart3, Bot, Target, Brain, Zap,
   Calculator, Trophy, CalendarDays, MessageCircle, Heart, MapPin,
-  Dumbbell, Timer, Activity, Pill
+  Dumbbell, Timer, Activity, Pill, LogOut
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
   SidebarContent,
