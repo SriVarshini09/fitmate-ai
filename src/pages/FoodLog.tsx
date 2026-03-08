@@ -32,7 +32,7 @@ const FoodLog = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState("breakfast");
   const [searchQuery, setSearchQuery] = useState("");
-  const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
+  const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "", fiber: "" });
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
