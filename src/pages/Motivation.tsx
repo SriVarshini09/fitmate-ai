@@ -27,9 +27,9 @@ interface Challenge {
 
 const challenges: Challenge[] = [
   { id: "1", title: "10K Steps Challenge", description: "Walk 10,000 steps every day for 7 days", duration: "7 days", progress: 5, total: 7, category: "Steps", emoji: "👟", active: true },
-  { id: "2", title: "Protein Champion", description: "Hit your protein goal for 14 consecutive days", duration: "14 days", progress: 8, total: 14, category: "Nutrition", emoji: "🥩", active: true },
+  { id: "2", title: "Protein Champion", description: "Hit your protein goal for 7 consecutive days", duration: "7 days", progress: 4, total: 7, category: "Nutrition", emoji: "🥩", active: true },
   { id: "3", title: "Hydration Hero", description: "Drink 8 glasses of water daily for 7 days", duration: "7 days", progress: 7, total: 7, category: "Water", emoji: "💧", active: true },
-  { id: "4", title: "Early Bird", description: "Sleep before 11 PM for 5 days straight", duration: "5 days", progress: 2, total: 5, category: "Sleep", emoji: "🌅", active: true },
+  { id: "4", title: "Early Bird", description: "Sleep before 11 PM for 7 days straight", duration: "7 days", progress: 2, total: 7, category: "Sleep", emoji: "🌅", active: true },
   { id: "5", title: "No Sugar Week", description: "Avoid added sugar for a full week", duration: "7 days", progress: 3, total: 7, category: "Nutrition", emoji: "🚫", active: true },
 ];
 
