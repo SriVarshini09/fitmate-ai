@@ -4,6 +4,7 @@ import {
   Dumbbell, Plus, X, Check, ChevronRight, Clock, Flame, TrendingUp,
   RotateCcw, Play, Pause, Square, Trophy, Calendar
 } from "lucide-react";
+import WorkoutDetailCard from "@/components/workout/WorkoutDetailCard";
 
 interface ExerciseSet {
   id: string;
@@ -11,6 +12,7 @@ interface ExerciseSet {
   reps: number;
   completed: boolean;
   isWarmup?: boolean;
+  rpe?: number;
 }
 
 interface Exercise {
@@ -19,35 +21,47 @@ interface Exercise {
   muscleGroup: string;
   sets: ExerciseSet[];
   notes?: string;
+  caloriesBurned?: number;
 }
 
 interface Workout {
   id: string;
   name: string;
   date: string;
-  duration: number; // minutes
+  duration: number;
   exercises: Exercise[];
   totalVolume: number;
+  totalCalories?: number;
+  avgHeartRate?: number;
+  peakHeartRate?: number;
+  muscleGroupsHit?: string[];
+  intensity?: "Light" | "Moderate" | "Intense" | "Max Effort";
   isActive?: boolean;
 }
 
 const EXERCISE_LIBRARY = [
   { name: "Bench Press", group: "Chest", emoji: "🏋️" },
+  { name: "Incline Dumbbell Press", group: "Chest", emoji: "🏋️" },
+  { name: "Cable Flyes", group: "Chest", emoji: "🦅" },
   { name: "Squat", group: "Legs", emoji: "🦵" },
+  { name: "Leg Press", group: "Legs", emoji: "🦵" },
+  { name: "Lunges", group: "Legs", emoji: "🏃" },
+  { name: "Leg Curl", group: "Legs", emoji: "🦵" },
+  { name: "Calf Raises", group: "Legs", emoji: "🦵" },
   { name: "Deadlift", group: "Back", emoji: "💪" },
-  { name: "Overhead Press", group: "Shoulders", emoji: "🙆" },
   { name: "Barbell Row", group: "Back", emoji: "🚣" },
   { name: "Pull-ups", group: "Back", emoji: "🧗" },
-  { name: "Leg Press", group: "Legs", emoji: "🦵" },
-  { name: "Bicep Curls", group: "Arms", emoji: "💪" },
-  { name: "Tricep Dips", group: "Arms", emoji: "🤸" },
-  { name: "Lunges", group: "Legs", emoji: "🏃" },
   { name: "Lat Pulldown", group: "Back", emoji: "🔽" },
-  { name: "Cable Flyes", group: "Chest", emoji: "🦅" },
-  { name: "Leg Curl", group: "Legs", emoji: "🦵" },
+  { name: "Overhead Press", group: "Shoulders", emoji: "🙆" },
   { name: "Shoulder Lateral Raise", group: "Shoulders", emoji: "🤷" },
+  { name: "Face Pulls", group: "Shoulders", emoji: "🎯" },
+  { name: "Bicep Curls", group: "Arms", emoji: "💪" },
+  { name: "Hammer Curls", group: "Arms", emoji: "🔨" },
+  { name: "Tricep Dips", group: "Arms", emoji: "🤸" },
+  { name: "Tricep Pushdown", group: "Arms", emoji: "⬇️" },
   { name: "Plank", group: "Core", emoji: "🧱" },
   { name: "Russian Twist", group: "Core", emoji: "🌀" },
+  { name: "Cable Crunch", group: "Core", emoji: "🔄" },
 ];
 
 const MUSCLE_GROUPS = ["All", "Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
@@ -55,64 +69,113 @@ const MUSCLE_GROUPS = ["All", "Chest", "Back", "Legs", "Shoulders", "Arms", "Cor
 const sampleWorkouts: Workout[] = [
   {
     id: "1", name: "Push Day", date: "Today", duration: 58, totalVolume: 12450,
+    totalCalories: 380, avgHeartRate: 128, peakHeartRate: 156,
+    intensity: "Intense", muscleGroupsHit: ["Chest", "Shoulders", "Arms"],
     exercises: [
-      { id: "e1", name: "Bench Press", muscleGroup: "Chest", sets: [
-        { id: "s1", weight: 80, reps: 8, completed: true },
-        { id: "s2", weight: 85, reps: 6, completed: true },
-        { id: "s3", weight: 85, reps: 6, completed: true },
-        { id: "s4", weight: 80, reps: 8, completed: true },
+      { id: "e1", name: "Bench Press", muscleGroup: "Chest", caloriesBurned: 120, sets: [
+        { id: "s1", weight: 80, reps: 8, completed: true, rpe: 7 },
+        { id: "s2", weight: 85, reps: 6, completed: true, rpe: 8 },
+        { id: "s3", weight: 85, reps: 6, completed: true, rpe: 9 },
+        { id: "s4", weight: 80, reps: 8, completed: true, rpe: 8 },
       ]},
-      { id: "e2", name: "Overhead Press", muscleGroup: "Shoulders", sets: [
-        { id: "s5", weight: 50, reps: 8, completed: true },
-        { id: "s6", weight: 55, reps: 6, completed: true },
-        { id: "s7", weight: 55, reps: 5, completed: true },
+      { id: "e2", name: "Overhead Press", muscleGroup: "Shoulders", caloriesBurned: 95, sets: [
+        { id: "s5", weight: 50, reps: 8, completed: true, rpe: 7 },
+        { id: "s6", weight: 55, reps: 6, completed: true, rpe: 8 },
+        { id: "s7", weight: 55, reps: 5, completed: true, rpe: 9 },
       ]},
-      { id: "e3", name: "Cable Flyes", muscleGroup: "Chest", sets: [
+      { id: "e3", name: "Cable Flyes", muscleGroup: "Chest", caloriesBurned: 65, sets: [
         { id: "s8", weight: 15, reps: 12, completed: true },
         { id: "s9", weight: 15, reps: 12, completed: true },
         { id: "s10", weight: 17.5, reps: 10, completed: true },
+      ]},
+      { id: "e3b", name: "Tricep Pushdown", muscleGroup: "Arms", caloriesBurned: 50, sets: [
+        { id: "s8b", weight: 25, reps: 15, completed: true },
+        { id: "s9b", weight: 30, reps: 12, completed: true },
+        { id: "s10b", weight: 30, reps: 10, completed: true },
+      ]},
+      { id: "e3c", name: "Shoulder Lateral Raise", muscleGroup: "Shoulders", caloriesBurned: 50, sets: [
+        { id: "s8c", weight: 10, reps: 15, completed: true },
+        { id: "s9c", weight: 12, reps: 12, completed: true },
+        { id: "s10c", weight: 12, reps: 12, completed: true },
       ]},
     ],
   },
   {
     id: "2", name: "Pull Day", date: "Yesterday", duration: 62, totalVolume: 10800,
+    totalCalories: 410, avgHeartRate: 132, peakHeartRate: 162,
+    intensity: "Intense", muscleGroupsHit: ["Back", "Arms"],
     exercises: [
-      { id: "e4", name: "Deadlift", muscleGroup: "Back", sets: [
-        { id: "s11", weight: 120, reps: 5, completed: true },
-        { id: "s12", weight: 130, reps: 3, completed: true },
-        { id: "s13", weight: 120, reps: 5, completed: true },
+      { id: "e4", name: "Deadlift", muscleGroup: "Back", caloriesBurned: 150, sets: [
+        { id: "s11", weight: 120, reps: 5, completed: true, rpe: 8 },
+        { id: "s12", weight: 130, reps: 3, completed: true, rpe: 9 },
+        { id: "s13", weight: 120, reps: 5, completed: true, rpe: 8 },
       ]},
-      { id: "e5", name: "Barbell Row", muscleGroup: "Back", sets: [
-        { id: "s14", weight: 70, reps: 8, completed: true },
-        { id: "s15", weight: 75, reps: 6, completed: true },
-        { id: "s16", weight: 70, reps: 8, completed: true },
+      { id: "e5", name: "Barbell Row", muscleGroup: "Back", caloriesBurned: 110, sets: [
+        { id: "s14", weight: 70, reps: 8, completed: true, rpe: 7 },
+        { id: "s15", weight: 75, reps: 6, completed: true, rpe: 8 },
+        { id: "s16", weight: 70, reps: 8, completed: true, rpe: 7 },
       ]},
-      { id: "e6", name: "Bicep Curls", muscleGroup: "Arms", sets: [
+      { id: "e5b", name: "Lat Pulldown", muscleGroup: "Back", caloriesBurned: 75, sets: [
+        { id: "s14b", weight: 55, reps: 10, completed: true },
+        { id: "s15b", weight: 60, reps: 8, completed: true },
+        { id: "s16b", weight: 55, reps: 10, completed: true },
+      ]},
+      { id: "e6", name: "Bicep Curls", muscleGroup: "Arms", caloriesBurned: 45, sets: [
         { id: "s17", weight: 14, reps: 12, completed: true },
         { id: "s18", weight: 14, reps: 12, completed: true },
         { id: "s19", weight: 16, reps: 10, completed: true },
+      ]},
+      { id: "e6b", name: "Hammer Curls", muscleGroup: "Arms", caloriesBurned: 30, sets: [
+        { id: "s17b", weight: 12, reps: 12, completed: true },
+        { id: "s18b", weight: 14, reps: 10, completed: true },
       ]},
     ],
   },
   {
     id: "3", name: "Leg Day", date: "Mar 5", duration: 72, totalVolume: 18500,
+    totalCalories: 520, avgHeartRate: 140, peakHeartRate: 172,
+    intensity: "Max Effort", muscleGroupsHit: ["Legs", "Core"],
     exercises: [
-      { id: "e7", name: "Squat", muscleGroup: "Legs", sets: [
-        { id: "s20", weight: 100, reps: 8, completed: true },
-        { id: "s21", weight: 110, reps: 6, completed: true },
-        { id: "s22", weight: 110, reps: 5, completed: true },
-        { id: "s23", weight: 100, reps: 8, completed: true },
+      { id: "e7", name: "Squat", muscleGroup: "Legs", caloriesBurned: 180, sets: [
+        { id: "s20", weight: 100, reps: 8, completed: true, rpe: 7 },
+        { id: "s21", weight: 110, reps: 6, completed: true, rpe: 8 },
+        { id: "s22", weight: 110, reps: 5, completed: true, rpe: 9 },
+        { id: "s23", weight: 100, reps: 8, completed: true, rpe: 8 },
+      ]},
+      { id: "e7b", name: "Leg Press", muscleGroup: "Legs", caloriesBurned: 120, sets: [
+        { id: "s20b", weight: 180, reps: 10, completed: true },
+        { id: "s21b", weight: 200, reps: 8, completed: true },
+        { id: "s22b", weight: 200, reps: 8, completed: true },
+      ]},
+      { id: "e7c", name: "Lunges", muscleGroup: "Legs", caloriesBurned: 90, sets: [
+        { id: "s20c", weight: 20, reps: 12, completed: true },
+        { id: "s21c", weight: 24, reps: 10, completed: true },
+        { id: "s22c", weight: 24, reps: 10, completed: true },
+      ]},
+      { id: "e7d", name: "Leg Curl", muscleGroup: "Legs", caloriesBurned: 65, sets: [
+        { id: "s20d", weight: 40, reps: 12, completed: true },
+        { id: "s21d", weight: 45, reps: 10, completed: true },
+        { id: "s22d", weight: 45, reps: 10, completed: true },
+      ]},
+      { id: "e7e", name: "Calf Raises", muscleGroup: "Legs", caloriesBurned: 35, sets: [
+        { id: "s20e", weight: 60, reps: 15, completed: true },
+        { id: "s21e", weight: 60, reps: 15, completed: true },
+        { id: "s22e", weight: 70, reps: 12, completed: true },
+      ]},
+      { id: "e7f", name: "Plank", muscleGroup: "Core", caloriesBurned: 30, sets: [
+        { id: "s20f", weight: 0, reps: 60, completed: true },
+        { id: "s21f", weight: 0, reps: 60, completed: true },
       ]},
     ],
   },
 ];
 
 const TEMPLATES = [
-  { name: "Push Day", exercises: ["Bench Press", "Overhead Press", "Cable Flyes", "Tricep Dips"] },
-  { name: "Pull Day", exercises: ["Deadlift", "Barbell Row", "Pull-ups", "Bicep Curls"] },
-  { name: "Leg Day", exercises: ["Squat", "Leg Press", "Lunges", "Leg Curl"] },
-  { name: "Upper Body", exercises: ["Bench Press", "Barbell Row", "Overhead Press", "Bicep Curls"] },
-  { name: "Full Body", exercises: ["Squat", "Bench Press", "Deadlift", "Overhead Press"] },
+  { name: "Push Day", exercises: ["Bench Press", "Overhead Press", "Cable Flyes", "Tricep Dips", "Shoulder Lateral Raise"] },
+  { name: "Pull Day", exercises: ["Deadlift", "Barbell Row", "Lat Pulldown", "Bicep Curls", "Hammer Curls"] },
+  { name: "Leg Day", exercises: ["Squat", "Leg Press", "Lunges", "Leg Curl", "Calf Raises"] },
+  { name: "Upper Body", exercises: ["Bench Press", "Barbell Row", "Overhead Press", "Bicep Curls", "Tricep Pushdown"] },
+  { name: "Full Body", exercises: ["Squat", "Bench Press", "Deadlift", "Overhead Press", "Pull-ups"] },
 ];
 
 const WorkoutLogger = () => {
@@ -128,16 +191,15 @@ const WorkoutLogger = () => {
   const [restTimer, setRestTimer] = useState(0);
   const [restRunning, setRestRunning] = useState(false);
   const [restDuration, setRestDuration] = useState(90);
+  const [activeWorkoutSeconds, setActiveWorkoutSeconds] = useState(0);
   const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const workoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (restRunning && restTimer > 0) {
       restIntervalRef.current = setInterval(() => {
         setRestTimer((t) => {
-          if (t <= 1) {
-            setRestRunning(false);
-            return 0;
-          }
+          if (t <= 1) { setRestRunning(false); return 0; }
           return t - 1;
         });
       }, 1000);
@@ -145,15 +207,22 @@ const WorkoutLogger = () => {
     return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current); };
   }, [restRunning, restTimer]);
 
-  const startRest = () => {
-    setRestTimer(restDuration);
-    setRestRunning(true);
-  };
+  useEffect(() => {
+    if (activeWorkout) {
+      workoutTimerRef.current = setInterval(() => {
+        setActiveWorkoutSeconds((s) => s + 1);
+      }, 1000);
+    } else {
+      setActiveWorkoutSeconds(0);
+    }
+    return () => { if (workoutTimerRef.current) clearInterval(workoutTimerRef.current); };
+  }, [activeWorkout]);
+
+  const startRest = () => { setRestTimer(restDuration); setRestRunning(true); };
 
   const startFromTemplate = (template: typeof TEMPLATES[0]) => {
     const exercises: Exercise[] = template.exercises.map((name, i) => ({
-      id: `new-e-${i}`,
-      name,
+      id: `new-e-${i}`, name,
       muscleGroup: EXERCISE_LIBRARY.find((e) => e.name === name)?.group || "",
       sets: [
         { id: `new-s-${i}-1`, weight: 0, reps: 0, completed: false },
@@ -204,20 +273,40 @@ const WorkoutLogger = () => {
     });
   };
 
-  // PR data
   const prData = [
     { exercise: "Bench Press", weight: "85 kg", reps: "6", date: "Today" },
     { exercise: "Squat", weight: "110 kg", reps: "6", date: "Mar 5" },
     { exercise: "Deadlift", weight: "130 kg", reps: "3", date: "Yesterday" },
+    { exercise: "Overhead Press", weight: "55 kg", reps: "6", date: "Today" },
   ];
 
   const totalWorkouts = workouts.length;
   const totalVolume = workouts.reduce((s, w) => s + w.totalVolume, 0);
+  const totalCalories = workouts.reduce((s, w) => s + (w.totalCalories || 0), 0);
 
   const filteredExercises = EXERCISE_LIBRARY.filter((e) =>
     (filterGroup === "All" || e.group === filterGroup) &&
     e.name.toLowerCase().includes(searchEx.toLowerCase())
   );
+
+  const formatActiveTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  // Calculate active workout stats
+  const activeVolume = activeWorkout
+    ? activeWorkout.exercises.reduce((sum, ex) =>
+        sum + ex.sets.filter((s) => s.completed).reduce((s, set) => s + set.weight * set.reps, 0), 0)
+    : 0;
+  const activeCompletedSets = activeWorkout
+    ? activeWorkout.exercises.reduce((sum, ex) => sum + ex.sets.filter((s) => s.completed).length, 0)
+    : 0;
+  const activeTotalSets = activeWorkout
+    ? activeWorkout.exercises.reduce((sum, ex) => sum + ex.sets.length, 0)
+    : 0;
+  const activeCalories = Math.round(activeWorkoutSeconds / 60 * 6.5);
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
@@ -228,7 +317,9 @@ const WorkoutLogger = () => {
             <Dumbbell className="w-5 h-5 text-warning" />
             <h1 className="text-2xl font-bold font-display text-foreground">Workouts</h1>
           </div>
-          <p className="text-sm text-muted-foreground font-body">{totalWorkouts} this week · {(totalVolume / 1000).toFixed(1)}k kg volume</p>
+          <p className="text-sm text-muted-foreground font-body">
+            {totalWorkouts} this week · {(totalVolume / 1000).toFixed(1)}k kg · {totalCalories} kcal
+          </p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setShowExerciseLib(true)} className="w-10 h-10 rounded-xl glass-card flex items-center justify-center">
@@ -258,12 +349,10 @@ const WorkoutLogger = () => {
         </div>
       </div>
 
-      {/* Rest Timer (if active) */}
+      {/* Rest Timer */}
       {restTimer > 0 && (
-        <motion.div
-          className="glass-card p-4 flex items-center justify-between ring-1 ring-primary/30"
-          initial={{ scale: 0.95 }} animate={{ scale: 1 }}
-        >
+        <motion.div className="glass-card p-4 flex items-center justify-between ring-1 ring-primary/30"
+          initial={{ scale: 0.95 }} animate={{ scale: 1 }}>
           <div className="flex items-center gap-3">
             <Clock className="w-5 h-5 text-primary" />
             <div>
@@ -296,6 +385,32 @@ const WorkoutLogger = () => {
             </button>
           </div>
 
+          {/* Active workout live stats */}
+          <div className="glass-card p-4 ring-1 ring-primary/20">
+            <div className="grid grid-cols-4 gap-2">
+              <div className="text-center">
+                <Clock className="w-3.5 h-3.5 text-primary mx-auto mb-0.5" />
+                <p className="text-sm font-bold font-display text-foreground tabular-nums">{formatActiveTime(activeWorkoutSeconds)}</p>
+                <p className="text-[8px] text-muted-foreground font-body">Duration</p>
+              </div>
+              <div className="text-center">
+                <Dumbbell className="w-3.5 h-3.5 text-warning mx-auto mb-0.5" />
+                <p className="text-sm font-bold font-display text-foreground">{(activeVolume / 1000).toFixed(1)}k</p>
+                <p className="text-[8px] text-muted-foreground font-body">Volume</p>
+              </div>
+              <div className="text-center">
+                <Flame className="w-3.5 h-3.5 text-destructive mx-auto mb-0.5" />
+                <p className="text-sm font-bold font-display text-foreground">{activeCalories}</p>
+                <p className="text-[8px] text-muted-foreground font-body">kcal</p>
+              </div>
+              <div className="text-center">
+                <TrendingUp className="w-3.5 h-3.5 text-success mx-auto mb-0.5" />
+                <p className="text-sm font-bold font-display text-foreground">{activeCompletedSets}/{activeTotalSets}</p>
+                <p className="text-[8px] text-muted-foreground font-body">Sets</p>
+              </div>
+            </div>
+          </div>
+
           {activeWorkout.exercises.map((ex) => (
             <div key={ex.id} className="glass-card p-4 ring-1 ring-primary/20">
               <p className="text-sm font-semibold font-display text-foreground mb-3">{ex.name}</p>
@@ -309,26 +424,15 @@ const WorkoutLogger = () => {
                 {ex.sets.map((set, si) => (
                   <div key={set.id} className={`grid grid-cols-12 gap-2 items-center ${set.completed ? "opacity-60" : ""}`}>
                     <span className="col-span-1 text-xs text-muted-foreground font-body">{si + 1}</span>
-                    <input
-                      type="number"
-                      value={set.weight || ""}
+                    <input type="number" value={set.weight || ""}
                       onChange={(e) => updateSet(ex.id, set.id, "weight", parseFloat(e.target.value) || 0)}
-                      className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center"
-                      placeholder="0"
-                    />
-                    <input
-                      type="number"
-                      value={set.reps || ""}
+                      className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
+                    <input type="number" value={set.reps || ""}
                       onChange={(e) => updateSet(ex.id, set.id, "reps", parseInt(e.target.value) || 0)}
-                      className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center"
-                      placeholder="0"
-                    />
+                      className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
                     <div className="col-span-3 flex justify-center">
                       <button
-                        onClick={() => {
-                          toggleSet(ex.id, set.id);
-                          if (!set.completed) startRest();
-                        }}
+                        onClick={() => { toggleSet(ex.id, set.id); if (!set.completed) startRest(); }}
                         className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                           set.completed ? "bg-primary/20" : "bg-secondary"
                         }`}
@@ -345,16 +449,13 @@ const WorkoutLogger = () => {
             </div>
           ))}
 
-          {/* Rest timer buttons */}
           <div className="flex gap-2">
             {[60, 90, 120, 180].map((s) => (
-              <button
-                key={s}
+              <button key={s}
                 onClick={() => { setRestDuration(s); setRestTimer(s); setRestRunning(true); }}
                 className={`flex-1 py-2 rounded-xl text-xs font-body transition-colors ${
                   restDuration === s ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"
-                }`}
-              >
+                }`}>
                 {s < 120 ? `${s}s` : `${s / 60}m`}
               </button>
             ))}
@@ -362,80 +463,26 @@ const WorkoutLogger = () => {
         </div>
       )}
 
-      {/* Workout history */}
+      {/* Workout history with detailed cards */}
       <div>
         <h3 className="text-sm font-semibold font-display text-foreground mb-3 flex items-center gap-2">
           <Calendar className="w-4 h-4 text-muted-foreground" /> History
         </h3>
         <div className="space-y-3">
-          {workouts.map((workout, i) => {
-            const isExpanded = expandedWorkout === workout.id;
-            return (
-              <motion.div
-                key={workout.id}
-                className="glass-card overflow-hidden"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <button onClick={() => setExpandedWorkout(isExpanded ? null : workout.id)} className="w-full p-4 text-left">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
-                        <Dumbbell className="w-5 h-5 text-warning" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold font-display text-foreground">{workout.name}</p>
-                        <p className="text-xs text-muted-foreground font-body">{workout.date} · {workout.duration}m · {workout.exercises.length} exercises</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground font-body">{(workout.totalVolume / 1000).toFixed(1)}k kg</span>
-                      <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
-                    </div>
-                  </div>
-                </button>
-
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      className="px-4 pb-4 space-y-3"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                    >
-                      {workout.exercises.map((ex) => (
-                        <div key={ex.id} className="p-3 rounded-xl bg-secondary/40">
-                          <p className="text-xs font-semibold text-foreground font-display mb-2">{ex.name}</p>
-                          <div className="space-y-1">
-                            {ex.sets.map((set, si) => (
-                              <div key={set.id} className="flex items-center gap-2 text-xs text-muted-foreground font-body">
-                                <span className="w-6">#{si + 1}</span>
-                                <span className="font-medium text-foreground">{set.weight} kg</span>
-                                <span>×</span>
-                                <span className="font-medium text-foreground">{set.reps} reps</span>
-                                {set.completed && <Check className="w-3 h-3 text-primary ml-auto" />}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => startFromTemplate({ name: workout.name, exercises: workout.exercises.map((e) => e.name) })}
-                        className="w-full py-2 rounded-xl bg-primary/10 text-primary text-xs font-medium font-body flex items-center justify-center gap-1"
-                      >
-                        <RotateCcw className="w-3 h-3" /> Repeat Workout
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+          {workouts.map((workout, i) => (
+            <WorkoutDetailCard
+              key={workout.id}
+              workout={workout}
+              isExpanded={expandedWorkout === workout.id}
+              onToggle={() => setExpandedWorkout(expandedWorkout === workout.id ? null : workout.id)}
+              onRepeat={(w) => startFromTemplate({ name: w.name, exercises: w.exercises.map((e) => e.name) })}
+              index={i}
+            />
+          ))}
         </div>
       </div>
 
-      {/* New Workout Modal (Templates) */}
+      {/* New Workout Modal */}
       <AnimatePresence>
         {showNewWorkout && (
           <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm"
@@ -450,11 +497,8 @@ const WorkoutLogger = () => {
               <p className="text-xs text-muted-foreground font-body">Choose a template or start empty</p>
               <div className="space-y-2">
                 {TEMPLATES.map((t) => (
-                  <button
-                    key={t.name}
-                    onClick={() => startFromTemplate(t)}
-                    className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                  >
+                  <button key={t.name} onClick={() => startFromTemplate(t)}
+                    className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
                     <div className="text-left">
                       <p className="text-sm font-semibold font-display text-foreground">{t.name}</p>
                       <p className="text-xs text-muted-foreground font-body">{t.exercises.join(", ")}</p>
@@ -463,10 +507,8 @@ const WorkoutLogger = () => {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => startFromTemplate({ name: "Custom Workout", exercises: [] })}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary"
-              >
+              <button onClick={() => startFromTemplate({ name: "Custom Workout", exercises: [] })}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary">
                 Empty Workout
               </button>
             </motion.div>
@@ -486,14 +528,8 @@ const WorkoutLogger = () => {
                 <h2 className="text-lg font-bold font-display text-foreground">Exercise Library</h2>
                 <button onClick={() => setShowExerciseLib(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
-
-              <input
-                value={searchEx}
-                onChange={(e) => setSearchEx(e.target.value)}
-                placeholder="Search exercises..."
-                className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
-              />
-
+              <input value={searchEx} onChange={(e) => setSearchEx(e.target.value)} placeholder="Search exercises..."
+                className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body" />
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                 {MUSCLE_GROUPS.map((g) => (
                   <button key={g} onClick={() => setFilterGroup(g)}
@@ -502,7 +538,6 @@ const WorkoutLogger = () => {
                     }`}>{g}</button>
                 ))}
               </div>
-
               <div className="space-y-1.5">
                 {filteredExercises.map((ex) => (
                   <div key={ex.name} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40">

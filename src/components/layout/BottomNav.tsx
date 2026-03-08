@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, UtensilsCrossed, BarChart3, Bot, MoreHorizontal, X, Target, Brain, Zap, Calculator, Trophy, CalendarDays, MessageCircle, Heart, MapPin, Dumbbell } from "lucide-react";
+import { Home, UtensilsCrossed, BarChart3, Bot, MoreHorizontal, X, Target, Brain, Zap, Calculator, Trophy, CalendarDays, MessageCircle, Heart, MapPin, Dumbbell, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const mainNavItems = [
