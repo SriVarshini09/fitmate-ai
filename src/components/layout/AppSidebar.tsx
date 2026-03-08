@@ -37,7 +37,7 @@ const trackingItems = [
 const moreItems = [
   { title: "Meal Planner", url: "/dashboard/planner", icon: CalendarDays },
   { title: "Lifestyle", url: "/dashboard/lifestyle", icon: Brain },
-  { title: "Motivation", url: "/dashboard/motivation", icon: Zap },
+  
   { title: "Tools", url: "/dashboard/tools", icon: Calculator },
   { title: "Badges", url: "/dashboard/badges", icon: Trophy },
   { title: "Community", url: "/dashboard/community", icon: MessageCircle },

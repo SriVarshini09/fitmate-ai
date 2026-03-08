@@ -16,7 +16,7 @@ const moreItems = [
   { path: "/dashboard/goals", icon: Target, label: "Goals", color: "bg-primary/10 text-primary" },
   { path: "/dashboard/planner", icon: CalendarDays, label: "Meal Planner", color: "bg-info/10 text-info" },
   { path: "/dashboard/lifestyle", icon: Brain, label: "Lifestyle", color: "bg-info/10 text-info" },
-  { path: "/dashboard/motivation", icon: Zap, label: "Motivation", color: "bg-warning/10 text-warning" },
+  
   { path: "/dashboard/tools", icon: Calculator, label: "Tools", color: "bg-success/10 text-success" },
   { path: "/dashboard/badges", icon: Trophy, label: "Badges", color: "bg-badge-gold/10 text-badge-gold" },
   { path: "/dashboard/community", icon: MessageCircle, label: "Community", color: "bg-primary/10 text-primary" },
