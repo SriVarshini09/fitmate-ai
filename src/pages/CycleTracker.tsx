@@ -316,34 +316,6 @@ const CycleTracker = () => {
         </motion.div>
       )}
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => setShowLogPeriod(true)}
-          className="glass-card p-4 flex items-center gap-3 hover:border-destructive/30 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
-            <Droplets className="w-5 h-5 text-destructive" />
-          </div>
-          <div className="text-left">
-            <p className="text-xs font-semibold font-display text-foreground">Log Period</p>
-            <p className="text-[9px] text-muted-foreground font-body">Dates, flow & pain</p>
-          </div>
-        </button>
-        <button
-          onClick={() => setShowSymptom(true)}
-          className="glass-card p-4 flex items-center gap-3 hover:border-warning/30 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
-            <Plus className="w-5 h-5 text-warning" />
-          </div>
-          <div className="text-left">
-            <p className="text-xs font-semibold font-display text-foreground">Log Symptom</p>
-            <p className="text-[9px] text-muted-foreground font-body">Track how you feel</p>
-          </div>
-        </button>
-      </div>
-
 
       {/* Today's symptoms */}
       {todaySymptoms.length > 0 && (
