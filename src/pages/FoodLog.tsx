@@ -45,6 +45,7 @@ const FoodLog = () => {
       protein: parseInt(newFood.protein) || 0,
       carbs: parseInt(newFood.carbs) || 0,
       fat: parseInt(newFood.fat) || 0,
+      fiber: parseInt(newFood.fiber) || 0,
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
