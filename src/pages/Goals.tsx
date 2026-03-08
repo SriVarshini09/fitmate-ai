@@ -225,9 +225,9 @@ const Goals = () => {
 
               <div className="grid grid-cols-3 gap-2">
                 {CATEGORIES.map((cat) => (
-                  <button key={cat.key} onClick={() => setNewGoal({ ...newGoal, category: cat.key })}
+                  <button key={cat.key} onClick={() => toggleCategory(cat.key)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-body transition-colors ${
-                      newGoal.category === cat.key ? "bg-primary/15 ring-1 ring-primary text-foreground" : "bg-secondary text-muted-foreground"
+                      newGoal.categories.includes(cat.key) ? "bg-primary/15 ring-1 ring-primary text-foreground" : "bg-secondary text-muted-foreground"
                     }`}>
                     <span>{cat.icon}</span>{cat.label}
                   </button>
