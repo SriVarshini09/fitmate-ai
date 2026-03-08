@@ -156,15 +156,9 @@ const Goals = () => {
             <Target className="w-8 h-8 text-primary" />
           </div>
           <h3 className="text-base font-semibold font-display text-foreground mb-1">No goals yet</h3>
-          <p className="text-xs text-muted-foreground font-body mb-5 max-w-[240px]">
-            Start by creating your first goal. Track weight, nutrition, fitness and more.
+          <p className="text-xs text-muted-foreground font-body max-w-[240px]">
+            Tap the <span className="text-primary font-semibold">+</span> button above to create your first goal.
           </p>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold font-display glow-primary active:scale-95 transition-transform"
-          >
-            Create First Goal
-          </button>
         </motion.div>
       )}
 
