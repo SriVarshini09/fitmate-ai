@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/layout/AppLayout";
 import Index from "./pages/Index";
+import WeeklyPlanner from "./pages/WeeklyPlanner";
 import FoodLog from "./pages/FoodLog";
 import Community from "./pages/Community";
 import AiChat from "./pages/AiChat";
@@ -23,6 +24,7 @@ const App = () => (
           <Route element={<AppLayout />}>
             <Route path="/" element={<Index />} />
             <Route path="/food" element={<FoodLog />} />
+            <Route path="/planner" element={<WeeklyPlanner />} />
             <Route path="/community" element={<Community />} />
             <Route path="/ai-chat" element={<AiChat />} />
             <Route path="/badges" element={<Badges />} />
