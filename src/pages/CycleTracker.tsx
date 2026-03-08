@@ -675,6 +675,8 @@ const CycleTracker = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      </div>{/* end z-10 content wrapper */}
     </div>
   );
 };
