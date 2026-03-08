@@ -21,7 +21,7 @@ export interface UserProfile {
   activityLevel: string;
   tdee: number;
   targetCalories: number;
-  macros: { protein: number; carbs: number; fat: number };
+  macros: { protein: number; carbs: number; fat: number; fiber: number };
 }
 
 const BURNED_KEY = "vitalflow_burned";
