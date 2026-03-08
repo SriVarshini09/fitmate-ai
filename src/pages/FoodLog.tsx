@@ -78,39 +78,39 @@ const FoodLog = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState("breakfast");
   const [searchQuery, setSearchQuery] = useState("");
-  const [addSearch, setAddSearch] = useState("");
-  const [selectedFood, setSelectedFood] = useState<FoodDBEntry | null>(null);
+  const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
-  const filteredFoodDB = useMemo(() => {
-    if (!addSearch.trim()) return FOOD_DB;
-    return FOOD_DB.filter((f) => f.name.toLowerCase().includes(addSearch.toLowerCase()));
-  }, [addSearch]);
+  // Auto-match typed food name to DB for nutrition lookup
+  const matchedFood = useMemo(() => {
+    if (!foodName.trim()) return null;
+    const lower = foodName.toLowerCase();
+    return FOOD_DB.find((f) => f.name.toLowerCase().includes(lower) || lower.includes(f.name.toLowerCase())) || null;
+  }, [foodName]);
 
   const preview = useMemo(() => {
-    if (!selectedFood) return null;
-    const qty = parseFloat(quantity) || selectedFood.defaultServing;
-    return calcNutrition(selectedFood, qty);
-  }, [selectedFood, quantity]);
+    if (!matchedFood) return null;
+    const qty = parseFloat(quantity) || matchedFood.defaultServing;
+    return calcNutrition(matchedFood, qty);
+  }, [matchedFood, quantity]);
 
   const addFood = () => {
-    if (!selectedFood) return;
-    const qty = parseFloat(quantity) || selectedFood.defaultServing;
-    const nutrition = calcNutrition(selectedFood, qty);
+    if (!foodName.trim()) return;
+    const qty = parseFloat(quantity) || matchedFood?.defaultServing || 100;
+    const nutrition = matchedFood ? calcNutrition(matchedFood, qty) : { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
     const entry: FoodEntry = {
       id: Date.now().toString(),
-      name: selectedFood.name,
+      name: foodName.trim(),
       quantity: qty,
-      unit: selectedFood.unit,
+      unit: matchedFood?.unit || "g",
       ...nutrition,
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
-    setSelectedFood(null);
+    setFoodName("");
     setQuantity("");
-    setAddSearch("");
     setShowAdd(false);
   };
 
@@ -195,7 +195,7 @@ const FoodLog = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => { setShowAdd(false); setSelectedFood(null); setAddSearch(""); }}
+            onClick={() => { setShowAdd(false); setFoodName(""); setQuantity(""); }}
           >
             <motion.div
               className="w-full max-w-lg glass-card-strong p-6 rounded-t-3xl space-y-4"
@@ -207,7 +207,7 @@ const FoodLog = () => {
             >
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold font-display text-foreground">Add Food</h2>
-                <button onClick={() => { setShowAdd(false); setSelectedFood(null); setAddSearch(""); }}>
+                <button onClick={() => { setShowAdd(false); setFoodName(""); setQuantity(""); }}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
@@ -227,90 +227,63 @@ const FoodLog = () => {
                 ))}
               </div>
 
-              {!selectedFood ? (
-                <>
-                  {/* Food search */}
-                  <div className="flex items-center gap-2 bg-secondary rounded-xl px-4">
-                    <Search className="w-4 h-4 text-muted-foreground" />
-                    <input
-                      value={addSearch}
-                      onChange={(e) => setAddSearch(e.target.value)}
-                      placeholder="Search food..."
-                      autoFocus
-                      className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-3 font-body"
-                    />
-                  </div>
+              {/* Food name input */}
+              <input
+                value={foodName}
+                onChange={(e) => setFoodName(e.target.value)}
+                placeholder="Enter food name (e.g. Rice, Chicken)"
+                autoFocus
+                className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
+              />
 
-                  {/* Food list */}
-                  <div className="max-h-60 overflow-y-auto space-y-1">
-                    {filteredFoodDB.map((food) => (
-                      <button
-                        key={food.name}
-                        onClick={() => {
-                          setSelectedFood(food);
-                          setQuantity(food.defaultServing.toString());
-                        }}
-                        className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-secondary/80 transition-colors text-left"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-foreground font-body">{food.name}</p>
-                          <p className="text-xs text-muted-foreground font-body">{food.caloriesPer100g} kcal/100{food.unit}</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground font-body">{food.defaultServing}{food.unit}</span>
-                      </button>
-                    ))}
-                    {filteredFoodDB.length === 0 && (
-                      <p className="text-xs text-muted-foreground text-center py-4 font-body">No foods found</p>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Selected food + quantity */}
-                  <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-foreground font-display">{selectedFood.name}</p>
-                      <button onClick={() => setSelectedFood(null)} className="text-xs text-primary font-body">Change</button>
-                    </div>
+              {/* Quantity input */}
+              <div className="flex items-center gap-3">
+                <input
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  type="number"
+                  placeholder={`Quantity (${matchedFood ? matchedFood.defaultServing + matchedFood.unit : "g"})`}
+                  className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
+                />
+                <span className="text-sm text-muted-foreground font-body min-w-[20px]">{matchedFood?.unit || "g"}</span>
+              </div>
 
-                    <div className="flex items-center gap-3">
-                      <input
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        type="number"
-                        autoFocus
-                        className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
-                        placeholder="Quantity"
-                      />
-                      <span className="text-sm text-muted-foreground font-body min-w-[20px]">{selectedFood.unit}</span>
-                    </div>
-
-                    {preview && (
-                      <div className="grid grid-cols-5 gap-2 pt-1">
-                        {[
-                          { label: "Cal", value: preview.calories, unit: "" },
-                          { label: "Protein", value: preview.protein, unit: "g" },
-                          { label: "Carbs", value: preview.carbs, unit: "g" },
-                          { label: "Fat", value: preview.fat, unit: "g" },
-                          { label: "Fiber", value: preview.fiber, unit: "g" },
-                        ].map((m) => (
-                          <div key={m.label} className="text-center">
-                            <p className="text-xs text-muted-foreground font-body">{m.label}</p>
-                            <p className="text-sm font-semibold text-foreground font-display">{m.value}{m.unit}</p>
-                          </div>
-                        ))}
+              {/* Nutrition preview */}
+              {matchedFood && preview && (
+                <div className="bg-secondary/50 rounded-xl p-3">
+                  <p className="text-xs text-muted-foreground font-body mb-2">
+                    Matched: <span className="text-foreground font-medium">{matchedFood.name}</span>
+                  </p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { label: "Cal", value: preview.calories, unit: "" },
+                      { label: "Protein", value: preview.protein, unit: "g" },
+                      { label: "Carbs", value: preview.carbs, unit: "g" },
+                      { label: "Fat", value: preview.fat, unit: "g" },
+                      { label: "Fiber", value: preview.fiber, unit: "g" },
+                    ].map((m) => (
+                      <div key={m.label} className="text-center">
+                        <p className="text-xs text-muted-foreground font-body">{m.label}</p>
+                        <p className="text-sm font-semibold text-foreground font-display">{m.value}{m.unit}</p>
                       </div>
-                    )}
+                    ))}
                   </div>
-
-                  <button
-                    onClick={addFood}
-                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary"
-                  >
-                    Add to {MEALS.find((m) => m.key === selectedMeal)?.label}
-                  </button>
-                </>
+                </div>
               )}
+
+              {!matchedFood && foodName.trim() && (
+                <p className="text-xs text-muted-foreground font-body text-center">
+                  Food not in database — will be logged without nutrition data
+                </p>
+              )}
+
+              <button
+                onClick={addFood}
+                disabled={!foodName.trim()}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary disabled:opacity-50"
+              >
+                Add to {MEALS.find((m) => m.key === selectedMeal)?.label}
+              </button>
             </motion.div>
           </motion.div>
         )}
