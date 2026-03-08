@@ -202,6 +202,37 @@ const WeeklyPlanner = () => {
         </div>
       </div>
 
+      {/* Calorie budget card */}
+      <motion.div 
+        className="glass-card p-4"
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold font-display text-foreground">Daily Budget</span>
+          </div>
+          <span className="text-sm font-bold font-display text-foreground">{calorieGoal} kcal</span>
+        </div>
+        <div className="h-2.5 bg-secondary rounded-full overflow-hidden mb-2">
+          <motion.div
+            className={`h-full rounded-full ${dayTotal > calorieGoal ? "bg-destructive" : "bg-primary"}`}
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min((dayTotal / calorieGoal) * 100, 100)}%` }}
+            transition={{ duration: 0.6 }}
+          />
+        </div>
+        <div className="flex justify-between text-xs font-body">
+          <span className="text-muted-foreground">Planned: <span className="text-foreground font-medium">{dayTotal} kcal</span></span>
+          <span className={dayTotal > calorieGoal ? "text-destructive font-medium" : "text-primary font-medium"}>
+            {dayTotal > calorieGoal 
+              ? `${dayTotal - calorieGoal} kcal over` 
+              : `${calorieGoal - dayTotal} kcal remaining`}
+          </span>
+        </div>
+      </motion.div>
+
       {/* Meal sections */}
       {MEALS.map((mealType) => {
         const meals = weekPlan[selectedDay]?.[mealType] || [];
