@@ -149,8 +149,8 @@ const Insights = () => {
             <BarChart data={stepsTrend}>
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis hide />
-              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(200, 18%, 91%, 0.5)" }} />
-              <Bar dataKey="steps" fill="hsl(155, 55%, 40%)" radius={[8, 8, 0, 0]} />
+              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(80, 5%, 20%, 0.5)" }} />
+              <Bar dataKey="steps" fill="hsl(66, 85%, 50%)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
