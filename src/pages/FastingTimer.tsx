@@ -81,6 +81,7 @@ const FastingTimer = () => {
   const [showProtocolPicker, setShowProtocolPicker] = useState(false);
   const [logs, setLogs] = useState<FastingLog[]>(sampleLogs);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [customHours, setCustomHours] = useState(16);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Tick every second while fasting
