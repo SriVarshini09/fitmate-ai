@@ -143,19 +143,7 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Aggressive motivational quote — above logo */}
-        <motion.div
-          className="relative p-4 rounded-2xl bg-primary/10 border border-primary/20 overflow-hidden"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          <div className="absolute -top-2 -right-2 text-5xl opacity-10 select-none">☠️</div>
-          <p className="text-sm font-bold font-display text-primary leading-snug uppercase tracking-wide">
-            "Pain is temporary. Quitting lasts forever. You didn't wake up today to be mediocre. So stop acting like it. DISCIPLINE IS CHOOSING BETWEEN WHAT YOU WANT NOW AND WHAT YOU WANT MOST."
-          </p>
-          <p className="text-[10px] text-primary/60 font-body mt-1.5 text-right">— The voice you keep ignoring</p>
-        </motion.div>
+
 
         {/* Logo */}
         <div className="text-center">
