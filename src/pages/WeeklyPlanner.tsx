@@ -305,7 +305,7 @@ const WeeklyPlanner = () => {
         <div className="space-y-2">
           {DAYS.map((day) => {
             const total = MEALS.reduce((s, m) => s + (weekPlan[day]?.[m]?.reduce((a, f) => a + f.calories, 0) || 0), 0);
-            const pct = Math.min((total / 2100) * 100, 100);
+            const pct = Math.min((total / calorieGoal) * 100, 100);
             return (
               <div key={day} className="flex items-center gap-3">
                 <span className={`text-xs font-medium w-8 font-body ${day === selectedDay ? "text-primary" : "text-muted-foreground"}`}>
