@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff, ArrowRight, Zap, Dumbbell, Flame, Heart, Trophy } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const floatingEmojis = [
