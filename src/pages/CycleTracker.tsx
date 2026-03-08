@@ -293,6 +293,16 @@ const CycleTracker = () => {
               <p className="text-[8px] text-muted-foreground font-body">Logged</p>
             </div>
           </div>
+
+          {/* Next predicted period */}
+          {predictedPeriods.length > 0 && (
+            <div className="mt-3 p-3 rounded-xl bg-destructive/5 border border-destructive/10">
+              <p className="text-[10px] text-muted-foreground font-body mb-1">Next predicted period</p>
+              <p className="text-xs font-semibold text-foreground font-display">
+                {format(predictedPeriods[0].start, "MMM d")} – {format(predictedPeriods[0].end, "MMM d, yyyy")}
+              </p>
+            </div>
+          )}
         </motion.div>
       ) : (
         <motion.div className="glass-card-accent p-8 flex flex-col items-center text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
@@ -334,72 +344,6 @@ const CycleTracker = () => {
         </button>
       </div>
 
-      {/* Calendar */}
-      <div className="glass-card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setViewMonth(subMonths(viewMonth, 1))} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-            <ChevronLeft className="w-4 h-4 text-foreground" />
-          </button>
-          <h3 className="text-sm font-semibold font-display text-foreground">{format(viewMonth, "MMMM yyyy")}</h3>
-          <button onClick={() => setViewMonth(addMonths(viewMonth, 1))} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-            <ChevronRight className="w-4 h-4 text-foreground" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {WEEKDAYS.map((d) => (
-            <div key={d} className="text-center text-[9px] text-muted-foreground font-body py-1">{d}</div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: startDayOfWeek }).map((_, i) => <div key={`e-${i}`} />)}
-          {monthDays.map((day) => {
-            const isToday = isSameDay(day, today);
-            const isPeriod = isDuringPeriod(day);
-            const isPredicted = isPredictedPeriod(day);
-            const hasSym = hasSymptom(day);
-
-            return (
-              <div
-                key={day.toISOString()}
-                className={`relative aspect-square flex items-center justify-center rounded-lg text-[11px] font-medium font-body transition-colors
-                  ${isToday ? "ring-1 ring-primary" : ""}
-                  ${isPeriod ? "bg-destructive/25 text-destructive font-bold" : isPredicted ? "bg-destructive/8 text-destructive/50 border border-dashed border-destructive/25" : "text-foreground/60 hover:bg-secondary/60"}
-                `}
-              >
-                {format(day, "d")}
-                {hasSym && <div className="absolute bottom-0.5 w-1 h-1 rounded-full bg-warning" />}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="flex gap-4 mt-4 pt-3 border-t border-border/50">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded bg-destructive/25" />
-            <span className="text-[9px] text-muted-foreground font-body">Period</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded border border-dashed border-destructive/30 bg-destructive/8" />
-            <span className="text-[9px] text-muted-foreground font-body">Predicted</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-warning" />
-            <span className="text-[9px] text-muted-foreground font-body">Symptom</span>
-          </div>
-        </div>
-
-        {/* Next predicted */}
-        {predictedPeriods.length > 0 && (
-          <div className="mt-3 p-3 rounded-xl bg-destructive/5 border border-destructive/10">
-            <p className="text-[10px] text-muted-foreground font-body mb-1">Next predicted period</p>
-            <p className="text-xs font-semibold text-foreground font-display">
-              {format(predictedPeriods[0].start, "MMM d")} – {format(predictedPeriods[0].end, "MMM d, yyyy")}
-            </p>
-          </div>
-        )}
-      </div>
 
       {/* Today's symptoms */}
       {todaySymptoms.length > 0 && (
