@@ -22,14 +22,14 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
 
 function getUserContext() {
   try {
-    const raw = localStorage.getItem("GetFit_onboarding");
+    const raw = localStorage.getItem("Cals Crumble Fit_onboarding");
     if (!raw) return null;
     const data = JSON.parse(raw);
 
     // Also grab today's calorie data
     const today = new Date().toISOString().slice(0, 10);
-    const eatenData = JSON.parse(localStorage.getItem("GetFit_eaten") || "{}");
-    const burned = JSON.parse(localStorage.getItem("GetFit_burned") || "[]");
+    const eatenData = JSON.parse(localStorage.getItem("Cals Crumble Fit_eaten") || "{}");
+    const burned = JSON.parse(localStorage.getItem("Cals Crumble Fit_burned") || "[]");
     const todayEaten = typeof eatenData === "object" && !Array.isArray(eatenData)
       ? (eatenData[today] || 0)
       : 0;

@@ -41,8 +41,8 @@ const formatDateShort = (d: Date) => {
 
 const sampleLogs: FastingLog[] = [];
 
-const FASTING_STATE_KEY = "GetFit_fasting_state";
-const FASTING_LOGS_KEY = "GetFit_fasting_logs";
+const FASTING_STATE_KEY = "Cals Crumble Fit_fasting_state";
+const FASTING_LOGS_KEY = "Cals Crumble Fit_fasting_logs";
 
 function loadFastingState() {
   try {

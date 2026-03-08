@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icons/*.png"],
       manifest: {
-        name: "GetFit — Fitness & Health",
-        short_name: "GetFit",
+        name: "Cals Crumble Fit — Fitness & Health",
+        short_name: "Cals Crumble Fit",
         description: "Your all-in-one fitness, nutrition and wellness app",
         theme_color: "#1a1a0e",
         background_color: "#1a1a0e",

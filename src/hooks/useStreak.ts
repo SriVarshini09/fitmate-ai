@@ -1,4 +1,4 @@
-const STREAK_KEY = "GetFit_streak";
+const STREAK_KEY = "Cals Crumble Fit_streak";
 
 interface StreakData {
   current: number;

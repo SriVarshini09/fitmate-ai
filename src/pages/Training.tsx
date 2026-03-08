@@ -94,7 +94,7 @@ const sampleActivities: Activity[] = [];
 
 const sampleWorkouts: Workout[] = [];
 
-const WORKOUTS_KEY = "GetFit_workouts";
+const WORKOUTS_KEY = "Cals Crumble Fit_workouts";
 
 function loadWorkouts(): Workout[] {
   try {

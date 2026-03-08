@@ -33,8 +33,8 @@ interface Symptom {
 }
 
 // ── Storage keys ──
-const CYCLES_KEY = "GetFit_cycles";
-const SYMPTOMS_KEY = "GetFit_symptoms";
+const CYCLES_KEY = "Cals Crumble Fit_cycles";
+const SYMPTOMS_KEY = "Cals Crumble Fit_symptoms";
 
 function loadCycles(): CycleLog[] {
   try {

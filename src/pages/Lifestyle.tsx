@@ -22,8 +22,8 @@ interface LifestyleEntry {
   notes: string;
 }
 
-const SLEEP_TIMER_KEY = "GetFit_sleep_timer";
-const LIFESTYLE_KEY = "GetFit_lifestyle";
+const SLEEP_TIMER_KEY = "Cals Crumble Fit_sleep_timer";
+const LIFESTYLE_KEY = "Cals Crumble Fit_lifestyle";
 const TABS = ["Sleep", "Mood", "Stress"] as const;
 type Tab = (typeof TABS)[number];
 

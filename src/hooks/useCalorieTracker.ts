@@ -24,9 +24,9 @@ export interface UserProfile {
   macros: { protein: number; carbs: number; fat: number; fiber: number };
 }
 
-const BURNED_KEY = "GetFit_burned";
-const EATEN_KEY = "GetFit_eaten";
-const ONBOARDING_KEY = "GetFit_onboarding";
+const BURNED_KEY = "Cals Crumble Fit_burned";
+const EATEN_KEY = "Cals Crumble Fit_eaten";
+const ONBOARDING_KEY = "Cals Crumble Fit_onboarding";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);

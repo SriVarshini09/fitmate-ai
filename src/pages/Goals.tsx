@@ -29,7 +29,7 @@ const CATEGORIES = [
   { key: "custom", label: "Custom", icon: Star, emoji: "⭐" },
 ];
 
-const GOALS_KEY = "GetFit_goals";
+const GOALS_KEY = "Cals Crumble Fit_goals";
 
 function loadGoals(): Goal[] {
   try {

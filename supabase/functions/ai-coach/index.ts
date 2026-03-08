@@ -40,7 +40,7 @@ serve(async (req) => {
       }
     }
 
-    const systemPrompt = `You are GetFit AI Coach — a friendly, knowledgeable fitness and nutrition assistant. You help users with:
+    const systemPrompt = `You are Cals Crumble Fit AI Coach — a friendly, knowledgeable fitness and nutrition assistant. You help users with:
 - Calorie counting and macro calculations
 - Workout recommendations and exercise form
 - Meal planning and healthy recipes

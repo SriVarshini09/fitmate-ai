@@ -93,7 +93,7 @@ serve(async (req) => {
     try {
       const searchUrl = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchName)}&search_simple=1&action=process&json=1&page_size=5&fields=product_name,nutriments`;
       const offRes = await fetch(searchUrl, {
-        headers: { "User-Agent": "GetFit-App/1.0" },
+        headers: { "User-Agent": "Cals Crumble Fit-App/1.0" },
       });
 
       if (offRes.ok) {
