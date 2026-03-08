@@ -108,7 +108,7 @@ const Landing = () => {
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={() => navigate("/onboarding")}
+              onClick={() => navigate("/signup")}
               className="group px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 glow-primary"
             >
               Start Free Today
