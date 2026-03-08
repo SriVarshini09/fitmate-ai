@@ -62,8 +62,16 @@ const MEALS = [
   { key: "dinner", label: "Dinner", icon: Moon, time: "6:00 - 9:00 PM" },
 ];
 
-function calcNutrition(food: FoodDBEntry, qty: number) {
-  const factor = qty / 100;
+const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
+
+// Conversion to grams equivalent for nutrition calc
+const UNIT_TO_GRAMS: Record<string, number> = {
+  g: 1, ml: 1, L: 1000, pcs: 50, cup: 240, tbsp: 15, tsp: 5,
+};
+
+function calcNutrition(food: FoodDBEntry, qty: number, unit: string) {
+  const gramsEquiv = qty * (UNIT_TO_GRAMS[unit] || 1);
+  const factor = gramsEquiv / 100;
   return {
     calories: Math.round(food.caloriesPer100g * factor),
     protein: Math.round(food.proteinPer100g * factor * 10) / 10,
@@ -80,6 +88,7 @@ const FoodLog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("g");
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
@@ -93,24 +102,25 @@ const FoodLog = () => {
   const preview = useMemo(() => {
     if (!matchedFood) return null;
     const qty = parseFloat(quantity) || matchedFood.defaultServing;
-    return calcNutrition(matchedFood, qty);
-  }, [matchedFood, quantity]);
+    return calcNutrition(matchedFood, qty, selectedUnit);
+  }, [matchedFood, quantity, selectedUnit]);
 
   const addFood = () => {
     if (!foodName.trim()) return;
     const qty = parseFloat(quantity) || matchedFood?.defaultServing || 100;
-    const nutrition = matchedFood ? calcNutrition(matchedFood, qty) : { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+    const nutrition = matchedFood ? calcNutrition(matchedFood, qty, selectedUnit) : { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
     const entry: FoodEntry = {
       id: Date.now().toString(),
       name: foodName.trim(),
       quantity: qty,
-      unit: matchedFood?.unit || "g",
+      unit: selectedUnit,
       ...nutrition,
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
     setFoodName("");
     setQuantity("");
+    setSelectedUnit("g");
     setShowAdd(false);
   };
 
@@ -237,15 +247,27 @@ const FoodLog = () => {
               />
 
               {/* Quantity input */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <input
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   type="number"
-                  placeholder={`Quantity (${matchedFood ? matchedFood.defaultServing + matchedFood.unit : "g"})`}
+                  placeholder="Qty"
                   className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
                 />
-                <span className="text-sm text-muted-foreground font-body min-w-[20px]">{matchedFood?.unit || "g"}</span>
+                <div className="flex gap-1.5 overflow-x-auto">
+                  {UNITS.map((u) => (
+                    <button
+                      key={u}
+                      onClick={() => setSelectedUnit(u)}
+                      className={`px-3 py-2.5 rounded-xl text-xs font-medium font-body whitespace-nowrap transition-colors ${
+                        selectedUnit === u ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      {u}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Nutrition preview */}
