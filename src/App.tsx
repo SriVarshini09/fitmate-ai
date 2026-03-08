@@ -27,6 +27,8 @@ import Tools from "./pages/Tools";
 import Training from "./pages/Training";
 import FastingTimer from "./pages/FastingTimer";
 import Tablets from "./pages/Tablets";
+import Activities from "./pages/Activities";
+import WorkoutLogger from "./pages/WorkoutLogger";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +70,8 @@ const App = () => (
               <Route path="training" element={<Training />} />
               <Route path="fasting" element={<FastingTimer />} />
               <Route path="tablets" element={<Tablets />} />
+              <Route path="workout" element={<WorkoutLogger />} />
+              <Route path="activities" element={<Activities />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
