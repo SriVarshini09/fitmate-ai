@@ -5,7 +5,7 @@ import { Target, Plus, X, Check, TrendingDown, TrendingUp, Minus, Trophy, Chevro
 interface Goal {
   id: string;
   title: string;
-  category: string;
+  categories: string[];
   target: number;
   current: number;
   unit: string;
