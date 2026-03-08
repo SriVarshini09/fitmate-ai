@@ -78,22 +78,23 @@ const FoodLog = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState("breakfast");
   const [searchQuery, setSearchQuery] = useState("");
-  const [addSearch, setAddSearch] = useState("");
-  const [selectedFood, setSelectedFood] = useState<FoodDBEntry | null>(null);
+  const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
-  const filteredFoodDB = useMemo(() => {
-    if (!addSearch.trim()) return FOOD_DB;
-    return FOOD_DB.filter((f) => f.name.toLowerCase().includes(addSearch.toLowerCase()));
-  }, [addSearch]);
+  // Auto-match typed food name to DB for nutrition lookup
+  const matchedFood = useMemo(() => {
+    if (!foodName.trim()) return null;
+    const lower = foodName.toLowerCase();
+    return FOOD_DB.find((f) => f.name.toLowerCase().includes(lower) || lower.includes(f.name.toLowerCase())) || null;
+  }, [foodName]);
 
   const preview = useMemo(() => {
-    if (!selectedFood) return null;
-    const qty = parseFloat(quantity) || selectedFood.defaultServing;
-    return calcNutrition(selectedFood, qty);
-  }, [selectedFood, quantity]);
+    if (!matchedFood) return null;
+    const qty = parseFloat(quantity) || matchedFood.defaultServing;
+    return calcNutrition(matchedFood, qty);
+  }, [matchedFood, quantity]);
 
   const addFood = () => {
     if (!selectedFood) return;
