@@ -127,7 +127,7 @@ const Goals = () => {
                 className="w-full p-5 text-left"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xl">{catEmoji}</span>
+                  <span className="text-xl">{catEmojis}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold font-display text-foreground truncate">{goal.title}</p>
