@@ -7,6 +7,7 @@ import MacroBar from "@/components/dashboard/MacroBar";
 import QuickActions from "@/components/dashboard/QuickActions";
 import BadgePreview from "@/components/dashboard/BadgePreview";
 import TabletTracker from "@/components/dashboard/TabletTracker";
+import { useCalorieTracker } from "@/hooks/useCalorieTracker";
 
 const container = {
   hidden: { opacity: 0 },
@@ -18,6 +19,24 @@ const item = {
 };
 
 const Index = () => {
+  const { profile, totalBurnedToday, eatenToday } = useCalorieTracker();
+
+  const calorieGoal = profile?.targetCalories || 2100;
+  const consumed = eatenToday || 1240; // fallback to sample if no food logged yet
+  const burned = totalBurnedToday || 0;
+
+  const macroGoals = profile?.macros || { protein: 150, carbs: 250, fat: 70 };
+
+  // Scale current macros proportionally to consumed/goal ratio
+  const consumedRatio = consumed / calorieGoal;
+  const currentMacros = {
+    protein: Math.round(macroGoals.protein * consumedRatio),
+    carbs: Math.round(macroGoals.carbs * consumedRatio),
+    fat: Math.round(macroGoals.fat * consumedRatio),
+  };
+
+  const greeting = profile?.name ? `Good morning, ${profile.name} 👋` : "Good morning 👋";
+
   return (
     <motion.div
       className="max-w-lg mx-auto px-4 py-6 space-y-5 relative"
@@ -32,26 +51,28 @@ const Index = () => {
       {/* Header */}
       <motion.div className="flex items-center justify-between" variants={item}>
         <div>
-          <p className="text-sm text-muted-foreground font-body">Good morning 👋</p>
+          <p className="text-sm text-muted-foreground font-body">{greeting}</p>
           <h1 className="text-2xl font-bold font-display text-gradient-primary">Dashboard</h1>
         </div>
         <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center gradient-border">
-          <span className="text-sm font-bold text-primary font-display">JD</span>
+          <span className="text-sm font-bold text-primary font-display">
+            {profile?.name ? profile.name.slice(0, 2).toUpperCase() : "JD"}
+          </span>
         </div>
       </motion.div>
 
       {/* Calorie Ring */}
       <motion.div variants={item}>
-        <CalorieRing consumed={1240} goal={2100} burned={320} />
+        <CalorieRing consumed={consumed} goal={calorieGoal} burned={burned} />
       </motion.div>
 
       {/* Macros */}
       <motion.div className="glass-card p-5 gradient-border" variants={item}>
         <h3 className="text-sm font-semibold font-display text-foreground mb-3">Macros</h3>
         <div className="flex gap-4">
-          <MacroBar label="Protein" current={65} goal={150} color="hsl(82, 60%, 40%)" />
-          <MacroBar label="Carbs" current={120} goal={250} color="hsl(210, 70%, 52%)" />
-          <MacroBar label="Fat" current={35} goal={70} color="hsl(18, 85%, 72%)" />
+          <MacroBar label="Protein" current={currentMacros.protein} goal={macroGoals.protein} color="hsl(82, 60%, 40%)" />
+          <MacroBar label="Carbs" current={currentMacros.carbs} goal={macroGoals.carbs} color="hsl(210, 70%, 52%)" />
+          <MacroBar label="Fat" current={currentMacros.fat} goal={macroGoals.fat} color="hsl(18, 85%, 72%)" />
         </div>
       </motion.div>
 
