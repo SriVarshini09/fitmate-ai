@@ -39,11 +39,7 @@ const formatDateShort = (d: Date) => {
   return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${time}`;
 };
 
-const sampleLogs: FastingLog[] = [
-  { id: "1", startTime: new Date(Date.now() - 36 * 3600000), endTime: new Date(Date.now() - 20 * 3600000), targetHours: 16, actualHours: 16, completed: true, caloriesBurned: 180 },
-  { id: "2", startTime: new Date(Date.now() - 60 * 3600000), endTime: new Date(Date.now() - 42 * 3600000), targetHours: 18, actualHours: 18, completed: true, caloriesBurned: 220 },
-  { id: "3", startTime: new Date(Date.now() - 84 * 3600000), endTime: new Date(Date.now() - 70 * 3600000), targetHours: 16, actualHours: 14, completed: false, caloriesBurned: 155 },
-];
+const sampleLogs: FastingLog[] = [];
 
 const FASTING_STATE_KEY = "vitalflow_fasting_state";
 const FASTING_LOGS_KEY = "vitalflow_fasting_logs";

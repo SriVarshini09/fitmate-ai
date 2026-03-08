@@ -90,22 +90,9 @@ const TEMPLATES = [
   { name: "Full Body", exercises: ["Squat", "Bench Press", "Deadlift", "Overhead Press", "Pull-ups"] },
 ];
 
-const sampleActivities: Activity[] = [
-  { id: "a1", type: "run", title: "Morning Run", date: "Today, 7:15 AM", distance: 5.2, duration: 28, calories: 420, pace: "5:23/km", isPR: true },
-  { id: "a2", type: "ride", title: "Evening Cycle", date: "Yesterday, 6:00 PM", distance: 22.5, duration: 55, calories: 580, pace: "24.5 km/h" },
-  { id: "a3", type: "swim", title: "Pool Session", date: "Mar 6, 12:00 PM", distance: 1.5, duration: 40, calories: 350, pace: "2:40/100m" },
-];
+const sampleActivities: Activity[] = [];
 
-const sampleWorkouts: Workout[] = [
-  { id: "w1", name: "Push Day", date: "Today", duration: 58, totalVolume: 12450, totalCalories: 380, intensity: "Intense", muscleGroupsHit: ["Chest", "Shoulders", "Arms"], exercises: [
-    { id: "e1", name: "Bench Press", muscleGroup: "Chest", caloriesBurned: 120, sets: [{ id: "s1", weight: 80, reps: 8, completed: true, rpe: 7 }, { id: "s2", weight: 85, reps: 6, completed: true, rpe: 8 }, { id: "s3", weight: 85, reps: 6, completed: true, rpe: 9 }] },
-    { id: "e2", name: "Overhead Press", muscleGroup: "Shoulders", caloriesBurned: 95, sets: [{ id: "s5", weight: 50, reps: 8, completed: true, rpe: 7 }, { id: "s6", weight: 55, reps: 6, completed: true, rpe: 8 }] },
-  ]},
-  { id: "w2", name: "Pull Day", date: "Yesterday", duration: 62, totalVolume: 10800, totalCalories: 410, intensity: "Intense", muscleGroupsHit: ["Back", "Arms"], exercises: [
-    { id: "e4", name: "Deadlift", muscleGroup: "Back", caloriesBurned: 150, sets: [{ id: "s11", weight: 120, reps: 5, completed: true, rpe: 8 }, { id: "s12", weight: 130, reps: 3, completed: true, rpe: 9 }] },
-    { id: "e5", name: "Barbell Row", muscleGroup: "Back", caloriesBurned: 110, sets: [{ id: "s14", weight: 70, reps: 8, completed: true, rpe: 7 }] },
-  ]},
-];
+const sampleWorkouts: Workout[] = [];
 
 const formatDuration = (mins: number) => {
   const h = Math.floor(mins / 60);

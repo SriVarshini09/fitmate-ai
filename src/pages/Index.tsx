@@ -22,7 +22,7 @@ const Index = () => {
   const { profile, totalBurnedToday, eatenToday } = useCalorieTracker();
 
   const calorieGoal = profile?.targetCalories || 2100;
-  const consumed = eatenToday || 1240; // fallback to sample if no food logged yet
+  const consumed = eatenToday || 0;
   const burned = totalBurnedToday || 0;
 
   const macroGoals = profile?.macros || { protein: 150, carbs: 250, fat: 70, fiber: 30 };

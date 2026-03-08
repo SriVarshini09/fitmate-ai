@@ -21,16 +21,6 @@ const defaultWeek: WeekPlan = Object.fromEntries(
   DAYS.map((d) => [d, Object.fromEntries(MEALS.map((m) => [m, []]))])
 );
 
-// Pre-populate some sample data
-defaultWeek["Monday"]["Breakfast"] = [
-  { id: "1", name: "Oatmeal & Berries", calories: 310, protein: 10, carbs: 52, fat: 7 },
-];
-defaultWeek["Monday"]["Lunch"] = [
-  { id: "2", name: "Grilled Chicken Wrap", calories: 480, protein: 35, carbs: 40, fat: 18 },
-];
-defaultWeek["Tuesday"]["Breakfast"] = [
-  { id: "3", name: "Scrambled Eggs & Toast", calories: 380, protein: 22, carbs: 30, fat: 18 },
-];
 
 const WeeklyPlanner = () => {
   const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
