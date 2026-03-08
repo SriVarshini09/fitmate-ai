@@ -59,32 +59,66 @@ const WeeklyPlanner = () => {
     return sum + (weekPlan[selectedDay]?.[meal]?.reduce((s, f) => s + f.calories, 0) || 0);
   }, 0);
 
+  // Debounced AI nutrition lookup
+  const lookupNutrition = useCallback(async (name: string, qty: string, unit: string) => {
+    if (!name.trim() || name.trim().length < 2) {
+      setAiResult(null);
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("food-nutrition", {
+        body: { foodName: name.trim(), quantity: qty || "1", unit },
+      });
+      if (error) { setAiResult(null); return; }
+      if (data?.error) {
+        if (data.error.includes("Rate limit")) toast.error("Too many requests. Please wait.");
+        setAiResult(null);
+        return;
+      }
+      setAiResult(data as NutritionResult);
+    } catch {
+      setAiResult(null);
+    } finally {
+      setAiLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!showAdd) return;
+    debounceRef.current = setTimeout(() => {
+      lookupNutrition(foodName, quantity, selectedUnit);
+    }, 800);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [foodName, quantity, selectedUnit, showAdd, lookupNutrition]);
+
   const openAdd = (mealType: string) => {
     setAddMealType(mealType);
-    setNewMeal({ name: "", calories: "", protein: "", carbs: "", fat: "" });
-    setImagePreview(null);
+    setFoodName("");
+    setQuantity("");
+    setSelectedUnit("g");
+    setAiResult(null);
     setShowAdd(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
+  const closeModal = () => {
+    setShowAdd(false);
+    setFoodName("");
+    setQuantity("");
+    setAiResult(null);
   };
 
   const addMeal = () => {
-    if (!newMeal.name) return;
+    if (!foodName.trim()) return;
+    const nutrition = aiResult || { calories: 0, protein: 0, carbs: 0, fat: 0 };
     const entry: PlannedMeal = {
       id: Date.now().toString(),
-      name: newMeal.name,
-      calories: parseInt(newMeal.calories) || 0,
-      protein: parseInt(newMeal.protein) || 0,
-      carbs: parseInt(newMeal.carbs) || 0,
-      fat: parseInt(newMeal.fat) || 0,
-      imageUrl: imagePreview || undefined,
+      name: aiResult?.name || foodName.trim(),
+      calories: nutrition.calories,
+      protein: nutrition.protein,
+      carbs: nutrition.carbs,
+      fat: nutrition.fat,
     };
     setWeekPlan((prev) => ({
       ...prev,
@@ -93,7 +127,7 @@ const WeeklyPlanner = () => {
         [addMealType]: [...(prev[selectedDay]?.[addMealType] || []), entry],
       },
     }));
-    setShowAdd(false);
+    closeModal();
   };
 
   const removeMeal = (mealType: string, id: string) => {
