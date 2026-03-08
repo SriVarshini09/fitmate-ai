@@ -40,17 +40,9 @@ const CycleTracker = () => {
   const [showLogPeriod, setShowLogPeriod] = useState(false);
   const [showSymptom, setShowSymptom] = useState(false);
 
-  // Sample cycle data
-  const [cycles, setCycles] = useState<CycleLog[]>([
-    { startDate: subDays(today, 18), endDate: subDays(today, 13) },
-    { startDate: subDays(today, 46), endDate: subDays(today, 41) },
-  ]);
+  const [cycles, setCycles] = useState<CycleLog[]>([]);
 
-  const [symptoms, setSymptoms] = useState<Symptom[]>([
-    { id: "1", date: subDays(today, 17), type: "Cramps", severity: "moderate" },
-    { id: "2", date: subDays(today, 16), type: "Fatigue", severity: "mild" },
-    { id: "3", date: subDays(today, 15), type: "Cravings", severity: "severe" },
-  ]);
+  const [symptoms, setSymptoms] = useState<Symptom[]>([]);
 
   const [periodStart, setPeriodStart] = useState<Date | null>(null);
   const [periodEnd, setPeriodEnd] = useState<Date | null>(null);
