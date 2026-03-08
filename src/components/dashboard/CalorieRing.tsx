@@ -33,7 +33,7 @@ const CalorieRing = ({ consumed, goal, burned }: CalorieRingProps) => {
           <circle
             cx="100" cy="100" r={radius + 0}
             className="fill-none"
-            stroke="hsl(18, 85%, 72%)"
+            stroke="hsl(66, 85%, 50%)"
             strokeWidth="14"
             strokeLinecap="round"
             strokeDasharray={circumference}
