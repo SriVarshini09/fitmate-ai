@@ -35,46 +35,11 @@ const ACTIVITY_TYPES: { key: ActivityType; label: string; icon: React.ElementTyp
   { key: "hike", label: "Hike", icon: Mountain, color: "bg-badge-bronze/15 text-badge-bronze" },
 ];
 
-const sampleActivities: Activity[] = [
-  {
-    id: "1", type: "run", title: "Morning Run", date: "Today, 7:15 AM",
-    distance: 5.2, duration: 28, calories: 420, elevation: 45, pace: "5:23/km",
-    heartRateAvg: 155, heartRateMax: 178, isPR: true, kudos: 12, comments: 3,
-    splits: [
-      { km: 1, pace: "5:30" }, { km: 2, pace: "5:25" }, { km: 3, pace: "5:20" },
-      { km: 4, pace: "5:18" }, { km: 5, pace: "5:22" },
-    ],
-  },
-  {
-    id: "2", type: "ride", title: "Evening Cycle", date: "Yesterday, 6:00 PM",
-    distance: 22.5, duration: 55, calories: 580, elevation: 180, pace: "24.5 km/h",
-    heartRateAvg: 142, heartRateMax: 165, kudos: 8, comments: 1,
-  },
-  {
-    id: "3", type: "swim", title: "Pool Session", date: "Mar 6, 12:00 PM",
-    distance: 1.5, duration: 40, calories: 350, pace: "2:40/100m",
-    heartRateAvg: 135, heartRateMax: 158, kudos: 5, comments: 0,
-  },
-  {
-    id: "4", type: "run", title: "Interval Training", date: "Mar 5, 6:30 AM",
-    distance: 8.0, duration: 42, calories: 620, elevation: 65, pace: "5:15/km",
-    heartRateAvg: 162, heartRateMax: 185, kudos: 15, comments: 4,
-  },
-  {
-    id: "5", type: "hike", title: "Trail Hike", date: "Mar 4, 9:00 AM",
-    distance: 12.3, duration: 180, calories: 890, elevation: 420,
-    heartRateAvg: 118, heartRateMax: 145, kudos: 22, comments: 7,
-  },
-];
+const sampleActivities: Activity[] = [];
 
-const personalRecords = [
-  { label: "Fastest 5K", value: "24:12", date: "Today", icon: "🏃" },
-  { label: "Longest Run", value: "21.1 km", date: "Feb 15", icon: "📏" },
-  { label: "Longest Ride", value: "65 km", date: "Jan 28", icon: "🚴" },
-  { label: "Most Elevation", value: "850m", date: "Feb 22", icon: "⛰️" },
-];
+const personalRecords: { label: string; value: string; date: string; icon: string }[] = [];
 
-const weekStats = { distance: 35.7, time: "5h 25m", activities: 4, calories: 1970, elevation: 290 };
+const weekStats = { distance: 0, time: "0m", activities: 0, calories: 0, elevation: 0 };
 
 const formatDuration = (mins: number) => {
   const h = Math.floor(mins / 60);

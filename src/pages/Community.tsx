@@ -13,20 +13,7 @@ interface Post {
   tag: string;
 }
 
-const samplePosts: Post[] = [
-  {
-    id: "1", author: "FitMike92", avatar: "FM", content: "Just hit my protein goal for 30 days straight! 💪 Anyone else tracking macros consistently?",
-    likes: 24, replies: 8, time: "2h ago", tag: "Nutrition",
-  },
-  {
-    id: "2", author: "RunnerSara", avatar: "RS", content: "What's the best way to estimate calories for home-cooked meals? I always feel like I'm guessing.",
-    likes: 15, replies: 12, time: "4h ago", tag: "Question",
-  },
-  {
-    id: "3", author: "IronChef_Dev", avatar: "IC", content: "High protein meal prep for the week: chicken breast, quinoa, roasted veggies. ~500 kcal per meal.",
-    likes: 42, replies: 6, time: "6h ago", tag: "Meal Prep",
-  },
-];
+const samplePosts: Post[] = [];
 
 const tags = ["All", "Nutrition", "Question", "Meal Prep", "Motivation", "Workouts"];
 

@@ -23,45 +23,7 @@ const CATEGORIES = [
   { key: "custom", label: "Custom", icon: "⭐" },
 ];
 
-const sampleGoals: Goal[] = [
-  {
-    id: "1", title: "Lose Weight", category: "weight", target: 70, current: 76, unit: "kg",
-    direction: "decrease", deadline: "2026-06-01",
-    milestones: [
-      { value: 78, label: "First 2kg", reached: true },
-      { value: 75, label: "Halfway", reached: false },
-      { value: 72, label: "Almost there", reached: false },
-      { value: 70, label: "Goal!", reached: false },
-    ],
-  },
-  {
-    id: "2", title: "Daily Protein", category: "nutrition", target: 150, current: 118, unit: "g/day",
-    direction: "increase", deadline: "2026-04-15",
-    milestones: [
-      { value: 100, label: "100g", reached: true },
-      { value: 120, label: "120g", reached: false },
-      { value: 150, label: "Target!", reached: false },
-    ],
-  },
-  {
-    id: "3", title: "10K Steps Daily", category: "steps", target: 10000, current: 6842, unit: "steps",
-    direction: "increase", deadline: "2026-04-01",
-    milestones: [
-      { value: 5000, label: "5K", reached: true },
-      { value: 7500, label: "7.5K", reached: false },
-      { value: 10000, label: "10K!", reached: false },
-    ],
-  },
-  {
-    id: "4", title: "Run 5K", category: "fitness", target: 5, current: 3.2, unit: "km",
-    direction: "increase", deadline: "2026-05-01",
-    milestones: [
-      { value: 2, label: "2km", reached: true },
-      { value: 3.5, label: "3.5km", reached: false },
-      { value: 5, label: "5km!", reached: false },
-    ],
-  },
-];
+const sampleGoals: Goal[] = [];
 
 const Goals = () => {
   const [goals, setGoals] = useState<Goal[]>(sampleGoals);
