@@ -24,13 +24,29 @@ const defaultWeek: WeekPlan = Object.fromEntries(
 );
 
 
+interface NutritionResult {
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  servingDescription: string;
+}
+
+const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
+
 const WeeklyPlanner = () => {
   const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [showAdd, setShowAdd] = useState(false);
   const [addMealType, setAddMealType] = useState<string>("Breakfast");
-  const [newMeal, setNewMeal] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [foodName, setFoodName] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("g");
+  const [aiResult, setAiResult] = useState<NutritionResult | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dayIndex = DAYS.indexOf(selectedDay);
 
