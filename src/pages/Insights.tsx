@@ -127,8 +127,8 @@ const Insights = () => {
             <AreaChart data={weightTrend}>
               <defs>
                 <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(82, 60%, 40%)" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="hsl(82, 60%, 40%)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(66, 85%, 50%)" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="hsl(66, 85%, 50%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="week" axisLine={false} tickLine={false} tick={tickStyle} />
