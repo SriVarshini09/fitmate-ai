@@ -13,13 +13,13 @@ const MacroBar = ({ label, current, goal, color, unit = "g" }: MacroBarProps) =>
 
   return (
     <div className="flex-1">
-      <div className="flex justify-between items-baseline mb-1">
+      <div className="flex justify-between items-baseline mb-1.5">
         <span className="text-xs text-muted-foreground font-body">{label}</span>
-        <span className="text-xs font-medium text-foreground font-display">
-          {current}/{goal}{unit}
+        <span className="text-xs font-semibold text-foreground font-display">
+          {current}<span className="text-muted-foreground font-normal">/{goal}{unit}</span>
         </span>
       </div>
-      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+      <div className="h-2.5 bg-secondary rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
           style={{ backgroundColor: color }}
