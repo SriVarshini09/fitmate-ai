@@ -65,8 +65,7 @@ const App = () => (
               <Route path="lifestyle" element={<Lifestyle />} />
               <Route path="motivation" element={<Motivation />} />
               <Route path="tools" element={<Tools />} />
-              <Route path="activities" element={<Activities />} />
-              <Route path="workout" element={<WorkoutLogger />} />
+              <Route path="training" element={<Training />} />
               <Route path="fasting" element={<FastingTimer />} />
               <Route path="tablets" element={<Tablets />} />
             </Route>
