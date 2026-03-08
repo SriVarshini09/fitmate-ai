@@ -164,6 +164,57 @@ const WeeklyPlanner = () => {
         <p className="text-sm text-muted-foreground font-body">Plan your week, hit your goals</p>
       </motion.div>
 
+      {/* Tab switcher */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setActiveTab("manual")}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium font-display flex items-center justify-center gap-2 transition-colors ${
+            activeTab === "manual"
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          Manual Plan
+        </button>
+        <button
+          onClick={() => setActiveTab("ai")}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium font-display flex items-center justify-center gap-2 transition-colors ${
+            activeTab === "ai"
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          AI Planner
+        </button>
+      </div>
+
+      {activeTab === "ai" ? (
+        <AiMealPlanner
+          profile={profile}
+          onApplyPlan={(plan) => {
+            const newWeek: WeekPlan = { ...defaultWeek };
+            for (const [day, meals] of Object.entries(plan)) {
+              newWeek[day] = {};
+              for (const [meal, items] of Object.entries(meals)) {
+                newWeek[day][meal] = (items as any[]).map((item) => ({
+                  id: Date.now().toString() + Math.random().toString(36).slice(2),
+                  name: item.name,
+                  calories: item.calories || 0,
+                  protein: item.protein || 0,
+                  carbs: item.carbs || 0,
+                  fat: item.fat || 0,
+                }));
+              }
+            }
+            setWeekPlan(newWeek);
+            setActiveTab("manual");
+          }}
+        />
+      ) : (
+      <>
+
       {/* Day selector */}
       <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-3">
