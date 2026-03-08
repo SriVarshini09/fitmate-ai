@@ -63,13 +63,13 @@ const Landing = () => {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/login")}
               className="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Log in
             </button>
             <button
-              onClick={() => navigate("/onboarding")}
+              onClick={() => navigate("/signup")}
               className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition-all active:scale-95"
             >
               Get Started
