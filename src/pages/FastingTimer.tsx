@@ -315,17 +315,41 @@ const FastingTimer = () => {
       {!isFasting && (
         <div className="glass-card p-5">
           <h3 className="text-sm font-semibold font-display text-foreground mb-3">Schedule</h3>
+          
+          {/* Custom hours slider */}
+          {selectedProtocol.protocol === "Custom" && (
+            <div className="mb-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-foreground font-body">Fasting Duration</span>
+                <span className="text-sm font-bold font-display text-primary">{customHours}h</span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={23}
+                value={customHours}
+                onChange={(e) => setCustomHours(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer"
+              />
+              <div className="flex justify-between text-[9px] text-muted-foreground font-body">
+                <span>1h</span>
+                <span>12h</span>
+                <span>23h</span>
+              </div>
+            </div>
+          )}
+
           <div className="h-6 rounded-full bg-secondary overflow-hidden flex mb-2">
-            <div className="h-full bg-primary/30 flex items-center justify-center" style={{ width: `${(selectedProtocol.fastHours / 24) * 100}%` }}>
+            <div className="h-full bg-primary/30 flex items-center justify-center" style={{ width: `${(activeFastHours / 24) * 100}%` }}>
               <span className="text-[9px] font-bold text-primary font-body">FASTING</span>
             </div>
-            <div className="h-full bg-success/20 flex items-center justify-center" style={{ width: `${(selectedProtocol.eatHours / 24) * 100}%` }}>
+            <div className="h-full bg-success/20 flex items-center justify-center" style={{ width: `${(activeEatHours / 24) * 100}%` }}>
               <span className="text-[9px] font-bold text-success font-body">EAT</span>
             </div>
           </div>
           <div className="flex justify-between text-[10px] text-muted-foreground font-body">
-            <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> Fast: {selectedProtocol.fastHours}h</span>
-            <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" /> Eat: {selectedProtocol.eatHours}h</span>
+            <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> Fast: {activeFastHours}h</span>
+            <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" /> Eat: {activeEatHours}h</span>
           </div>
         </div>
       )}
