@@ -284,12 +284,18 @@ const CycleTracker = () => {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <Heart className="w-5 h-5 text-destructive" />
+          <div className="flex items-center gap-3">
+            <motion.img
+              src={cycleComfortImg}
+              alt="Comfort illustration"
+              className="w-14 h-14 object-contain"
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div>
               <h1 className="text-xl font-bold font-display text-foreground">Cycle Tracker</h1>
+              <p className="text-xs text-muted-foreground font-body">Track your menstrual cycle & understand your body</p>
             </div>
-            <p className="text-xs text-muted-foreground font-body">Track your menstrual cycle & understand your body</p>
           </div>
           <button
             onClick={() => setShowLogPeriod(true)}
