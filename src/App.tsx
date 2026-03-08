@@ -11,6 +11,11 @@ import Community from "./pages/Community";
 import AiChat from "./pages/AiChat";
 import Badges from "./pages/Badges";
 import CycleTracker from "./pages/CycleTracker";
+import Goals from "./pages/Goals";
+import Insights from "./pages/Insights";
+import Lifestyle from "./pages/Lifestyle";
+import Motivation from "./pages/Motivation";
+import Tools from "./pages/Tools";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +35,11 @@ const App = () => (
             <Route path="/ai-chat" element={<AiChat />} />
             <Route path="/badges" element={<Badges />} />
             <Route path="/cycle" element={<CycleTracker />} />
+            <Route path="/goals" element={<Goals />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/lifestyle" element={<Lifestyle />} />
+            <Route path="/motivation" element={<Motivation />} />
+            <Route path="/tools" element={<Tools />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
