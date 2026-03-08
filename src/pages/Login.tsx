@@ -6,27 +6,27 @@ import { Eye, EyeOff, ArrowRight, Zap, Dumbbell, Flame, Heart, Trophy } from "lu
 import { toast } from "sonner";
 
 const floatingEmojis = [
-  { emoji: "💪", top: "8%", left: "5%", delay: 0, duration: 4, size: "text-3xl" },
-  { emoji: "🔥", top: "15%", right: "8%", delay: 0.5, duration: 3.5, size: "text-4xl" },
-  { emoji: "🏋️", bottom: "25%", left: "3%", delay: 1, duration: 5, size: "text-2xl" },
-  { emoji: "⚡", top: "40%", right: "5%", delay: 1.5, duration: 4.5, size: "text-3xl" },
-  { emoji: "🏃", bottom: "12%", right: "12%", delay: 0.8, duration: 3.8, size: "text-2xl" },
-  { emoji: "🥊", bottom: "35%", left: "8%", delay: 2, duration: 4.2, size: "text-xl" },
-  { emoji: "💯", top: "60%", right: "3%", delay: 0.3, duration: 3.2, size: "text-2xl" },
-  { emoji: "🦾", top: "5%", left: "30%", delay: 1.2, duration: 4.8, size: "text-xl" },
+  { emoji: "💪", top: "6%", left: "7%", delay: 0, duration: 8, size: "text-3xl" },
+  { emoji: "🔥", top: "16%", right: "9%", delay: 1.5, duration: 9, size: "text-4xl" },
+  { emoji: "🏋️", bottom: "24%", left: "5%", delay: 2.5, duration: 10, size: "text-2xl" },
+  { emoji: "⚡", top: "44%", right: "6%", delay: 0.8, duration: 9.5, size: "text-3xl" },
+  { emoji: "🏃", bottom: "10%", right: "13%", delay: 3, duration: 8.5, size: "text-2xl" },
+  { emoji: "🥊", bottom: "36%", left: "7%", delay: 4, duration: 10, size: "text-xl" },
+  { emoji: "💯", top: "62%", right: "4%", delay: 1, duration: 9, size: "text-2xl" },
+  { emoji: "🦾", top: "4%", right: "32%", delay: 3.5, duration: 8, size: "text-xl" },
 ];
 
 const floatingIcons = [
-  { Icon: Dumbbell, top: "20%", left: "10%", delay: 0.4, duration: 6 },
-  { Icon: Flame, top: "70%", right: "6%", delay: 1.2, duration: 5 },
-  { Icon: Heart, bottom: "8%", left: "15%", delay: 0.8, duration: 5.5 },
-  { Icon: Trophy, top: "30%", right: "15%", delay: 1.6, duration: 4.5 },
+  { Icon: Dumbbell, top: "22%", left: "12%", delay: 1, duration: 11 },
+  { Icon: Flame, top: "72%", right: "7%", delay: 2.5, duration: 10 },
+  { Icon: Heart, bottom: "7%", left: "16%", delay: 1.8, duration: 9 },
+  { Icon: Trophy, top: "33%", right: "16%", delay: 3.5, duration: 10.5 },
 ];
 
 const badges = [
-  { text: "NO EXCUSES", rotate: "-12deg", top: "12%", right: "2%" },
-  { text: "BEAST MODE", rotate: "8deg", bottom: "18%", left: "2%" },
-  { text: "GRIND 💀", rotate: "-5deg", bottom: "8%", right: "5%" },
+  { text: "NO EXCUSES", rotate: "-12deg", top: "10%", right: "3%" },
+  { text: "BEAST MODE", rotate: "8deg", bottom: "20%", left: "3%" },
+  { text: "GRIND 💀", rotate: "-5deg", bottom: "6%", right: "6%" },
 ];
 
 const Login = () => {
@@ -78,9 +78,9 @@ const Login = () => {
           className={`absolute ${item.size} select-none pointer-events-none opacity-30`}
           style={{ top: item.top, left: item.left, right: (item as any).right, bottom: (item as any).bottom }}
           animate={{
-            y: [0, -18, 0, 12, 0],
-            rotate: [0, 8, -8, 4, 0],
-            scale: [1, 1.1, 0.95, 1.05, 1],
+            y: [0, -10, 0, 8, 0],
+            rotate: [0, 5, -5, 3, 0],
+            scale: [1, 1.05, 0.98, 1.02, 1],
           }}
           transition={{
             duration: item.duration,
@@ -143,6 +143,20 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
+        {/* Aggressive motivational quote — above logo */}
+        <motion.div
+          className="relative p-4 rounded-2xl bg-primary/10 border border-primary/20 overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <div className="absolute -top-2 -right-2 text-5xl opacity-10 select-none">☠️</div>
+          <p className="text-sm font-bold font-display text-primary leading-snug uppercase tracking-wide">
+            "Pain is temporary. Quitting lasts forever. You didn't wake up today to be mediocre. So stop acting like it. DISCIPLINE IS CHOOSING BETWEEN WHAT YOU WANT NOW AND WHAT YOU WANT MOST."
+          </p>
+          <p className="text-[10px] text-primary/60 font-body mt-1.5 text-right">— The voice you keep ignoring</p>
+        </motion.div>
+
         {/* Logo */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
@@ -154,20 +168,6 @@ const Login = () => {
           <h1 className="text-3xl font-bold font-display text-foreground">Welcome back</h1>
           <p className="text-muted-foreground font-body mt-2">Sign in to continue your journey</p>
         </div>
-
-        {/* Aggressive motivational quote */}
-        <motion.div
-          className="relative p-4 rounded-2xl bg-primary/10 border border-primary/20 overflow-hidden"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          <div className="absolute -top-2 -right-2 text-5xl opacity-10 select-none">🔥</div>
-          <p className="text-sm font-bold font-display text-primary leading-snug uppercase tracking-wide">
-            "Nobody cares about your excuses. Nobody pities you for procrastinating. Nobody is going to come knock on your door and make you do the work. It's YOUR life. GET UP."
-          </p>
-          <p className="text-[10px] text-primary/60 font-body mt-1.5 text-right">— Your future self</p>
-        </motion.div>
 
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
