@@ -104,7 +104,25 @@ Be accurate. Use standard nutritional databases as reference. If the food is unk
       );
     }
 
-    const data = await response.json();
+    const responseText = await response.text();
+    if (!responseText) {
+      console.error("AI gateway returned empty response");
+      return new Response(
+        JSON.stringify({ error: "AI returned empty response, please try again" }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseErr) {
+      console.error("Failed to parse AI response:", responseText.slice(0, 200));
+      return new Response(
+        JSON.stringify({ error: "Invalid AI response, please try again" }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Extract from tool call
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
