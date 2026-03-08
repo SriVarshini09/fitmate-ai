@@ -2,8 +2,32 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff, ArrowRight, Zap } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Zap, Dumbbell, Flame, Heart, Trophy } from "lucide-react";
 import { toast } from "sonner";
+
+const floatingEmojis = [
+  { emoji: "💪", top: "8%", left: "5%", delay: 0, duration: 4, size: "text-3xl" },
+  { emoji: "🔥", top: "15%", right: "8%", delay: 0.5, duration: 3.5, size: "text-4xl" },
+  { emoji: "🏋️", bottom: "25%", left: "3%", delay: 1, duration: 5, size: "text-2xl" },
+  { emoji: "⚡", top: "40%", right: "5%", delay: 1.5, duration: 4.5, size: "text-3xl" },
+  { emoji: "🏃", bottom: "12%", right: "12%", delay: 0.8, duration: 3.8, size: "text-2xl" },
+  { emoji: "🥊", bottom: "35%", left: "8%", delay: 2, duration: 4.2, size: "text-xl" },
+  { emoji: "💯", top: "60%", right: "3%", delay: 0.3, duration: 3.2, size: "text-2xl" },
+  { emoji: "🦾", top: "5%", left: "30%", delay: 1.2, duration: 4.8, size: "text-xl" },
+];
+
+const floatingIcons = [
+  { Icon: Dumbbell, top: "20%", left: "10%", delay: 0.4, duration: 6 },
+  { Icon: Flame, top: "70%", right: "6%", delay: 1.2, duration: 5 },
+  { Icon: Heart, bottom: "8%", left: "15%", delay: 0.8, duration: 5.5 },
+  { Icon: Trophy, top: "30%", right: "15%", delay: 1.6, duration: 4.5 },
+];
+
+const badges = [
+  { text: "NO EXCUSES", rotate: "-12deg", top: "12%", right: "2%" },
+  { text: "BEAST MODE", rotate: "8deg", bottom: "18%", left: "2%" },
+  { text: "GRIND 💀", rotate: "-5deg", bottom: "8%", right: "5%" },
+];
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,7 +49,6 @@ const Login = () => {
       toast.error(error.message);
       return;
     }
-    // Fetch display name from profile
     const userId = data.user?.id;
     let displayName = "champ";
     if (userId) {
@@ -48,8 +71,74 @@ const Login = () => {
       <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
       <div className="absolute bottom-20 left-10 w-48 h-48 rounded-full bg-accent/10 blur-3xl" />
 
+      {/* Floating Emoji Stickers */}
+      {floatingEmojis.map((item, i) => (
+        <motion.div
+          key={`emoji-${i}`}
+          className={`absolute ${item.size} select-none pointer-events-none opacity-30`}
+          style={{ top: item.top, left: item.left, right: (item as any).right, bottom: (item as any).bottom }}
+          animate={{
+            y: [0, -18, 0, 12, 0],
+            rotate: [0, 8, -8, 4, 0],
+            scale: [1, 1.1, 0.95, 1.05, 1],
+          }}
+          transition={{
+            duration: item.duration,
+            repeat: Infinity,
+            delay: item.delay,
+            ease: "easeInOut",
+          }}
+        >
+          {item.emoji}
+        </motion.div>
+      ))}
+
+      {/* Floating Lucide Icons */}
+      {floatingIcons.map((item, i) => (
+        <motion.div
+          key={`icon-${i}`}
+          className="absolute text-primary/15 pointer-events-none"
+          style={{ top: item.top, left: (item as any).left, right: (item as any).right, bottom: (item as any).bottom }}
+          animate={{
+            y: [0, -12, 0, 8, 0],
+            opacity: [0.12, 0.25, 0.12],
+            rotate: [0, 15, -10, 5, 0],
+          }}
+          transition={{
+            duration: item.duration,
+            repeat: Infinity,
+            delay: item.delay,
+            ease: "easeInOut",
+          }}
+        >
+          <item.Icon className="w-8 h-8" />
+        </motion.div>
+      ))}
+
+      {/* Glassmorphic Badge Stickers */}
+      {badges.map((badge, i) => (
+        <motion.div
+          key={`badge-${i}`}
+          className="absolute hidden md:flex items-center px-3 py-1.5 rounded-full bg-primary/10 backdrop-blur-md border border-primary/20 shadow-lg pointer-events-none"
+          style={{
+            top: badge.top,
+            left: (badge as any).left,
+            right: (badge as any).right,
+            bottom: badge.bottom,
+            rotate: badge.rotate,
+          }}
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 + i * 0.3, duration: 0.5, type: "spring" }}
+        >
+          <span className="text-[10px] font-black font-display text-primary tracking-widest uppercase">
+            {badge.text}
+          </span>
+        </motion.div>
+      ))}
+
       <motion.div
-        className="w-full max-w-md space-y-8"
+        className="w-full max-w-md space-y-8 relative z-10"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
