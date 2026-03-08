@@ -80,6 +80,7 @@ const FoodLog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("g");
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
