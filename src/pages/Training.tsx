@@ -384,7 +384,7 @@ const Training = () => {
                         <input type="number" value={set.reps || ""} onChange={e => updateSet(ex.id, set.id, "reps", parseInt(e.target.value) || 0)}
                           className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
                         <div className="col-span-3 flex justify-center">
-                          <button onClick={() => { toggleSet(ex.id, set.id); if (!set.completed) startRest(); }}
+                          <button onClick={() => toggleSet(ex.id, set.id)}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.completed ? "bg-primary/20" : "bg-secondary"}`}>
                             <Check className={`w-4 h-4 ${set.completed ? "text-primary" : "text-muted-foreground"}`} />
                           </button>
