@@ -5,6 +5,8 @@ import {
   RotateCcw, Play, Pause, Square, Trophy, Calendar
 } from "lucide-react";
 import WorkoutDetailCard from "@/components/workout/WorkoutDetailCard";
+import { useCalorieTracker, estimateWeightExerciseCalories } from "@/hooks/useCalorieTracker";
+import { toast } from "sonner";
 
 interface ExerciseSet {
   id: string;
