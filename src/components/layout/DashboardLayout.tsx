@@ -25,10 +25,10 @@ const DashboardLayout = () => {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors font-body"
               >
-                Back to site
+                Home
               </button>
               <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
                 <span className="text-xs font-bold text-primary font-display">JD</span>
