@@ -106,9 +106,9 @@ const Insights = () => {
             <BarChart data={weeklyCalories} barGap={2}>
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis hide />
-              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(200, 18%, 91%, 0.5)" }} />
-              <Bar dataKey="consumed" fill="hsl(82, 60%, 40%)" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="burned" fill="hsl(18, 85%, 72%)" radius={[8, 8, 0, 0]} />
+              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(80, 5%, 20%, 0.5)" }} />
+              <Bar dataKey="consumed" fill="hsl(66, 85%, 50%)" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="burned" fill="hsl(45, 85%, 50%)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
