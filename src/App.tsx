@@ -3,7 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AppLayout from "./components/layout/AppLayout";
+import Landing from "./pages/Landing";
+import DashboardLayout from "./components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import WeeklyPlanner from "./pages/WeeklyPlanner";
 import FoodLog from "./pages/FoodLog";
@@ -30,22 +31,23 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/food" element={<FoodLog />} />
-            <Route path="/planner" element={<WeeklyPlanner />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/ai-chat" element={<AiChat />} />
-            <Route path="/badges" element={<Badges />} />
-            <Route path="/cycle" element={<CycleTracker />} />
-            <Route path="/goals" element={<Goals />} />
-            <Route path="/insights" element={<Insights />} />
-            <Route path="/lifestyle" element={<Lifestyle />} />
-            <Route path="/motivation" element={<Motivation />} />
-            <Route path="/tools" element={<Tools />} />
-            <Route path="/activities" element={<Activities />} />
-            <Route path="/workout" element={<WorkoutLogger />} />
-            <Route path="/fasting" element={<FastingTimer />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Index />} />
+            <Route path="food" element={<FoodLog />} />
+            <Route path="planner" element={<WeeklyPlanner />} />
+            <Route path="community" element={<Community />} />
+            <Route path="ai-chat" element={<AiChat />} />
+            <Route path="badges" element={<Badges />} />
+            <Route path="cycle" element={<CycleTracker />} />
+            <Route path="goals" element={<Goals />} />
+            <Route path="insights" element={<Insights />} />
+            <Route path="lifestyle" element={<Lifestyle />} />
+            <Route path="motivation" element={<Motivation />} />
+            <Route path="tools" element={<Tools />} />
+            <Route path="activities" element={<Activities />} />
+            <Route path="workout" element={<WorkoutLogger />} />
+            <Route path="fasting" element={<FastingTimer />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
