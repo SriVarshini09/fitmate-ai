@@ -125,7 +125,7 @@ const Training = () => {
   const [timerType, setTimerType] = useState("run");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [workouts] = useState(sampleWorkouts);
+  const [workouts, setWorkouts] = useState(sampleWorkouts);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
   const [showNewWorkout, setShowNewWorkout] = useState(false);
   const [showExerciseLib, setShowExerciseLib] = useState(false);
@@ -259,7 +259,23 @@ const Training = () => {
       const completedSets = ex.sets.filter(s => s.completed).map(s => ({ weight: s.weight, reps: s.reps }));
       return sum + (completedSets.length > 0 ? estimateWeightExerciseCalories(ex.name, completedSets, bodyWeight) : 0);
     }, 0);
-    logBurned({ source: "workout", name: activeWorkout.name, calories: totalCals, duration: Math.round(activeWorkoutSeconds / 60) });
+    const totalVol = activeWorkout.exercises.reduce((sum, ex) =>
+      sum + ex.sets.filter(s => s.completed).reduce((s, set) => s + set.weight * set.reps, 0), 0
+    );
+    const durationMins = Math.round(activeWorkoutSeconds / 60);
+    const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    const finishedWorkout: Workout = {
+      ...activeWorkout,
+      date: today,
+      duration: durationMins,
+      totalVolume: totalVol,
+      totalCalories: totalCals,
+      isActive: false,
+    };
+
+    setWorkouts(prev => [finishedWorkout, ...prev]);
+    logBurned({ source: "workout", name: activeWorkout.name, calories: totalCals, duration: durationMins });
     toast.success(`${activeWorkout.name} complete! ${totalCals} kcal burned 🔥`);
     setActiveWorkout(null);
   };
