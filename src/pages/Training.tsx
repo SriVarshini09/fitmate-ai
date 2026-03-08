@@ -327,31 +327,6 @@ const Training = () => {
         ))}
       </div>
 
-      {/* Rest Timer (floating) */}
-      <AnimatePresence>
-        {restTimer > 0 && (
-          <motion.div className="glass-card p-3 flex items-center justify-between ring-1 ring-primary/20"
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <div className="flex items-center gap-3">
-              <Clock className="w-4 h-4 text-primary" />
-              <div>
-                <p className="text-[10px] text-muted-foreground font-body">Rest</p>
-                <p className="text-lg font-bold font-display text-foreground tabular-nums">
-                  {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, "0")}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setRestRunning(!restRunning)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
-                {restRunning ? <Pause className="w-3.5 h-3.5 text-foreground" /> : <Play className="w-3.5 h-3.5 text-foreground" />}
-              </button>
-              <button onClick={() => { setRestTimer(0); setRestRunning(false); }} className="w-9 h-9 rounded-xl bg-destructive/15 flex items-center justify-center">
-                <X className="w-3.5 h-3.5 text-destructive" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ═══ STRENGTH TAB ═══ */}
       {tab === "strength" && (
@@ -409,7 +384,7 @@ const Training = () => {
                         <input type="number" value={set.reps || ""} onChange={e => updateSet(ex.id, set.id, "reps", parseInt(e.target.value) || 0)}
                           className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
                         <div className="col-span-3 flex justify-center">
-                          <button onClick={() => { toggleSet(ex.id, set.id); if (!set.completed) startRest(); }}
+                          <button onClick={() => toggleSet(ex.id, set.id)}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.completed ? "bg-primary/20" : "bg-secondary"}`}>
                             <Check className={`w-4 h-4 ${set.completed ? "text-primary" : "text-muted-foreground"}`} />
                           </button>
@@ -427,15 +402,6 @@ const Training = () => {
                 <Plus className="w-4 h-4" /> Add Exercise
               </button>
 
-              {/* Quick rest presets */}
-              <div className="flex gap-2">
-                {[60, 90, 120, 180].map(s => (
-                  <button key={s} onClick={() => { setRestDuration(s); setRestTimer(s); setRestRunning(true); }}
-                    className={`flex-1 py-2 rounded-xl text-xs font-body transition-colors ${restDuration === s ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground"}`}>
-                    {s < 120 ? `${s}s` : `${s / 60}m`}
-                  </button>
-                ))}
-              </div>
             </div>
           )}
 
