@@ -30,9 +30,9 @@ const Goals = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [expandedGoal, setExpandedGoal] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState<{
-    title: string; category: string; target: string; current: string; unit: string; direction: "decrease" | "increase" | "maintain"; deadline: string;
+    title: string; categories: string[]; target: string; current: string; unit: string; direction: "decrease" | "increase" | "maintain"; deadline: string;
   }>({
-    title: "", category: "weight", target: "", current: "", unit: "", direction: "decrease", deadline: "",
+    title: "", categories: [], target: "", current: "", unit: "", direction: "decrease", deadline: "",
   });
 
   const addGoal = () => {
