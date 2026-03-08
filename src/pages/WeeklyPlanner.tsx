@@ -352,32 +352,7 @@ const WeeklyPlanner = () => {
         );
       })}
 
-      {/* Weekly overview */}
-      <div className="glass-card p-5">
-        <h3 className="text-sm font-semibold font-display text-foreground mb-3">Weekly Overview</h3>
-        <div className="space-y-2">
-          {DAYS.map((day) => {
-            const total = MEALS.reduce((s, m) => s + (weekPlan[day]?.[m]?.reduce((a, f) => a + f.calories, 0) || 0), 0);
-            const pct = Math.min((total / calorieGoal) * 100, 100);
-            return (
-              <div key={day} className="flex items-center gap-3">
-                <span className={`text-xs font-medium w-8 font-body ${day === selectedDay ? "text-primary" : "text-muted-foreground"}`}>
-                  {day.slice(0, 3)}
-                </span>
-                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                  <motion.div
-                    className={`h-full rounded-full ${total > 0 ? "bg-primary" : ""}`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.6 }}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground font-body w-14 text-right">{total > 0 ? `${total} kcal` : "—"}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+
 
       {/* Add meal modal */}
       <AnimatePresence>
