@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Flame, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2, Loader2 } from "lucide-react";
+import { Calendar, Flame, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCalorieTracker } from "@/hooks/useCalorieTracker";
+import AiMealPlanner from "@/components/planner/AiMealPlanner";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MEALS = ["Breakfast", "Lunch", "Snack", "Dinner"] as const;
@@ -41,6 +42,7 @@ const WeeklyPlanner = () => {
   const { profile } = useCalorieTracker();
   const calorieGoal = profile?.targetCalories || 2100;
   const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
+  const [activeTab, setActiveTab] = useState<"manual" | "ai">("manual");
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [showAdd, setShowAdd] = useState(false);
   const [addMealType, setAddMealType] = useState<string>("Breakfast");
@@ -161,6 +163,57 @@ const WeeklyPlanner = () => {
         </div>
         <p className="text-sm text-muted-foreground font-body">Plan your week, hit your goals</p>
       </motion.div>
+
+      {/* Tab switcher */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setActiveTab("manual")}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium font-display flex items-center justify-center gap-2 transition-colors ${
+            activeTab === "manual"
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          Manual Plan
+        </button>
+        <button
+          onClick={() => setActiveTab("ai")}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium font-display flex items-center justify-center gap-2 transition-colors ${
+            activeTab === "ai"
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          AI Planner
+        </button>
+      </div>
+
+      {activeTab === "ai" ? (
+        <AiMealPlanner
+          profile={profile}
+          onApplyPlan={(plan) => {
+            const newWeek: WeekPlan = { ...defaultWeek };
+            for (const [day, meals] of Object.entries(plan)) {
+              newWeek[day] = {};
+              for (const [meal, items] of Object.entries(meals)) {
+                newWeek[day][meal] = (items as any[]).map((item) => ({
+                  id: Date.now().toString() + Math.random().toString(36).slice(2),
+                  name: item.name,
+                  calories: item.calories || 0,
+                  protein: item.protein || 0,
+                  carbs: item.carbs || 0,
+                  fat: item.fat || 0,
+                }));
+              }
+            }
+            setWeekPlan(newWeek);
+            setActiveTab("manual");
+          }}
+        />
+      ) : (
+      <>
 
       {/* Day selector */}
       <div className="glass-card p-4">
@@ -436,6 +489,8 @@ const WeeklyPlanner = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      </>
+      )}
     </div>
   );
 };
