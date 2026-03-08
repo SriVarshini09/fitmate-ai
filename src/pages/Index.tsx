@@ -71,6 +71,11 @@ const Index = () => {
         <WaterTracker />
       </motion.div>
 
+      {/* Tablets */}
+      <motion.div variants={item}>
+        <TabletTracker />
+      </motion.div>
+
       {/* Badges */}
       <motion.div variants={item}>
         <BadgePreview />
