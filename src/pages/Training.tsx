@@ -402,15 +402,6 @@ const Training = () => {
                 <Plus className="w-4 h-4" /> Add Exercise
               </button>
 
-              {/* Quick rest presets */}
-              <div className="flex gap-2">
-                {[60, 90, 120, 180].map(s => (
-                  <button key={s} onClick={() => { setRestDuration(s); setRestTimer(s); setRestRunning(true); }}
-                    className={`flex-1 py-2 rounded-xl text-xs font-body transition-colors ${restDuration === s ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground"}`}>
-                    {s < 120 ? `${s}s` : `${s / 60}m`}
-                  </button>
-                ))}
-              </div>
             </div>
           )}
 
