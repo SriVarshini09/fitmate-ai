@@ -418,7 +418,7 @@ function StepResults({ data }: { data: OnboardingData }) {
   const bmr = calcBMR(sex, w, h, a);
   const tdee = calcTDEE(bmr, activity);
   const targetCal = calcTargetCalories(tdee, goal);
-  const macros = calcMacros(targetCal, goal);
+  const macros = calcMacros(targetCal, goal, sex);
   const weeks = weeksToGoal(w, gw, goal);
 
   const deficit = goal === "lose" ? tdee - targetCal : goal === "gain" ? targetCal - tdee : 0;
