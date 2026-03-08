@@ -225,19 +225,20 @@ const CycleTracker = () => {
   // Generate twinkling stars — use useMemo-like pattern with useState to keep stable across renders
   const [stars] = useState(() => {
     const colors = [
-      "hsl(45 100% 88%)",   // warm white/gold
-      "hsl(210 60% 90%)",   // cool blue-white
-      "hsl(30 80% 85%)",    // soft amber
-      "hsl(0 0% 95%)",      // pure white
-      "hsl(50 90% 80%)",    // golden
+      "hsl(45 100% 88%)",
+      "hsl(210 60% 90%)",
+      "hsl(30 80% 85%)",
+      "hsl(0 0% 95%)",
+      "hsl(50 90% 80%)",
     ];
-    return Array.from({ length: 45 }, (_, i) => ({
+    return Array.from({ length: 70 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 2.5 + 1.5,
+      size: Math.random() * 10 + 6,
       delay: Math.random() * 5,
       duration: Math.random() * 3 + 2,
+      rotation: Math.random() * 360,
       color: colors[Math.floor(Math.random() * colors.length)],
     }));
   });
@@ -249,18 +250,18 @@ const CycleTracker = () => {
         {stars.map((star) => (
           <motion.div
             key={star.id}
-            className="absolute rounded-full"
+            className="absolute"
             style={{
               left: `${star.x}%`,
               top: `${star.y}%`,
               width: star.size,
               height: star.size,
-              backgroundColor: star.color,
-              boxShadow: `0 0 ${star.size * 4}px ${star.size * 1.5}px ${star.color}`,
+              filter: `drop-shadow(0 0 ${star.size * 0.4}px ${star.color})`,
+              transform: `rotate(${star.rotation}deg)`,
             }}
             animate={{
               opacity: [0.1, 1, 0.1],
-              scale: [0.5, 1.3, 0.5],
+              scale: [0.5, 1.2, 0.5],
             }}
             transition={{
               duration: star.duration,
@@ -268,7 +269,11 @@ const CycleTracker = () => {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-          />
+          >
+            <svg viewBox="0 0 24 24" width={star.size} height={star.size} fill={star.color}>
+              <path d="M12 0l3.09 6.26L22 7.27l-5 4.87L18.18 19 12 15.77 5.82 19 7 12.14l-5-4.87 6.91-1.01z" />
+            </svg>
+          </motion.div>
         ))}
       </div>
 
