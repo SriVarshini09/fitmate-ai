@@ -29,7 +29,8 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are a nutrition database. Given a food/dish/drink name with quantity and unit, return accurate estimated nutrition data. 
+    const systemPrompt = `You are a nutrition database. Given a food/dish/drink name with quantity and unit, return accurate estimated nutrition data.
+IMPORTANT: Pay close attention to the unit. "pcs" means pieces/whole items (e.g. 1 pcs egg = 1 whole egg ≈ 50g, 1 pcs banana = 1 whole banana ≈ 120g). "cup" means a standard measuring cup (~240ml). Always calculate nutrition for the TOTAL amount specified.
 You MUST respond with ONLY a valid JSON object, no other text. The JSON must have exactly these fields:
 {
   "name": "recognized food name",
@@ -38,11 +39,12 @@ You MUST respond with ONLY a valid JSON object, no other text. The JSON must hav
   "carbs": number (grams),
   "fat": number (grams),
   "fiber": number (grams),
-  "servingDescription": "brief description like '2 pieces (80g)'"
+  "servingDescription": "brief description like '1 whole egg (50g)' or '2 pieces (80g)'"
 }
 Be accurate. Use standard nutritional databases as reference. If the food is unknown, make your best estimate. Round to 1 decimal place for macros, whole numbers for calories.`;
 
-    const userPrompt = `Food: "${foodName}", Quantity: ${quantity || "1 serving"} ${unit || ""}`;
+    const unitLabel = unit === "pcs" ? "pieces/whole items" : unit || "";
+    const userPrompt = `Food: "${foodName}", Quantity: ${quantity || "1"} ${unitLabel}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
