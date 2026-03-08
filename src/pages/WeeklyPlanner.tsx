@@ -170,7 +170,9 @@ const WeeklyPlanner = () => {
           </button>
           <div className="text-center">
             <p className="text-lg font-bold font-display text-foreground">{selectedDay}</p>
-            <p className="text-xs text-muted-foreground font-body">{dayTotal} kcal planned</p>
+            <p className="text-xs text-muted-foreground font-body">
+              {dayTotal} / {calorieGoal} kcal planned
+            </p>
           </div>
           <button onClick={() => navigateDay(1)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
             <ChevronRight className="w-4 h-4 text-foreground" />
