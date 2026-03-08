@@ -327,31 +327,6 @@ const Training = () => {
         ))}
       </div>
 
-      {/* Rest Timer (floating) */}
-      <AnimatePresence>
-        {restTimer > 0 && (
-          <motion.div className="glass-card p-3 flex items-center justify-between ring-1 ring-primary/20"
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <div className="flex items-center gap-3">
-              <Clock className="w-4 h-4 text-primary" />
-              <div>
-                <p className="text-[10px] text-muted-foreground font-body">Rest</p>
-                <p className="text-lg font-bold font-display text-foreground tabular-nums">
-                  {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, "0")}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setRestRunning(!restRunning)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
-                {restRunning ? <Pause className="w-3.5 h-3.5 text-foreground" /> : <Play className="w-3.5 h-3.5 text-foreground" />}
-              </button>
-              <button onClick={() => { setRestTimer(0); setRestRunning(false); }} className="w-9 h-9 rounded-xl bg-destructive/15 flex items-center justify-center">
-                <X className="w-3.5 h-3.5 text-destructive" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ═══ STRENGTH TAB ═══ */}
       {tab === "strength" && (
