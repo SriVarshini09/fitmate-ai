@@ -153,15 +153,6 @@ const FoodLog = () => {
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-3 font-body"
           />
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center glow-primary"
-        >
-          <Plus className="w-5 h-5 text-primary-foreground" />
-        </button>
-        <button className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center">
-          <Camera className="w-5 h-5 text-primary" />
-        </button>
       </div>
 
       {MEALS.map((meal) => {
