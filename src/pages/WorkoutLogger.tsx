@@ -187,6 +187,7 @@ const WorkoutLogger = () => {
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
   const [filterGroup, setFilterGroup] = useState("All");
   const [searchEx, setSearchEx] = useState("");
+  const { logBurned, bodyWeight } = useCalorieTracker();
 
   // Active workout state
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
