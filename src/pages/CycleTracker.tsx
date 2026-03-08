@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import cycleComfortImg from "@/assets/cycle-comfort.png";
 import {
   Heart, CalendarDays, Droplets, Moon, Sun, Flower2,
   ChevronLeft, ChevronRight, Plus, X, AlertCircle,
