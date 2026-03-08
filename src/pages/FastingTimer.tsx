@@ -1,26 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Timer, Power, X, ChevronRight, Flame, TrendingUp,
+  Timer, Power, X, Flame, TrendingUp,
   Clock, Zap, Trophy, BarChart3, UtensilsCrossed, Moon, Target
 } from "lucide-react";
 import { toast } from "sonner";
 
-type FastingProtocol = "16:8" | "18:6" | "20:4" | "OMAD" | "Custom";
-
-
-
-interface FastingWindow {
-  protocol: FastingProtocol;
-  fastHours: number;
-  eatHours: number;
-  description: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Expert";
-}
-
 interface FastingLog {
   id: string;
-  protocol: FastingProtocol;
   startTime: Date;
   endTime?: Date;
   targetHours: number;
@@ -28,20 +15,6 @@ interface FastingLog {
   completed: boolean;
   caloriesBurned: number;
 }
-
-const PROTOCOLS: FastingWindow[] = [
-  { protocol: "16:8", fastHours: 16, eatHours: 8, description: "Most popular. Fast 16h, eat in 8h window.", difficulty: "Beginner" },
-  { protocol: "18:6", fastHours: 18, eatHours: 6, description: "Extended fast. Eat in a 6h window.", difficulty: "Intermediate" },
-  { protocol: "20:4", fastHours: 20, eatHours: 4, description: "Warrior diet. 20h fast, 4h eating.", difficulty: "Advanced" },
-  { protocol: "OMAD", fastHours: 23, eatHours: 1, description: "One Meal A Day. Maximum fasting.", difficulty: "Expert" },
-];
-
-const difficultyColor: Record<string, string> = {
-  Beginner: "bg-success/15 text-success",
-  Intermediate: "bg-info/15 text-info",
-  Advanced: "bg-warning/15 text-warning",
-  Expert: "bg-destructive/15 text-destructive",
-};
 
 const FASTING_STAGES = [
   { hours: 0, name: "Fed State", icon: "🍽️", description: "Blood sugar elevated, insulin active", color: "text-info" },
@@ -66,25 +39,22 @@ const formatDateShort = (d: Date) => {
   return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${time}`;
 };
 
-// Sample history
 const sampleLogs: FastingLog[] = [
-  { id: "1", protocol: "16:8", startTime: new Date(Date.now() - 36 * 3600000), endTime: new Date(Date.now() - 20 * 3600000), targetHours: 16, actualHours: 16, completed: true, caloriesBurned: 180 },
-  { id: "2", protocol: "18:6", startTime: new Date(Date.now() - 60 * 3600000), endTime: new Date(Date.now() - 42 * 3600000), targetHours: 18, actualHours: 18, completed: true, caloriesBurned: 220 },
-  { id: "3", protocol: "16:8", startTime: new Date(Date.now() - 84 * 3600000), endTime: new Date(Date.now() - 70 * 3600000), targetHours: 16, actualHours: 14, completed: false, caloriesBurned: 155 },
+  { id: "1", startTime: new Date(Date.now() - 36 * 3600000), endTime: new Date(Date.now() - 20 * 3600000), targetHours: 16, actualHours: 16, completed: true, caloriesBurned: 180 },
+  { id: "2", startTime: new Date(Date.now() - 60 * 3600000), endTime: new Date(Date.now() - 42 * 3600000), targetHours: 18, actualHours: 18, completed: true, caloriesBurned: 220 },
+  { id: "3", startTime: new Date(Date.now() - 84 * 3600000), endTime: new Date(Date.now() - 70 * 3600000), targetHours: 16, actualHours: 14, completed: false, caloriesBurned: 155 },
 ];
 
 const FastingTimer = () => {
   const [isFasting, setIsFasting] = useState(false);
   const [fastStartTime, setFastStartTime] = useState<Date | null>(null);
-  const [selectedProtocol, setSelectedProtocol] = useState<FastingWindow>(PROTOCOLS[0]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [showProtocolPicker, setShowProtocolPicker] = useState(false);
+  const [showHourPicker, setShowHourPicker] = useState(false);
   const [logs, setLogs] = useState<FastingLog[]>(sampleLogs);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
-  const [customHours, setCustomHours] = useState(16);
+  const [fastingHours, setFastingHours] = useState(16);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Tick every second while fasting
   useEffect(() => {
     if (isFasting && fastStartTime) {
       intervalRef.current = setInterval(() => {
@@ -96,16 +66,14 @@ const FastingTimer = () => {
 
   const toggleFasting = () => {
     if (!isFasting) {
-      // START fasting
       const now = new Date();
       setFastStartTime(now);
       setElapsedSeconds(0);
       setIsFasting(true);
       toast.success("⏱️ Fasting started!", {
-        description: `${selectedProtocol.protocol} fast began at ${formatDateShort(now)}`,
+        description: `${fastingHours}h fast began at ${formatDateShort(now)}`,
       });
     } else {
-      // STOP fasting — show confirm
       setShowEndConfirm(true);
     }
   };
@@ -115,14 +83,13 @@ const FastingTimer = () => {
     const endTime = new Date();
     const actualHours = parseFloat(((endTime.getTime() - fastStartTime.getTime()) / 3600000).toFixed(1));
     const caloriesBurned = Math.round(actualHours > 4 ? (actualHours - 4) * 70 + 4 * 50 : actualHours * 50);
-    const completed = actualHours >= activeFastHours;
+    const completed = actualHours >= fastingHours;
 
     const newLog: FastingLog = {
       id: Date.now().toString(),
-      protocol: selectedProtocol.protocol === "Custom" ? "Custom" : selectedProtocol.protocol,
       startTime: fastStartTime,
       endTime,
-      targetHours: activeFastHours,
+      targetHours: fastingHours,
       actualHours,
       completed,
       caloriesBurned,
@@ -135,19 +102,18 @@ const FastingTimer = () => {
     setShowEndConfirm(false);
 
     if (completed) {
-      toast.success(`🎉 ${activeFastHours}h fast completed!`, {
+      toast.success(`🎉 ${fastingHours}h fast completed!`, {
         description: `${actualHours}h fasted · ${caloriesBurned} kcal burned`,
       });
     } else {
       toast(`Fast ended early at ${actualHours}h`, {
-        description: `Target was ${activeFastHours}h · ${caloriesBurned} kcal burned`,
+        description: `Target was ${fastingHours}h · ${caloriesBurned} kcal burned`,
       });
     }
   };
 
-  const activeFastHours = selectedProtocol.protocol === "Custom" ? customHours : selectedProtocol.fastHours;
-  const activeEatHours = 24 - activeFastHours;
-  const totalTargetSeconds = activeFastHours * 3600;
+  const eatHours = 24 - fastingHours;
+  const totalTargetSeconds = fastingHours * 3600;
   const progressPct = Math.min(100, (elapsedSeconds / totalTargetSeconds) * 100);
   const elapsedHours = elapsedSeconds / 3600;
   const remainingSeconds = Math.max(0, totalTargetSeconds - elapsedSeconds);
@@ -169,7 +135,6 @@ const FastingTimer = () => {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
-  // Weekly stats from logs
   const thisWeekLogs = logs.filter((l) => l.endTime && Date.now() - l.endTime.getTime() < 7 * 86400000);
   const weeklyStats = {
     totalFasts: thisWeekLogs.length,
@@ -180,29 +145,28 @@ const FastingTimer = () => {
     currentStreak: thisWeekLogs.filter((l) => l.completed).length,
   };
 
+  // Generate hour marks for the clock-style picker
+  const hourMarks = Array.from({ length: 23 }, (_, i) => i + 1);
+
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Timer className="w-5 h-5 text-primary" />
-            <h1 className="text-2xl font-bold font-display text-foreground">Fasting</h1>
-          </div>
-          <p className="text-sm text-muted-foreground font-body">
-            {isFasting ? `Fasting since ${fastStartTime ? formatDateShort(fastStartTime) : ""}` : "Tap the button to start fasting"}
+          <h1 className="text-xl font-bold font-display text-foreground">Fasting</h1>
+          <p className="text-xs text-muted-foreground font-body">
+            {isFasting ? `Since ${fastStartTime ? formatDateShort(fastStartTime) : ""}` : "Set your goal & start"}
           </p>
         </div>
-        <button
-          onClick={() => setShowProtocolPicker(true)}
-          className="px-4 py-2 rounded-xl glass-card text-xs font-medium text-foreground font-body flex items-center gap-1.5"
-        >
-          {selectedProtocol.protocol}
-          <ChevronRight className="w-3 h-3 text-muted-foreground" />
-        </button>
+        {!isFasting && (
+          <button onClick={() => setShowHourPicker(true)}
+            className="px-4 py-2 rounded-xl glass-card text-sm font-bold text-primary font-display flex items-center gap-1.5">
+            <Clock className="w-4 h-4" /> {fastingHours}h
+          </button>
+        )}
       </motion.div>
 
-      {/* Main Timer + Big Toggle */}
+      {/* Main Timer Ring */}
       <motion.div className="glass-card p-6 flex flex-col items-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
         <div className="relative w-60 h-60 flex items-center justify-center mb-4">
           <svg className="w-full h-full progress-ring" viewBox="0 0 240 240">
@@ -229,38 +193,30 @@ const FastingTimer = () => {
               </>
             ) : (
               <>
-                <p className="text-4xl font-bold font-display text-foreground">{activeFastHours}h</p>
-                <p className="text-sm text-muted-foreground font-body mt-1">
-                  {selectedProtocol.protocol === "Custom" ? "Custom Fast" : `${selectedProtocol.protocol} Fast`}
-                </p>
+                <p className="text-4xl font-bold font-display text-foreground">{fastingHours}h</p>
                 <p className="text-xs text-muted-foreground font-body mt-1">Tap below to start</p>
               </>
             )}
           </div>
         </div>
 
-        {/* Single ON/OFF Toggle Button */}
-        <button
-          onClick={toggleFasting}
+        <button onClick={toggleFasting}
           className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isFasting
-              ? "bg-destructive glow-primary ring-2 ring-destructive/30"
-              : "bg-primary glow-primary"
-          }`}
-        >
+            isFasting ? "bg-destructive ring-2 ring-destructive/30" : "bg-primary glow-primary"
+          }`}>
           <Power className={`w-8 h-8 ${isFasting ? "text-destructive-foreground" : "text-primary-foreground"}`} />
         </button>
         <p className={`text-xs font-medium mt-3 font-body ${isFasting ? "text-destructive" : "text-primary"}`}>
           {isFasting ? "Tap to end fast" : "Tap to start fast"}
         </p>
 
-        {/* Live stats during fast */}
+        {/* Live stats */}
         {isFasting && (
           <motion.div className="grid grid-cols-3 gap-4 mt-6 w-full" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <div className="text-center p-3 rounded-xl bg-secondary/40">
               <Flame className="w-4 h-4 text-warning mx-auto mb-1" />
               <p className="text-sm font-bold font-display text-foreground">{estimatedCalories}</p>
-              <p className="text-[9px] text-muted-foreground font-body">kcal burned</p>
+              <p className="text-[9px] text-muted-foreground font-body">kcal</p>
             </div>
             <div className="text-center p-3 rounded-xl bg-secondary/40">
               <TrendingUp className="w-4 h-4 text-primary mx-auto mb-1" />
@@ -274,21 +230,14 @@ const FastingTimer = () => {
             </div>
           </motion.div>
         )}
-
-        {/* Start time info */}
-        {isFasting && fastStartTime && (
-          <p className="text-[10px] text-muted-foreground font-body mt-3">
-            Started: {formatDateShort(fastStartTime)}
-          </p>
-        )}
       </motion.div>
 
-      {/* Fasting stages timeline */}
+      {/* Fasting stages */}
       {isFasting && (
         <motion.div className="glass-card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <h3 className="text-sm font-semibold font-display text-foreground mb-3">Fasting Stages</h3>
           <div className="space-y-2">
-            {FASTING_STAGES.filter((s) => s.hours <= Math.max(selectedProtocol.fastHours, 24)).map((stage) => {
+            {FASTING_STAGES.filter((s) => s.hours <= Math.max(fastingHours, 24)).map((stage) => {
               const reached = elapsedHours >= stage.hours;
               const isCurrent = currentStage.hours === stage.hours;
               return (
@@ -311,45 +260,21 @@ const FastingTimer = () => {
         </motion.div>
       )}
 
-      {/* Eating / Fasting window visual (when not fasting) */}
+      {/* Schedule bar (when not fasting) */}
       {!isFasting && (
         <div className="glass-card p-5">
           <h3 className="text-sm font-semibold font-display text-foreground mb-3">Schedule</h3>
-          
-          {/* Custom hours slider */}
-          {selectedProtocol.protocol === "Custom" && (
-            <div className="mb-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-foreground font-body">Fasting Duration</span>
-                <span className="text-sm font-bold font-display text-primary">{customHours}h</span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={23}
-                value={customHours}
-                onChange={(e) => setCustomHours(Number(e.target.value))}
-                className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer"
-              />
-              <div className="flex justify-between text-[9px] text-muted-foreground font-body">
-                <span>1h</span>
-                <span>12h</span>
-                <span>23h</span>
-              </div>
-            </div>
-          )}
-
           <div className="h-6 rounded-full bg-secondary overflow-hidden flex mb-2">
-            <div className="h-full bg-primary/30 flex items-center justify-center" style={{ width: `${(activeFastHours / 24) * 100}%` }}>
+            <div className="h-full bg-primary/30 flex items-center justify-center" style={{ width: `${(fastingHours / 24) * 100}%` }}>
               <span className="text-[9px] font-bold text-primary font-body">FASTING</span>
             </div>
-            <div className="h-full bg-success/20 flex items-center justify-center" style={{ width: `${(activeEatHours / 24) * 100}%` }}>
+            <div className="h-full bg-success/20 flex items-center justify-center" style={{ width: `${(eatHours / 24) * 100}%` }}>
               <span className="text-[9px] font-bold text-success font-body">EAT</span>
             </div>
           </div>
           <div className="flex justify-between text-[10px] text-muted-foreground font-body">
-            <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> Fast: {activeFastHours}h</span>
-            <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" /> Eat: {activeEatHours}h</span>
+            <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> Fast: {fastingHours}h</span>
+            <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" /> Eat: {eatHours}h</span>
           </div>
         </div>
       )}
@@ -377,7 +302,7 @@ const FastingTimer = () => {
         </div>
       </div>
 
-      {/* Fasting History */}
+      {/* History */}
       <div>
         <h3 className="text-sm font-semibold font-display text-foreground mb-3">History</h3>
         <div className="space-y-2">
@@ -390,10 +315,10 @@ const FastingTimer = () => {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-xs font-semibold font-display text-foreground">{log.protocol} Fast</p>
-                      {log.completed && <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-success/15 text-success">✓ Complete</span>}
+                      <p className="text-xs font-semibold font-display text-foreground">{log.targetHours}h Fast</p>
+                      {log.completed && <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-success/15 text-success">✓</span>}
                     </div>
-                    <p className="text-[10px] text-muted-foreground font-body">{formatDateShort(log.startTime)} → {log.endTime ? formatDateShort(log.endTime) : "..."}</p>
+                    <p className="text-[10px] text-muted-foreground font-body">{formatDateShort(log.startTime)}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -423,7 +348,7 @@ const FastingTimer = () => {
                 You've been fasting for <span className="font-bold text-foreground">{formatHM(elapsedSeconds)}</span>.
                 {progressPct >= 100
                   ? " 🎉 You've reached your goal!"
-                  : ` ${(100 - progressPct).toFixed(0)}% remaining to reach your ${activeFastHours}h target.`
+                  : ` ${(100 - progressPct).toFixed(0)}% remaining to reach your ${fastingHours}h target.`
                 }
               </p>
               <div className="flex gap-3">
@@ -441,55 +366,78 @@ const FastingTimer = () => {
         )}
       </AnimatePresence>
 
-      {/* Protocol Picker Modal */}
+      {/* Hour Picker — Clock-style dial */}
       <AnimatePresence>
-        {showProtocolPicker && (
+        {showHourPicker && (
           <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProtocolPicker(false)}>
-            <motion.div className="w-full max-w-lg glass-card-strong p-6 rounded-t-3xl space-y-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowHourPicker(false)}>
+            <motion.div className="w-full max-w-lg glass-card-strong p-6 rounded-t-3xl space-y-5"
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }} onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold font-display text-foreground">Choose Protocol</h2>
-                <button onClick={() => setShowProtocolPicker(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+                <h2 className="text-lg font-bold font-display text-foreground">Set Fasting Hours</h2>
+                <button onClick={() => setShowHourPicker(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
-              <div className="space-y-2">
-                {PROTOCOLS.map((p) => (
-                  <button key={p.protocol}
-                    onClick={() => { setSelectedProtocol(p); setShowProtocolPicker(false); }}
-                    className={`w-full p-4 rounded-xl text-left transition-colors ${
-                      selectedProtocol.protocol === p.protocol ? "bg-primary/10 ring-1 ring-primary/30" : "bg-secondary/50 hover:bg-secondary"
-                    }`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold font-display text-foreground">{p.protocol}</p>
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${difficultyColor[p.difficulty]}`}>{p.difficulty}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground font-body">{p.fastHours}h : {p.eatHours}h</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground font-body">{p.description}</p>
-                  </button>
-                ))}
 
-                {/* Custom option */}
-                <button
-                  onClick={() => {
-                    setSelectedProtocol({ protocol: "Custom", fastHours: customHours, eatHours: 24 - customHours, description: "Set your own fasting duration.", difficulty: "Beginner" });
-                    setShowProtocolPicker(false);
-                  }}
-                  className={`w-full p-4 rounded-xl text-left transition-colors ${
-                    selectedProtocol.protocol === "Custom" ? "bg-primary/10 ring-1 ring-primary/30" : "bg-secondary/50 hover:bg-secondary"
-                  }`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold font-display text-foreground">Custom</p>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/15 text-primary">Flexible</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground font-body">{customHours}h : {24 - customHours}h</span>
+              {/* Clock dial */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-64 h-64">
+                  <svg viewBox="0 0 260 260" className="w-full h-full">
+                    {/* Outer circle */}
+                    <circle cx="130" cy="130" r="120" fill="none" stroke="hsl(var(--secondary))" strokeWidth="2" />
+                    {/* Filled arc showing fasting hours */}
+                    <circle cx="130" cy="130" r="120" fill="none"
+                      stroke="hsl(var(--primary))" strokeWidth="6" strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 120}
+                      strokeDashoffset={2 * Math.PI * 120 * (1 - fastingHours / 24)}
+                      transform="rotate(-90 130 130)" opacity="0.3" />
+                    {/* Hour marks */}
+                    {hourMarks.map((h) => {
+                      const angle = (h / 24) * 360 - 90;
+                      const rad = (angle * Math.PI) / 180;
+                      const isSelected = h === fastingHours;
+                      const r = 95;
+                      const x = 130 + r * Math.cos(rad);
+                      const y = 130 + r * Math.sin(rad);
+                      return (
+                        <g key={h} onClick={() => setFastingHours(h)} className="cursor-pointer">
+                          <circle cx={x} cy={y} r={isSelected ? 18 : 14}
+                            fill={isSelected ? "hsl(var(--primary))" : h <= fastingHours ? "hsl(var(--primary) / 0.15)" : "hsl(var(--secondary) / 0.5)"}
+                            className="transition-all duration-200" />
+                          <text x={x} y={y} textAnchor="middle" dominantBaseline="central"
+                            fontSize={isSelected ? "12" : "10"}
+                            fontWeight={isSelected ? "bold" : "normal"}
+                            fill={isSelected ? "hsl(var(--primary-foreground))" : h <= fastingHours ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}>
+                            {h}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                  {/* Center display */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <p className="text-3xl font-bold font-display text-foreground">{fastingHours}h</p>
+                    <p className="text-[10px] text-muted-foreground font-body">fasting</p>
                   </div>
-                  <p className="text-xs text-muted-foreground font-body">Set your own fasting hours with the slider.</p>
-                </button>
+                </div>
+
+                {/* Quick summary */}
+                <div className="flex gap-6 mt-4">
+                  <div className="text-center">
+                    <p className="text-sm font-bold font-display text-primary">{fastingHours}h</p>
+                    <p className="text-[9px] text-muted-foreground font-body">Fasting</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold font-display text-success">{24 - fastingHours}h</p>
+                    <p className="text-[9px] text-muted-foreground font-body">Eating</p>
+                  </div>
+                </div>
               </div>
+
+              <button onClick={() => setShowHourPicker(false)}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display text-sm glow-primary">
+                Set {fastingHours}h Fast
+              </button>
             </motion.div>
           </motion.div>
         )}
