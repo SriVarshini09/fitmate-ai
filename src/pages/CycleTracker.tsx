@@ -222,8 +222,52 @@ const CycleTracker = () => {
 
   const todaySymptoms = symptoms.filter((s) => isSameDay(new Date(s.date), today));
 
+  // Generate twinkling stars
+  const stars = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2.5 + 1,
+    delay: Math.random() * 4,
+    duration: Math.random() * 2 + 2,
+  }));
+
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-28">
+    <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-28 relative">
+      {/* Twinkling stars background */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {stars.map((star) => (
+          <motion.div
+            key={star.id}
+            className="absolute rounded-full"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: star.size,
+              height: star.size,
+              background: `radial-gradient(circle, hsl(var(--destructive) / 0.6), hsl(var(--peach) / 0.3))`,
+            }}
+            animate={{
+              opacity: [0.1, 0.8, 0.1],
+              scale: [0.8, 1.2, 0.8],
+            }}
+            transition={{
+              duration: star.duration,
+              delay: star.delay,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+        {/* Soft warm glow orbs */}
+        <div className="absolute top-[15%] left-[10%] w-[250px] h-[250px] rounded-full bg-[hsl(350_60%_50%/0.06)] blur-[80px]" />
+        <div className="absolute bottom-[20%] right-[5%] w-[200px] h-[200px] rounded-full bg-[hsl(18_85%_72%/0.05)] blur-[70px]" />
+        <div className="absolute top-[50%] left-[50%] w-[180px] h-[180px] rounded-full bg-[hsl(280_40%_50%/0.04)] blur-[60px]" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 space-y-5">
+
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between">
@@ -232,7 +276,7 @@ const CycleTracker = () => {
               <Heart className="w-5 h-5 text-destructive" />
               <h1 className="text-xl font-bold font-display text-foreground">Cycle Tracker</h1>
             </div>
-            <p className="text-xs text-muted-foreground font-body">Track your cycle, understand your body</p>
+            <p className="text-xs text-muted-foreground font-body">Track your menstrual cycle & understand your body</p>
           </div>
           <button
             onClick={() => setShowLogPeriod(true)}
@@ -631,6 +675,8 @@ const CycleTracker = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      </div>{/* end z-10 content wrapper */}
     </div>
   );
 };
