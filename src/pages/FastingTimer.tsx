@@ -229,8 +229,10 @@ const FastingTimer = () => {
               </>
             ) : (
               <>
-                <p className="text-4xl font-bold font-display text-foreground">{selectedProtocol.fastHours}h</p>
-                <p className="text-sm text-muted-foreground font-body mt-1">{selectedProtocol.protocol} Fast</p>
+                <p className="text-4xl font-bold font-display text-foreground">{activeFastHours}h</p>
+                <p className="text-sm text-muted-foreground font-body mt-1">
+                  {selectedProtocol.protocol === "Custom" ? "Custom Fast" : `${selectedProtocol.protocol} Fast`}
+                </p>
                 <p className="text-xs text-muted-foreground font-body mt-1">Tap below to start</p>
               </>
             )}
