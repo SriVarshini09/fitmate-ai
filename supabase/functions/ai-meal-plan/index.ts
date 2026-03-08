@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { ingredients, calorieGoal, goal, macros, dietaryPreferences } = await req.json();
+    const { ingredients, calorieGoal, goal, macros, dietaryPreferences, planType, userDetails } = await req.json();
 
     if (!ingredients || !calorieGoal) {
       return new Response(
@@ -30,21 +30,29 @@ serve(async (req) => {
     }
 
     const goalDesc = goal === "lose" ? "weight loss (calorie deficit)" : goal === "gain" ? "muscle gain (calorie surplus)" : "weight maintenance";
-    const macroDesc = macros ? `Target macros: Protein ${macros.protein}g, Carbs ${macros.carbs}g, Fat ${macros.fat}g, Fiber ${macros.fiber}g.` : "";
+    const macroDesc = macros ? `STRICT daily macro targets: Protein ${macros.protein}g, Carbs ${macros.carbs}g, Fat ${macros.fat}g, Fiber ${macros.fiber}g. Each day's meals MUST add up close to these targets.` : "";
     const dietDesc = dietaryPreferences ? `Dietary preferences: ${dietaryPreferences}.` : "";
+    const userDesc = userDetails ? `User: ${userDetails.weight}kg, ${userDetails.height}cm, ${userDetails.age}y, ${userDetails.sex}, activity: ${userDetails.activityLevel}.` : "";
+    const planTypeDesc = planType === "day-ideas"
+      ? "Create varied daily meal IDEAS - each day should have completely different meals to give the user options and variety."
+      : "Create a practical MEAL PREP plan - meals can repeat across days for efficiency, focus on batch cooking.";
 
-    const systemPrompt = `You are an expert nutritionist meal planner. Create a complete 7-day meal plan (Monday to Sunday) using the available ingredients. Each day should have Breakfast, Lunch, Snack, and Dinner.
+    const systemPrompt = `You are an expert nutritionist and meal planner. Create a complete 7-day meal plan (Monday to Sunday). Each day MUST have Breakfast, Lunch, Snack, and Dinner.
 
-Rules:
-- Stay close to the daily calorie target of ${calorieGoal} kcal per day
+CRITICAL RULES:
+- STRICT daily calorie target: ${calorieGoal} kcal per day (±50 kcal tolerance)
 - Goal: ${goalDesc}
 ${macroDesc}
+${userDesc}
 ${dietDesc}
-- Use primarily the ingredients provided, but you can suggest common pantry staples (oil, salt, spices, etc.)
-- Vary meals across the week - don't repeat the same meal more than twice
-- Provide realistic, practical meals that are easy to prepare
-- Include accurate calorie and macro estimates for each meal item
-- Each meal should list individual food items with their portions`;
+- ${planTypeDesc}
+- Use primarily the ingredients provided, but you can suggest common pantry staples (oil, salt, spices, butter, etc.)
+- EACH meal must have accurate calorie and macro breakdowns that ADD UP to the daily target
+- Protein should be distributed across all meals, not loaded into one meal
+- Include realistic portion sizes
+- Make meals practical and easy to prepare
+- For Indian foods, use authentic preparations and correct nutritional values
+- Each meal item should list the specific food with portion (e.g. "2 boiled eggs", "1 cup cooked rice 200g", "grilled chicken breast 150g")`;
 
     const userPrompt = `Available ingredients/foods: ${ingredients}
 
