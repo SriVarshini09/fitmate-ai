@@ -36,7 +36,9 @@ const Index = () => {
     fiber: Math.round((macroGoals.fiber || 30) * consumedRatio),
   };
 
-  const greeting = profile?.name ? `Good morning, ${profile.name} 👋` : "Good morning 👋";
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const greeting = profile?.name ? `${timeGreeting}, ${profile.name} 👋` : `${timeGreeting} 👋`;
 
   return (
     <motion.div
