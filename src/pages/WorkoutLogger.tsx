@@ -388,7 +388,21 @@ const WorkoutLogger = () => {
             <h3 className="text-sm font-semibold font-display text-primary flex items-center gap-2">
               <Play className="w-4 h-4" /> {activeWorkout.name} — Active
             </h3>
-            <button onClick={() => setActiveWorkout(null)} className="text-xs text-primary font-body hover:underline">
+            <button onClick={() => {
+              // Save burned calories
+              const totalCals = activeWorkout.exercises.reduce((sum, ex) => {
+                const completedSets = ex.sets.filter(s => s.completed).map(s => ({ weight: s.weight, reps: s.reps }));
+                return sum + (completedSets.length > 0 ? estimateWeightExerciseCalories(ex.name, completedSets, bodyWeight) : 0);
+              }, 0);
+              logBurned({
+                source: "workout",
+                name: activeWorkout.name,
+                calories: totalCals || activeCalories,
+                duration: Math.round(activeWorkoutSeconds / 60),
+              });
+              toast.success(`${activeWorkout.name} complete! ${totalCals} kcal burned 🔥`);
+              setActiveWorkout(null);
+            }} className="text-xs text-primary font-body hover:underline">
               Finish
             </button>
           </div>
