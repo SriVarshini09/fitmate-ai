@@ -13,6 +13,7 @@ const mainNavItems = [
 const moreItems = [
   { path: "/activities", icon: MapPin, label: "Activities", color: "bg-primary/15 text-primary" },
   { path: "/workout", icon: Dumbbell, label: "Workouts", color: "bg-warning/15 text-warning" },
+  { path: "/fasting", icon: Timer, label: "Fasting", color: "bg-info/15 text-info" },
   { path: "/goals", icon: Target, label: "Goals", color: "bg-primary/15 text-primary" },
   { path: "/planner", icon: CalendarDays, label: "Meal Planner", color: "bg-info/15 text-info" },
   { path: "/lifestyle", icon: Brain, label: "Lifestyle", color: "bg-info/15 text-info" },
