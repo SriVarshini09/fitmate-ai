@@ -45,14 +45,51 @@ const sampleLogs: FastingLog[] = [
   { id: "3", startTime: new Date(Date.now() - 84 * 3600000), endTime: new Date(Date.now() - 70 * 3600000), targetHours: 16, actualHours: 14, completed: false, caloriesBurned: 155 },
 ];
 
+const FASTING_STATE_KEY = "vitalflow_fasting_state";
+const FASTING_LOGS_KEY = "vitalflow_fasting_logs";
+
+function loadFastingState() {
+  try {
+    const raw = localStorage.getItem(FASTING_STATE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return { startTime: new Date(data.startTime), targetHours: data.targetHours as number };
+  } catch { return null; }
+}
+
+function saveFastingState(startTime: Date, targetHours: number) {
+  localStorage.setItem(FASTING_STATE_KEY, JSON.stringify({ startTime: startTime.toISOString(), targetHours }));
+}
+
+function clearFastingState() {
+  localStorage.removeItem(FASTING_STATE_KEY);
+}
+
+function loadLogs(): FastingLog[] {
+  try {
+    const raw = localStorage.getItem(FASTING_LOGS_KEY);
+    if (!raw) return sampleLogs;
+    const parsed = JSON.parse(raw);
+    return parsed.map((l: any) => ({ ...l, startTime: new Date(l.startTime), endTime: l.endTime ? new Date(l.endTime) : undefined }));
+  } catch { return sampleLogs; }
+}
+
+function saveLogs(logs: FastingLog[]) {
+  localStorage.setItem(FASTING_LOGS_KEY, JSON.stringify(logs));
+}
+
 const FastingTimer = () => {
-  const [isFasting, setIsFasting] = useState(false);
-  const [fastStartTime, setFastStartTime] = useState<Date | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  // Restore state from localStorage on mount
+  const saved = loadFastingState();
+  const [isFasting, setIsFasting] = useState(!!saved);
+  const [fastStartTime, setFastStartTime] = useState<Date | null>(saved?.startTime || null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(
+    saved ? Math.floor((Date.now() - saved.startTime.getTime()) / 1000) : 0
+  );
   const [showHourPicker, setShowHourPicker] = useState(false);
-  const [logs, setLogs] = useState<FastingLog[]>(sampleLogs);
+  const [logs, setLogs] = useState<FastingLog[]>(loadLogs);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
-  const [fastingHours, setFastingHours] = useState(16);
+  const [fastingHours, setFastingHours] = useState(saved?.targetHours || 16);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -70,6 +107,7 @@ const FastingTimer = () => {
       setFastStartTime(now);
       setElapsedSeconds(0);
       setIsFasting(true);
+      saveFastingState(now, fastingHours);
       toast.success("⏱️ Fasting started!", {
         description: `${fastingHours}h fast began at ${formatDateShort(now)}`,
       });
