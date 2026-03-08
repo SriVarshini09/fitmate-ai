@@ -11,17 +11,17 @@ const mainNavItems = [
 ];
 
 const moreItems = [
-  { path: "/activities", icon: MapPin, label: "Activities", color: "bg-primary/15 text-primary" },
-  { path: "/workout", icon: Dumbbell, label: "Workouts", color: "bg-warning/15 text-warning" },
-  { path: "/fasting", icon: Timer, label: "Fasting", color: "bg-info/15 text-info" },
-  { path: "/goals", icon: Target, label: "Goals", color: "bg-primary/15 text-primary" },
-  { path: "/planner", icon: CalendarDays, label: "Meal Planner", color: "bg-info/15 text-info" },
-  { path: "/lifestyle", icon: Brain, label: "Lifestyle", color: "bg-info/15 text-info" },
-  { path: "/motivation", icon: Zap, label: "Motivation", color: "bg-warning/15 text-warning" },
-  { path: "/tools", icon: Calculator, label: "Tools", color: "bg-success/15 text-success" },
-  { path: "/badges", icon: Trophy, label: "Badges", color: "bg-badge-gold/15 text-badge-gold" },
-  { path: "/community", icon: MessageCircle, label: "Community", color: "bg-primary/15 text-primary" },
-  { path: "/cycle", icon: Heart, label: "Cycle Tracker", color: "bg-destructive/15 text-destructive" },
+  { path: "/activities", icon: MapPin, label: "Activities", color: "bg-primary/10 text-primary" },
+  { path: "/workout", icon: Dumbbell, label: "Workouts", color: "bg-warning/10 text-warning" },
+  { path: "/fasting", icon: Timer, label: "Fasting", color: "bg-info/10 text-info" },
+  { path: "/goals", icon: Target, label: "Goals", color: "bg-primary/10 text-primary" },
+  { path: "/planner", icon: CalendarDays, label: "Meal Planner", color: "bg-info/10 text-info" },
+  { path: "/lifestyle", icon: Brain, label: "Lifestyle", color: "bg-info/10 text-info" },
+  { path: "/motivation", icon: Zap, label: "Motivation", color: "bg-warning/10 text-warning" },
+  { path: "/tools", icon: Calculator, label: "Tools", color: "bg-success/10 text-success" },
+  { path: "/badges", icon: Trophy, label: "Badges", color: "bg-badge-gold/10 text-badge-gold" },
+  { path: "/community", icon: MessageCircle, label: "Community", color: "bg-primary/10 text-primary" },
+  { path: "/cycle", icon: Heart, label: "Cycle Tracker", color: "bg-destructive/10 text-destructive" },
 ];
 
 const BottomNav = () => {
@@ -37,7 +37,7 @@ const BottomNav = () => {
       <AnimatePresence>
         {showMore && (
           <motion.div
-            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -60,7 +60,7 @@ const BottomNav = () => {
                         setShowMore(false);
                       }}
                       className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-colors ${
-                        location.pathname === item.path ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-secondary"
+                        location.pathname === item.path ? "bg-primary/8 ring-1 ring-primary/20" : "hover:bg-secondary"
                       }`}
                     >
                       <div className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center`}>
@@ -76,7 +76,7 @@ const BottomNav = () => {
         )}
       </AnimatePresence>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 glass-card-strong border-t border-glass-border rounded-none">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
         <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
           {mainNavItems.map((item) => {
             const isActive = location.pathname === item.path;
