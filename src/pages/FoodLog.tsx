@@ -53,6 +53,36 @@ const FOOD_DB: FoodDBEntry[] = [
   { name: "Paneer", caloriesPer100g: 265, proteinPer100g: 18, carbsPer100g: 1.2, fatPer100g: 21, fiberPer100g: 0, defaultServing: 100, unit: "g" },
   { name: "Tofu", caloriesPer100g: 76, proteinPer100g: 8, carbsPer100g: 1.9, fatPer100g: 4.8, fiberPer100g: 0.3, defaultServing: 100, unit: "g" },
   { name: "Coffee (black)", caloriesPer100g: 2, proteinPer100g: 0.3, carbsPer100g: 0, fatPer100g: 0, fiberPer100g: 0, defaultServing: 250, unit: "ml" },
+  // Indian foods
+  { name: "Idli / Idly", caloriesPer100g: 130, proteinPer100g: 4, carbsPer100g: 24, fatPer100g: 1, fiberPer100g: 1.5, defaultServing: 40, unit: "pcs" },
+  { name: "Dosa", caloriesPer100g: 168, proteinPer100g: 4, carbsPer100g: 27, fatPer100g: 5, fiberPer100g: 1, defaultServing: 80, unit: "pcs" },
+  { name: "Sambar", caloriesPer100g: 55, proteinPer100g: 3, carbsPer100g: 8, fatPer100g: 1.5, fiberPer100g: 2, defaultServing: 150, unit: "ml" },
+  { name: "Upma", caloriesPer100g: 130, proteinPer100g: 3, carbsPer100g: 19, fatPer100g: 4.5, fiberPer100g: 1.5, defaultServing: 150, unit: "g" },
+  { name: "Poha", caloriesPer100g: 120, proteinPer100g: 2.5, carbsPer100g: 22, fatPer100g: 3, fiberPer100g: 1, defaultServing: 150, unit: "g" },
+  { name: "Puri", caloriesPer100g: 310, proteinPer100g: 6, carbsPer100g: 37, fatPer100g: 15, fiberPer100g: 2, defaultServing: 30, unit: "pcs" },
+  { name: "Paratha", caloriesPer100g: 260, proteinPer100g: 5, carbsPer100g: 32, fatPer100g: 13, fiberPer100g: 2, defaultServing: 60, unit: "pcs" },
+  { name: "Biryani", caloriesPer100g: 146, proteinPer100g: 5, carbsPer100g: 18, fatPer100g: 6, fiberPer100g: 0.5, defaultServing: 250, unit: "g" },
+  { name: "Curd / Yogurt", caloriesPer100g: 60, proteinPer100g: 3.5, carbsPer100g: 4.7, fatPer100g: 3.3, fiberPer100g: 0, defaultServing: 100, unit: "g" },
+  { name: "Buttermilk / Chaas", caloriesPer100g: 27, proteinPer100g: 1.5, carbsPer100g: 3.5, fatPer100g: 0.7, fiberPer100g: 0, defaultServing: 250, unit: "ml" },
+  { name: "Vada", caloriesPer100g: 260, proteinPer100g: 8, carbsPer100g: 28, fatPer100g: 13, fiberPer100g: 2, defaultServing: 50, unit: "pcs" },
+  { name: "Poori", caloriesPer100g: 310, proteinPer100g: 6, carbsPer100g: 37, fatPer100g: 15, fiberPer100g: 2, defaultServing: 30, unit: "pcs" },
+  { name: "Chicken Curry", caloriesPer100g: 120, proteinPer100g: 12, carbsPer100g: 5, fatPer100g: 6, fiberPer100g: 0.5, defaultServing: 200, unit: "g" },
+  { name: "Fish Curry", caloriesPer100g: 105, proteinPer100g: 11, carbsPer100g: 4, fatPer100g: 5, fiberPer100g: 0.3, defaultServing: 200, unit: "g" },
+  { name: "Rajma (cooked)", caloriesPer100g: 120, proteinPer100g: 7, carbsPer100g: 20, fatPer100g: 1, fiberPer100g: 6, defaultServing: 150, unit: "g" },
+  { name: "Chole / Chickpeas", caloriesPer100g: 164, proteinPer100g: 9, carbsPer100g: 27, fatPer100g: 2.6, fiberPer100g: 8, defaultServing: 150, unit: "g" },
+  { name: "Palak Paneer", caloriesPer100g: 130, proteinPer100g: 7, carbsPer100g: 5, fatPer100g: 10, fiberPer100g: 1.5, defaultServing: 200, unit: "g" },
+  { name: "Naan", caloriesPer100g: 290, proteinPer100g: 9, carbsPer100g: 48, fatPer100g: 7, fiberPer100g: 2, defaultServing: 90, unit: "pcs" },
+  // More common foods
+  { name: "Orange", caloriesPer100g: 47, proteinPer100g: 0.9, carbsPer100g: 12, fatPer100g: 0.1, fiberPer100g: 2.4, defaultServing: 150, unit: "g" },
+  { name: "Mango", caloriesPer100g: 60, proteinPer100g: 0.8, carbsPer100g: 15, fatPer100g: 0.4, fiberPer100g: 1.6, defaultServing: 200, unit: "g" },
+  { name: "Watermelon", caloriesPer100g: 30, proteinPer100g: 0.6, carbsPer100g: 8, fatPer100g: 0.2, fiberPer100g: 0.4, defaultServing: 200, unit: "g" },
+  { name: "Tea (with milk)", caloriesPer100g: 22, proteinPer100g: 0.7, carbsPer100g: 3, fatPer100g: 0.8, fiberPer100g: 0, defaultServing: 150, unit: "ml" },
+  { name: "Juice (orange)", caloriesPer100g: 45, proteinPer100g: 0.7, carbsPer100g: 10, fatPer100g: 0.2, fiberPer100g: 0.2, defaultServing: 250, unit: "ml" },
+  { name: "Pizza", caloriesPer100g: 266, proteinPer100g: 11, carbsPer100g: 33, fatPer100g: 10, fiberPer100g: 2.3, defaultServing: 107, unit: "pcs" },
+  { name: "Burger", caloriesPer100g: 240, proteinPer100g: 13, carbsPer100g: 24, fatPer100g: 11, fiberPer100g: 1, defaultServing: 200, unit: "pcs" },
+  { name: "French Fries", caloriesPer100g: 312, proteinPer100g: 3.4, carbsPer100g: 41, fatPer100g: 15, fiberPer100g: 3.8, defaultServing: 100, unit: "g" },
+  { name: "Ice Cream", caloriesPer100g: 207, proteinPer100g: 3.5, carbsPer100g: 24, fatPer100g: 11, fiberPer100g: 0, defaultServing: 100, unit: "g" },
+  { name: "Chocolate", caloriesPer100g: 546, proteinPer100g: 5, carbsPer100g: 60, fatPer100g: 31, fiberPer100g: 7, defaultServing: 30, unit: "g" },
 ];
 
 const MEALS = [
@@ -70,7 +100,9 @@ const UNIT_TO_GRAMS: Record<string, number> = {
 };
 
 function calcNutrition(food: FoodDBEntry, qty: number, unit: string) {
-  const gramsEquiv = qty * (UNIT_TO_GRAMS[unit] || 1);
+  // For "pcs", use the food's default serving weight per piece
+  const gramsPerUnit = unit === "pcs" ? food.defaultServing : (UNIT_TO_GRAMS[unit] || 1);
+  const gramsEquiv = qty * gramsPerUnit;
   const factor = gramsEquiv / 100;
   return {
     calories: Math.round(food.caloriesPer100g * factor),
@@ -92,11 +124,15 @@ const FoodLog = () => {
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
-  // Auto-match typed food name to DB for nutrition lookup
+  // Auto-match typed food name to DB for nutrition lookup (checks each word in the DB name)
   const matchedFood = useMemo(() => {
     if (!foodName.trim()) return null;
-    const lower = foodName.toLowerCase();
-    return FOOD_DB.find((f) => f.name.toLowerCase().includes(lower) || lower.includes(f.name.toLowerCase())) || null;
+    const lower = foodName.toLowerCase().trim();
+    // Exact or partial match on name or any word/alias separated by " / "
+    return FOOD_DB.find((f) => {
+      const aliases = f.name.toLowerCase().split(/\s*\/\s*/);
+      return aliases.some(a => a.includes(lower) || lower.includes(a));
+    }) || null;
   }, [foodName]);
 
   const preview = useMemo(() => {
