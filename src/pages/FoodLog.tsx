@@ -274,25 +274,12 @@ const FoodLog = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold font-display text-foreground">Add Food</h2>
+                <h2 className="text-lg font-bold font-display text-foreground">
+                  Add to {MEALS.find((m) => m.key === selectedMeal)?.label}
+                </h2>
                 <button onClick={closeModal}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
-              </div>
-
-              {/* Meal selector */}
-              <div className="flex gap-2">
-                {MEALS.map((m) => (
-                  <button
-                    key={m.key}
-                    onClick={() => setSelectedMeal(m.key)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-medium font-body transition-colors ${
-                      selectedMeal === m.key ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
               </div>
 
               {/* Food name input */}
