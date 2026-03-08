@@ -6,27 +6,27 @@ import { Eye, EyeOff, ArrowRight, Zap, Dumbbell, Flame, Heart, Trophy } from "lu
 import { toast } from "sonner";
 
 const floatingEmojis = [
-  { emoji: "💪", top: "8%", left: "5%", delay: 0, duration: 4, size: "text-3xl" },
-  { emoji: "🔥", top: "15%", right: "8%", delay: 0.5, duration: 3.5, size: "text-4xl" },
-  { emoji: "🏋️", bottom: "25%", left: "3%", delay: 1, duration: 5, size: "text-2xl" },
-  { emoji: "⚡", top: "40%", right: "5%", delay: 1.5, duration: 4.5, size: "text-3xl" },
-  { emoji: "🏃", bottom: "12%", right: "12%", delay: 0.8, duration: 3.8, size: "text-2xl" },
-  { emoji: "🥊", bottom: "35%", left: "8%", delay: 2, duration: 4.2, size: "text-xl" },
-  { emoji: "💯", top: "60%", right: "3%", delay: 0.3, duration: 3.2, size: "text-2xl" },
-  { emoji: "🦾", top: "5%", left: "30%", delay: 1.2, duration: 4.8, size: "text-xl" },
+  { emoji: "💪", top: "6%", left: "7%", delay: 0, duration: 8, size: "text-3xl" },
+  { emoji: "🔥", top: "16%", right: "9%", delay: 1.5, duration: 9, size: "text-4xl" },
+  { emoji: "🏋️", bottom: "24%", left: "5%", delay: 2.5, duration: 10, size: "text-2xl" },
+  { emoji: "⚡", top: "44%", right: "6%", delay: 0.8, duration: 9.5, size: "text-3xl" },
+  { emoji: "🏃", bottom: "10%", right: "13%", delay: 3, duration: 8.5, size: "text-2xl" },
+  { emoji: "🥊", bottom: "36%", left: "7%", delay: 4, duration: 10, size: "text-xl" },
+  { emoji: "💯", top: "62%", right: "4%", delay: 1, duration: 9, size: "text-2xl" },
+  { emoji: "🦾", top: "4%", right: "32%", delay: 3.5, duration: 8, size: "text-xl" },
 ];
 
 const floatingIcons = [
-  { Icon: Dumbbell, top: "20%", left: "10%", delay: 0.4, duration: 6 },
-  { Icon: Flame, top: "70%", right: "6%", delay: 1.2, duration: 5 },
-  { Icon: Heart, bottom: "8%", left: "15%", delay: 0.8, duration: 5.5 },
-  { Icon: Trophy, top: "30%", right: "15%", delay: 1.6, duration: 4.5 },
+  { Icon: Dumbbell, top: "22%", left: "12%", delay: 1, duration: 11 },
+  { Icon: Flame, top: "72%", right: "7%", delay: 2.5, duration: 10 },
+  { Icon: Heart, bottom: "7%", left: "16%", delay: 1.8, duration: 9 },
+  { Icon: Trophy, top: "33%", right: "16%", delay: 3.5, duration: 10.5 },
 ];
 
 const badges = [
-  { text: "NO EXCUSES", rotate: "-12deg", top: "12%", right: "2%" },
-  { text: "BEAST MODE", rotate: "8deg", bottom: "18%", left: "2%" },
-  { text: "GRIND 💀", rotate: "-5deg", bottom: "8%", right: "5%" },
+  { text: "NO EXCUSES", rotate: "-12deg", top: "10%", right: "3%" },
+  { text: "BEAST MODE", rotate: "8deg", bottom: "20%", left: "3%" },
+  { text: "GRIND 💀", rotate: "-5deg", bottom: "6%", right: "6%" },
 ];
 
 const Login = () => {
