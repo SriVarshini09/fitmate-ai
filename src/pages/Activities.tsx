@@ -4,6 +4,8 @@ import {
   Play, Pause, Square, MapPin, Clock, Flame, TrendingUp, Trophy,
   ChevronRight, Bike, Waves, Footprints, Mountain, Timer, X, Plus, Heart, ThumbsUp, MessageSquare
 } from "lucide-react";
+import { useCalorieTracker, estimateActivityCalories } from "@/hooks/useCalorieTracker";
+import { toast } from "sonner";
 
 type ActivityType = "run" | "ride" | "swim" | "walk" | "hike";
 
