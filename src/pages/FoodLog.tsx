@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Plus, Search, X, Apple, Coffee, UtensilsCrossed, Moon } from "lucide-react";
-import MacroBar from "@/components/dashboard/MacroBar";
+import { Camera, Plus, Search, X, Apple, Coffee, UtensilsCrossed, Moon, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface FoodEntry {
   id: string;
@@ -16,74 +17,15 @@ interface FoodEntry {
   meal: string;
 }
 
-interface FoodDBEntry {
+interface NutritionResult {
   name: string;
-  caloriesPer100g: number;
-  proteinPer100g: number;
-  carbsPer100g: number;
-  fatPer100g: number;
-  fiberPer100g: number;
-  defaultServing: number;
-  unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  servingDescription: string;
 }
-
-const FOOD_DB: FoodDBEntry[] = [
-  { name: "Rice (cooked)", caloriesPer100g: 130, proteinPer100g: 2.7, carbsPer100g: 28, fatPer100g: 0.3, fiberPer100g: 0.4, defaultServing: 150, unit: "g" },
-  { name: "Chicken Breast", caloriesPer100g: 165, proteinPer100g: 31, carbsPer100g: 0, fatPer100g: 3.6, fiberPer100g: 0, defaultServing: 150, unit: "g" },
-  { name: "Egg", caloriesPer100g: 155, proteinPer100g: 13, carbsPer100g: 1.1, fatPer100g: 11, fiberPer100g: 0, defaultServing: 50, unit: "g" },
-  { name: "Banana", caloriesPer100g: 89, proteinPer100g: 1.1, carbsPer100g: 23, fatPer100g: 0.3, fiberPer100g: 2.6, defaultServing: 120, unit: "g" },
-  { name: "Apple", caloriesPer100g: 52, proteinPer100g: 0.3, carbsPer100g: 14, fatPer100g: 0.2, fiberPer100g: 2.4, defaultServing: 180, unit: "g" },
-  { name: "Oatmeal", caloriesPer100g: 68, proteinPer100g: 2.4, carbsPer100g: 12, fatPer100g: 1.4, fiberPer100g: 1.7, defaultServing: 250, unit: "g" },
-  { name: "Greek Yogurt", caloriesPer100g: 59, proteinPer100g: 10, carbsPer100g: 3.6, fatPer100g: 0.7, fiberPer100g: 0, defaultServing: 170, unit: "g" },
-  { name: "Bread (whole wheat)", caloriesPer100g: 247, proteinPer100g: 13, carbsPer100g: 41, fatPer100g: 3.4, fiberPer100g: 7, defaultServing: 30, unit: "g" },
-  { name: "Milk", caloriesPer100g: 42, proteinPer100g: 3.4, carbsPer100g: 5, fatPer100g: 1, fiberPer100g: 0, defaultServing: 250, unit: "ml" },
-  { name: "Salmon", caloriesPer100g: 208, proteinPer100g: 20, carbsPer100g: 0, fatPer100g: 13, fiberPer100g: 0, defaultServing: 150, unit: "g" },
-  { name: "Pasta (cooked)", caloriesPer100g: 131, proteinPer100g: 5, carbsPer100g: 25, fatPer100g: 1.1, fiberPer100g: 1.8, defaultServing: 200, unit: "g" },
-  { name: "Potato (boiled)", caloriesPer100g: 87, proteinPer100g: 1.9, carbsPer100g: 20, fatPer100g: 0.1, fiberPer100g: 1.8, defaultServing: 150, unit: "g" },
-  { name: "Avocado", caloriesPer100g: 160, proteinPer100g: 2, carbsPer100g: 9, fatPer100g: 15, fiberPer100g: 7, defaultServing: 100, unit: "g" },
-  { name: "Peanut Butter", caloriesPer100g: 588, proteinPer100g: 25, carbsPer100g: 20, fatPer100g: 50, fiberPer100g: 6, defaultServing: 32, unit: "g" },
-  { name: "Cheese (cheddar)", caloriesPer100g: 403, proteinPer100g: 25, carbsPer100g: 1.3, fatPer100g: 33, fiberPer100g: 0, defaultServing: 30, unit: "g" },
-  { name: "Broccoli", caloriesPer100g: 34, proteinPer100g: 2.8, carbsPer100g: 7, fatPer100g: 0.4, fiberPer100g: 2.6, defaultServing: 100, unit: "g" },
-  { name: "Sweet Potato", caloriesPer100g: 86, proteinPer100g: 1.6, carbsPer100g: 20, fatPer100g: 0.1, fiberPer100g: 3, defaultServing: 150, unit: "g" },
-  { name: "Tuna (canned)", caloriesPer100g: 116, proteinPer100g: 26, carbsPer100g: 0, fatPer100g: 0.8, fiberPer100g: 0, defaultServing: 100, unit: "g" },
-  { name: "Lentils (cooked)", caloriesPer100g: 116, proteinPer100g: 9, carbsPer100g: 20, fatPer100g: 0.4, fiberPer100g: 8, defaultServing: 150, unit: "g" },
-  { name: "Almonds", caloriesPer100g: 579, proteinPer100g: 21, carbsPer100g: 22, fatPer100g: 50, fiberPer100g: 12, defaultServing: 30, unit: "g" },
-  { name: "Chapati / Roti", caloriesPer100g: 297, proteinPer100g: 9, carbsPer100g: 50, fatPer100g: 7, fiberPer100g: 4, defaultServing: 40, unit: "g" },
-  { name: "Dal (cooked)", caloriesPer100g: 104, proteinPer100g: 7, carbsPer100g: 18, fatPer100g: 0.4, fiberPer100g: 5, defaultServing: 150, unit: "g" },
-  { name: "Paneer", caloriesPer100g: 265, proteinPer100g: 18, carbsPer100g: 1.2, fatPer100g: 21, fiberPer100g: 0, defaultServing: 100, unit: "g" },
-  { name: "Tofu", caloriesPer100g: 76, proteinPer100g: 8, carbsPer100g: 1.9, fatPer100g: 4.8, fiberPer100g: 0.3, defaultServing: 100, unit: "g" },
-  { name: "Coffee (black)", caloriesPer100g: 2, proteinPer100g: 0.3, carbsPer100g: 0, fatPer100g: 0, fiberPer100g: 0, defaultServing: 250, unit: "ml" },
-  // Indian foods
-  { name: "Idli / Idly", caloriesPer100g: 130, proteinPer100g: 4, carbsPer100g: 24, fatPer100g: 1, fiberPer100g: 1.5, defaultServing: 40, unit: "pcs" },
-  { name: "Dosa", caloriesPer100g: 168, proteinPer100g: 4, carbsPer100g: 27, fatPer100g: 5, fiberPer100g: 1, defaultServing: 80, unit: "pcs" },
-  { name: "Sambar", caloriesPer100g: 55, proteinPer100g: 3, carbsPer100g: 8, fatPer100g: 1.5, fiberPer100g: 2, defaultServing: 150, unit: "ml" },
-  { name: "Upma", caloriesPer100g: 130, proteinPer100g: 3, carbsPer100g: 19, fatPer100g: 4.5, fiberPer100g: 1.5, defaultServing: 150, unit: "g" },
-  { name: "Poha", caloriesPer100g: 120, proteinPer100g: 2.5, carbsPer100g: 22, fatPer100g: 3, fiberPer100g: 1, defaultServing: 150, unit: "g" },
-  { name: "Puri", caloriesPer100g: 310, proteinPer100g: 6, carbsPer100g: 37, fatPer100g: 15, fiberPer100g: 2, defaultServing: 30, unit: "pcs" },
-  { name: "Paratha", caloriesPer100g: 260, proteinPer100g: 5, carbsPer100g: 32, fatPer100g: 13, fiberPer100g: 2, defaultServing: 60, unit: "pcs" },
-  { name: "Biryani", caloriesPer100g: 146, proteinPer100g: 5, carbsPer100g: 18, fatPer100g: 6, fiberPer100g: 0.5, defaultServing: 250, unit: "g" },
-  { name: "Curd / Yogurt", caloriesPer100g: 60, proteinPer100g: 3.5, carbsPer100g: 4.7, fatPer100g: 3.3, fiberPer100g: 0, defaultServing: 100, unit: "g" },
-  { name: "Buttermilk / Chaas", caloriesPer100g: 27, proteinPer100g: 1.5, carbsPer100g: 3.5, fatPer100g: 0.7, fiberPer100g: 0, defaultServing: 250, unit: "ml" },
-  { name: "Vada", caloriesPer100g: 260, proteinPer100g: 8, carbsPer100g: 28, fatPer100g: 13, fiberPer100g: 2, defaultServing: 50, unit: "pcs" },
-  { name: "Poori", caloriesPer100g: 310, proteinPer100g: 6, carbsPer100g: 37, fatPer100g: 15, fiberPer100g: 2, defaultServing: 30, unit: "pcs" },
-  { name: "Chicken Curry", caloriesPer100g: 120, proteinPer100g: 12, carbsPer100g: 5, fatPer100g: 6, fiberPer100g: 0.5, defaultServing: 200, unit: "g" },
-  { name: "Fish Curry", caloriesPer100g: 105, proteinPer100g: 11, carbsPer100g: 4, fatPer100g: 5, fiberPer100g: 0.3, defaultServing: 200, unit: "g" },
-  { name: "Rajma (cooked)", caloriesPer100g: 120, proteinPer100g: 7, carbsPer100g: 20, fatPer100g: 1, fiberPer100g: 6, defaultServing: 150, unit: "g" },
-  { name: "Chole / Chickpeas", caloriesPer100g: 164, proteinPer100g: 9, carbsPer100g: 27, fatPer100g: 2.6, fiberPer100g: 8, defaultServing: 150, unit: "g" },
-  { name: "Palak Paneer", caloriesPer100g: 130, proteinPer100g: 7, carbsPer100g: 5, fatPer100g: 10, fiberPer100g: 1.5, defaultServing: 200, unit: "g" },
-  { name: "Naan", caloriesPer100g: 290, proteinPer100g: 9, carbsPer100g: 48, fatPer100g: 7, fiberPer100g: 2, defaultServing: 90, unit: "pcs" },
-  // More common foods
-  { name: "Orange", caloriesPer100g: 47, proteinPer100g: 0.9, carbsPer100g: 12, fatPer100g: 0.1, fiberPer100g: 2.4, defaultServing: 150, unit: "g" },
-  { name: "Mango", caloriesPer100g: 60, proteinPer100g: 0.8, carbsPer100g: 15, fatPer100g: 0.4, fiberPer100g: 1.6, defaultServing: 200, unit: "g" },
-  { name: "Watermelon", caloriesPer100g: 30, proteinPer100g: 0.6, carbsPer100g: 8, fatPer100g: 0.2, fiberPer100g: 0.4, defaultServing: 200, unit: "g" },
-  { name: "Tea (with milk)", caloriesPer100g: 22, proteinPer100g: 0.7, carbsPer100g: 3, fatPer100g: 0.8, fiberPer100g: 0, defaultServing: 150, unit: "ml" },
-  { name: "Juice (orange)", caloriesPer100g: 45, proteinPer100g: 0.7, carbsPer100g: 10, fatPer100g: 0.2, fiberPer100g: 0.2, defaultServing: 250, unit: "ml" },
-  { name: "Pizza", caloriesPer100g: 266, proteinPer100g: 11, carbsPer100g: 33, fatPer100g: 10, fiberPer100g: 2.3, defaultServing: 107, unit: "pcs" },
-  { name: "Burger", caloriesPer100g: 240, proteinPer100g: 13, carbsPer100g: 24, fatPer100g: 11, fiberPer100g: 1, defaultServing: 200, unit: "pcs" },
-  { name: "French Fries", caloriesPer100g: 312, proteinPer100g: 3.4, carbsPer100g: 41, fatPer100g: 15, fiberPer100g: 3.8, defaultServing: 100, unit: "g" },
-  { name: "Ice Cream", caloriesPer100g: 207, proteinPer100g: 3.5, carbsPer100g: 24, fatPer100g: 11, fiberPer100g: 0, defaultServing: 100, unit: "g" },
-  { name: "Chocolate", caloriesPer100g: 546, proteinPer100g: 5, carbsPer100g: 60, fatPer100g: 31, fiberPer100g: 7, defaultServing: 30, unit: "g" },
-];
 
 const MEALS = [
   { key: "breakfast", label: "Breakfast", icon: Coffee, time: "7:00 - 10:00 AM" },
@@ -94,25 +36,6 @@ const MEALS = [
 
 const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
 
-// Conversion to grams equivalent for nutrition calc
-const UNIT_TO_GRAMS: Record<string, number> = {
-  g: 1, ml: 1, L: 1000, pcs: 50, cup: 240, tbsp: 15, tsp: 5,
-};
-
-function calcNutrition(food: FoodDBEntry, qty: number, unit: string) {
-  // For "pcs", use the food's default serving weight per piece
-  const gramsPerUnit = unit === "pcs" ? food.defaultServing : (UNIT_TO_GRAMS[unit] || 1);
-  const gramsEquiv = qty * gramsPerUnit;
-  const factor = gramsEquiv / 100;
-  return {
-    calories: Math.round(food.caloriesPer100g * factor),
-    protein: Math.round(food.proteinPer100g * factor * 10) / 10,
-    carbs: Math.round(food.carbsPer100g * factor * 10) / 10,
-    fat: Math.round(food.fatPer100g * factor * 10) / 10,
-    fiber: Math.round(food.fiberPer100g * factor * 10) / 10,
-  };
-}
-
 const FoodLog = () => {
   const [foods, setFoods] = useState<FoodEntry[]>([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -122,45 +45,96 @@ const FoodLog = () => {
   const [quantity, setQuantity] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("g");
 
+  // AI lookup state
+  const [aiResult, setAiResult] = useState<NutritionResult | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
-  // Auto-match typed food name to DB for nutrition lookup (checks each word in the DB name)
-  const matchedFood = useMemo(() => {
-    if (!foodName.trim()) return null;
-    const lower = foodName.toLowerCase().trim();
-    // Exact or partial match on name or any word/alias separated by " / "
-    return FOOD_DB.find((f) => {
-      const aliases = f.name.toLowerCase().split(/\s*\/\s*/);
-      return aliases.some(a => a.includes(lower) || lower.includes(a));
-    }) || null;
-  }, [foodName]);
+  // Debounced AI nutrition lookup
+  const lookupNutrition = useCallback(async (name: string, qty: string, unit: string) => {
+    if (!name.trim() || name.trim().length < 2) {
+      setAiResult(null);
+      return;
+    }
 
-  const preview = useMemo(() => {
-    if (!matchedFood) return null;
-    const qty = parseFloat(quantity) || matchedFood.defaultServing;
-    return calcNutrition(matchedFood, qty, selectedUnit);
-  }, [matchedFood, quantity, selectedUnit]);
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("food-nutrition", {
+        body: { foodName: name.trim(), quantity: qty || "1", unit },
+      });
+
+      if (error) {
+        console.error("Nutrition lookup error:", error);
+        setAiResult(null);
+        return;
+      }
+
+      if (data?.error) {
+        console.error("AI error:", data.error);
+        if (data.error.includes("Rate limit")) {
+          toast.error("Too many requests. Please wait a moment.");
+        }
+        setAiResult(null);
+        return;
+      }
+
+      setAiResult(data as NutritionResult);
+    } catch (e) {
+      console.error("Lookup failed:", e);
+      setAiResult(null);
+    } finally {
+      setAiLoading(false);
+    }
+  }, []);
+
+  // Debounce the AI lookup when food name, quantity, or unit changes
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!showAdd) return;
+
+    debounceRef.current = setTimeout(() => {
+      lookupNutrition(foodName, quantity, selectedUnit);
+    }, 800);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [foodName, quantity, selectedUnit, showAdd, lookupNutrition]);
 
   const addFood = () => {
     if (!foodName.trim()) return;
-    const qty = parseFloat(quantity) || matchedFood?.defaultServing || 100;
-    const nutrition = matchedFood ? calcNutrition(matchedFood, qty, selectedUnit) : { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+    const qty = parseFloat(quantity) || 1;
+    const nutrition = aiResult || { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
     const entry: FoodEntry = {
       id: Date.now().toString(),
-      name: foodName.trim(),
+      name: aiResult?.name || foodName.trim(),
       quantity: qty,
       unit: selectedUnit,
-      ...nutrition,
+      calories: nutrition.calories,
+      protein: nutrition.protein,
+      carbs: nutrition.carbs,
+      fat: nutrition.fat,
+      fiber: nutrition.fiber,
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
     setFoodName("");
     setQuantity("");
     setSelectedUnit("g");
+    setAiResult(null);
     setShowAdd(false);
   };
 
   const removeFood = (id: string) => setFoods(foods.filter((f) => f.id !== id));
+
+  const closeModal = () => {
+    setShowAdd(false);
+    setFoodName("");
+    setQuantity("");
+    setAiResult(null);
+  };
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-32">
@@ -252,7 +226,7 @@ const FoodLog = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => { setShowAdd(false); setFoodName(""); setQuantity(""); }}
+            onClick={closeModal}
           >
             <motion.div
               className="w-full max-w-lg glass-card-strong p-6 rounded-t-3xl space-y-4"
@@ -264,7 +238,7 @@ const FoodLog = () => {
             >
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold font-display text-foreground">Add Food</h2>
-                <button onClick={() => { setShowAdd(false); setFoodName(""); setQuantity(""); }}>
+                <button onClick={closeModal}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
@@ -288,12 +262,12 @@ const FoodLog = () => {
               <input
                 value={foodName}
                 onChange={(e) => setFoodName(e.target.value)}
-                placeholder="Enter food name (e.g. Rice, Chicken)"
+                placeholder="Type any food, dish, or drink..."
                 autoFocus
                 className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
               />
 
-              {/* Quantity input */}
+              {/* Quantity + unit */}
               <div className="flex items-center gap-2">
                 <input
                   value={quantity}
@@ -317,19 +291,29 @@ const FoodLog = () => {
                 </div>
               </div>
 
-              {/* Nutrition preview */}
-              {matchedFood && preview && (
+              {/* AI Nutrition Preview */}
+              {aiLoading && (
+                <div className="flex items-center justify-center gap-2 py-3">
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  <span className="text-xs text-muted-foreground font-body">Looking up nutrition...</span>
+                </div>
+              )}
+
+              {!aiLoading && aiResult && (
                 <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="text-xs text-muted-foreground font-body mb-2">
-                    Matched: <span className="text-foreground font-medium">{matchedFood.name}</span>
-                  </p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-muted-foreground font-body">
+                      AI Match: <span className="text-foreground font-medium">{aiResult.name}</span>
+                    </p>
+                    <span className="text-[10px] text-muted-foreground font-body">{aiResult.servingDescription}</span>
+                  </div>
                   <div className="grid grid-cols-5 gap-2">
                     {[
-                      { label: "Cal", value: preview.calories, unit: "" },
-                      { label: "Protein", value: preview.protein, unit: "g" },
-                      { label: "Carbs", value: preview.carbs, unit: "g" },
-                      { label: "Fat", value: preview.fat, unit: "g" },
-                      { label: "Fiber", value: preview.fiber, unit: "g" },
+                      { label: "Cal", value: aiResult.calories, unit: "" },
+                      { label: "Protein", value: aiResult.protein, unit: "g" },
+                      { label: "Carbs", value: aiResult.carbs, unit: "g" },
+                      { label: "Fat", value: aiResult.fat, unit: "g" },
+                      { label: "Fiber", value: aiResult.fiber, unit: "g" },
                     ].map((m) => (
                       <div key={m.label} className="text-center">
                         <p className="text-xs text-muted-foreground font-body">{m.label}</p>
@@ -340,15 +324,15 @@ const FoodLog = () => {
                 </div>
               )}
 
-              {!matchedFood && foodName.trim() && (
+              {!aiLoading && !aiResult && foodName.trim().length >= 2 && (
                 <p className="text-xs text-muted-foreground font-body text-center">
-                  Food not in database — will be logged without nutrition data
+                  Type to search any food worldwide — AI will estimate nutrition
                 </p>
               )}
 
               <button
                 onClick={addFood}
-                disabled={!foodName.trim()}
+                disabled={!foodName.trim() || aiLoading}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary disabled:opacity-50"
               >
                 Add to {MEALS.find((m) => m.key === selectedMeal)?.label}
