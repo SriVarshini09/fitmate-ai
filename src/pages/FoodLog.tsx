@@ -189,17 +189,6 @@ const FoodLog = () => {
         </div>
       </motion.div>
 
-      <div className="flex gap-3">
-        <div className="flex-1 glass-card flex items-center px-4 gap-2">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search logged foods..."
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-3 font-body"
-          />
-        </div>
-      </div>
 
       {MEALS.map((meal) => {
         const mealFoods = foods.filter((f) => f.meal === meal.key && (!searchQuery || f.name.toLowerCase().includes(searchQuery.toLowerCase())));
