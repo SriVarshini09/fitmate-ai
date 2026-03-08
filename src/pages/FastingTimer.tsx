@@ -145,7 +145,9 @@ const FastingTimer = () => {
     }
   };
 
-  const totalTargetSeconds = selectedProtocol.fastHours * 3600;
+  const activeFastHours = selectedProtocol.protocol === "Custom" ? customHours : selectedProtocol.fastHours;
+  const activeEatHours = 24 - activeFastHours;
+  const totalTargetSeconds = activeFastHours * 3600;
   const progressPct = Math.min(100, (elapsedSeconds / totalTargetSeconds) * 100);
   const elapsedHours = elapsedSeconds / 3600;
   const remainingSeconds = Math.max(0, totalTargetSeconds - elapsedSeconds);
