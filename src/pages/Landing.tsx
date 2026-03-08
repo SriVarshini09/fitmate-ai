@@ -69,7 +69,7 @@ const Landing = () => {
               Log in
             </button>
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/onboarding")}
               className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition-all active:scale-95"
             >
               Get Started
@@ -108,7 +108,7 @@ const Landing = () => {
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/onboarding")}
               className="group px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 glow-primary"
             >
               Start Free Today
@@ -310,7 +310,7 @@ const Landing = () => {
           </motion.p>
           <motion.button
             variants={fadeUp}
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/onboarding")}
             className="group px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:brightness-110 transition-all active:scale-95 inline-flex items-center gap-2 glow-primary relative z-10"
           >
             Get Started Free

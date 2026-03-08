@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
+import Onboarding from "./pages/Onboarding";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import WeeklyPlanner from "./pages/WeeklyPlanner";
@@ -32,6 +33,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Index />} />
             <Route path="food" element={<FoodLog />} />
