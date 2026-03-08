@@ -1,8 +1,81 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Plus, Search, X, Apple, Coffee, UtensilsCrossed, Moon, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Camera, Plus, X, Apple, Coffee, UtensilsCrossed, Moon } from "lucide-react";
 import { toast } from "sonner";
+
+// Built-in nutrition table per 100g: [kcal, protein, carbs, fat, fiber]
+const NUTRITION_TABLE: Record<string, [number, number, number, number, number]> = {
+  "rice": [130, 2.7, 28, 0.3, 0.4],
+  "white rice": [130, 2.7, 28, 0.3, 0.4],
+  "brown rice": [123, 2.6, 26, 1.0, 1.8],
+  "ragi": [336, 7.3, 72, 1.9, 3.6],
+  "ragi malt": [330, 7.0, 71, 1.8, 3.5],
+  "idli": [58, 2, 11.5, 0.4, 0.5],
+  "idly": [58, 2, 11.5, 0.4, 0.5],
+  "dosa": [168, 3.5, 28, 5, 0.8],
+  "sambar": [56, 3.5, 8, 1.5, 2.5],
+  "chapati": [297, 9.2, 55, 3.9, 4.6],
+  "roti": [297, 9.2, 55, 3.9, 4.6],
+  "dal": [116, 9, 20, 0.4, 7.9],
+  "lentils": [116, 9, 20, 0.4, 7.9],
+  "paneer": [265, 18, 3.4, 20, 0],
+  "curd": [98, 3.5, 3.4, 4.3, 0],
+  "yogurt": [98, 3.5, 3.4, 4.3, 0],
+  "oats": [389, 17, 66, 7, 10.6],
+  "egg": [155, 13, 1.1, 11, 0],
+  "chicken breast": [165, 31, 0, 3.6, 0],
+  "chicken": [165, 31, 0, 3.6, 0],
+  "banana": [89, 1.1, 23, 0.3, 2.6],
+  "apple": [52, 0.3, 14, 0.2, 2.4],
+  "milk": [61, 3.2, 4.8, 3.3, 0],
+  "bread": [265, 9, 49, 3.2, 2.7],
+  "potato": [77, 2, 17, 0.1, 2.2],
+  "almonds": [579, 21, 22, 50, 12.5],
+  "peanut butter": [588, 25, 20, 50, 6],
+  "pasta": [158, 5.8, 31, 0.9, 1.8],
+  "salmon": [208, 20, 0, 13, 0],
+  "tuna": [132, 29, 0, 1, 0],
+  "broccoli": [34, 2.8, 7, 0.4, 2.6],
+  "spinach": [23, 2.9, 3.6, 0.4, 2.2],
+  "mango": [60, 0.8, 15, 0.4, 1.6],
+  "orange": [47, 0.9, 12, 0.1, 2.4],
+  "coffee": [2, 0.3, 0, 0, 0],
+  "tea": [1, 0, 0.2, 0, 0],
+};
+
+function unitToGrams(qty: number, unit: string): number {
+  switch (unit) {
+    case "g": return qty;
+    case "ml": return qty;
+    case "L": return qty * 1000;
+    case "cup": return qty * 240;
+    case "tbsp": return qty * 15;
+    case "tsp": return qty * 5;
+    case "pcs": return qty * 100;
+    default: return qty;
+  }
+}
+
+function lookupFallback(name: string, qty: number, unit: string): NutritionResult | null {
+  const key = name.toLowerCase().trim();
+  const grams = unitToGrams(qty, unit);
+  let row = NUTRITION_TABLE[key];
+  if (!row) {
+    const found = Object.keys(NUTRITION_TABLE).find(k => key.includes(k) || k.includes(key));
+    if (found) row = NUTRITION_TABLE[found];
+  }
+  if (!row) return null;
+  const f = grams / 100;
+  return {
+    name,
+    calories: Math.round(row[0] * f),
+    protein: Math.round(row[1] * f * 10) / 10,
+    carbs: Math.round(row[2] * f * 10) / 10,
+    fat: Math.round(row[3] * f * 10) / 10,
+    fiber: Math.round(row[4] * f * 10) / 10,
+    servingDescription: `${qty}${unit} (~${Math.round(grams)}g) — estimated`,
+  };
+}
 
 interface FoodEntry {
   id: string;
@@ -47,7 +120,6 @@ const FoodLog = () => {
 
   // AI lookup state
   const [aiResult, setAiResult] = useState<NutritionResult | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
@@ -59,41 +131,32 @@ const FoodLog = () => {
   // Default goals (can be user-customizable later)
   const goals = { protein: 92, carbs: 92, fat: 35, fiber: 25 };
 
-  // Debounced AI nutrition lookup
-  const lookupNutrition = useCallback(async (name: string, qty: string, unit: string) => {
+  // Nutrition lookup: built-in table first, then generic estimate
+  const lookupNutrition = useCallback((name: string, qty: string, unit: string) => {
     if (!name.trim() || name.trim().length < 2) {
       setAiResult(null);
       return;
     }
+    const parsedQty = parseFloat(qty) || 100;
+    const grams = unitToGrams(parsedQty, unit);
 
-    setAiLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("food-nutrition", {
-        body: { foodName: name.trim(), quantity: qty || "1", unit },
-      });
-
-      if (error) {
-        console.warn("Nutrition lookup error (non-critical):", error.message);
-        setAiResult(null);
-        return;
-      }
-
-      if (data?.error) {
-        console.error("AI error:", data.error);
-        if (data.error.includes("Rate limit")) {
-          toast.error("Too many requests. Please wait a moment.");
-        }
-        setAiResult(null);
-        return;
-      }
-
-      setAiResult(data as NutritionResult);
-    } catch (e) {
-      console.error("Lookup failed:", e);
-      setAiResult(null);
-    } finally {
-      setAiLoading(false);
+    // 1. Built-in table
+    const fallback = lookupFallback(name, parsedQty, unit);
+    if (fallback) {
+      setAiResult(fallback);
+      return;
     }
+
+    // 2. Generic estimate: 2 kcal/g
+    setAiResult({
+      name,
+      calories: Math.round(grams * 2),
+      protein: Math.round(grams * 0.05 * 10) / 10,
+      carbs: Math.round(grams * 0.25 * 10) / 10,
+      fat: Math.round(grams * 0.05 * 10) / 10,
+      fiber: 0,
+      servingDescription: `${parsedQty}${unit} — rough estimate`,
+    });
   }, []);
 
   // Debounce the AI lookup when food name, quantity, or unit changes
@@ -305,14 +368,7 @@ const FoodLog = () => {
               </div>
 
               {/* AI Nutrition Preview */}
-              {aiLoading && (
-                <div className="flex items-center justify-center gap-2 py-3">
-                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                  <span className="text-xs text-muted-foreground font-body">Looking up nutrition...</span>
-                </div>
-              )}
-
-              {!aiLoading && aiResult && (
+              {aiResult && (
                 <div className="bg-secondary/50 rounded-xl p-3">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs text-muted-foreground font-body">
@@ -337,15 +393,15 @@ const FoodLog = () => {
                 </div>
               )}
 
-              {!aiLoading && !aiResult && foodName.trim().length >= 2 && (
+              {!aiResult && foodName.trim().length >= 2 && (
                 <p className="text-xs text-muted-foreground font-body text-center">
-                  Type to search any food worldwide — AI will estimate nutrition
+                  Searching nutrition database...
                 </p>
               )}
 
               <button
                 onClick={addFood}
-                disabled={!foodName.trim() || aiLoading}
+                disabled={!foodName.trim()}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary disabled:opacity-50"
               >
                 Add to {MEALS.find((m) => m.key === selectedMeal)?.label}

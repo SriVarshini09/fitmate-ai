@@ -36,11 +36,7 @@ const WaterTracker = () => {
   const totalGlasses = Math.round(dailyGoalMl / GLASS_ML);
 
   // Water logs for today
-  const [logs, setLogs] = useState<WaterLog[]>([
-    { id: "1", amount: 250, time: "7:30 AM" },
-    { id: "2", amount: 250, time: "9:15 AM" },
-    { id: "3", amount: 500, time: "11:00 AM" },
-  ]);
+  const [logs, setLogs] = useState<WaterLog[]>([]);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [customAmount, setCustomAmount] = useState(250);
 

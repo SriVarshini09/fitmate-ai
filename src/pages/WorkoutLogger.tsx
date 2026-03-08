@@ -68,7 +68,18 @@ const EXERCISE_LIBRARY = [
 
 const MUSCLE_GROUPS = ["All", "Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
-const sampleWorkouts: Workout[] = [];
+const WORKOUTS_KEY = "vitalflow_workouts";
+
+function loadWorkouts(): Workout[] {
+  try {
+    const raw = localStorage.getItem(WORKOUTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveWorkouts(workouts: Workout[]) {
+  localStorage.setItem(WORKOUTS_KEY, JSON.stringify(workouts));
+}
 
 const TEMPLATES = [
   { name: "Push Day", exercises: ["Bench Press", "Overhead Press", "Cable Flyes", "Tricep Dips", "Shoulder Lateral Raise"] },
@@ -79,7 +90,7 @@ const TEMPLATES = [
 ];
 
 const WorkoutLogger = () => {
-  const [workouts] = useState(sampleWorkouts);
+  const [workouts, setWorkouts] = useState<Workout[]>(loadWorkouts);
   const [showNewWorkout, setShowNewWorkout] = useState(false);
   const [showExerciseLib, setShowExerciseLib] = useState(false);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
@@ -174,12 +185,28 @@ const WorkoutLogger = () => {
     });
   };
 
-  const prData = [
-    { exercise: "Bench Press", weight: "85 kg", reps: "6", date: "Today" },
-    { exercise: "Squat", weight: "110 kg", reps: "6", date: "Mar 5" },
-    { exercise: "Deadlift", weight: "130 kg", reps: "3", date: "Yesterday" },
-    { exercise: "Overhead Press", weight: "55 kg", reps: "6", date: "Today" },
-  ];
+  // Compute PRs from real workout history
+  const prData = (() => {
+    const prMap: Record<string, { weight: number; reps: number; date: string }> = {};
+    workouts.forEach((w) => {
+      w.exercises?.forEach((ex) => {
+        ex.sets?.forEach((s) => {
+          if (s.completed && s.weight > 0) {
+            const existing = prMap[ex.name];
+            if (!existing || s.weight > existing.weight || (s.weight === existing.weight && s.reps > existing.reps)) {
+              prMap[ex.name] = { weight: s.weight, reps: s.reps, date: w.date };
+            }
+          }
+        });
+      });
+    });
+    return Object.entries(prMap).map(([exercise, v]) => ({
+      exercise,
+      weight: `${v.weight} kg`,
+      reps: `${v.reps}`,
+      date: v.date,
+    }));
+  })();
 
   const totalWorkouts = workouts.length;
   const totalVolume = workouts.reduce((s, w) => s + w.totalVolume, 0);
@@ -287,16 +314,31 @@ const WorkoutLogger = () => {
               <Play className="w-4 h-4" /> {activeWorkout.name} — Active
             </h3>
             <button onClick={() => {
-              // Save burned calories
+              const durationMins = Math.round(activeWorkoutSeconds / 60);
               const totalCals = activeWorkout.exercises.reduce((sum, ex) => {
                 const completedSets = ex.sets.filter(s => s.completed).map(s => ({ weight: s.weight, reps: s.reps }));
                 return sum + (completedSets.length > 0 ? estimateWeightExerciseCalories(ex.name, completedSets, bodyWeight) : 0);
               }, 0);
+              const totalVol = activeWorkout.exercises.reduce((sum, ex) =>
+                sum + ex.sets.filter(s => s.completed).reduce((s, set) => s + set.weight * set.reps, 0), 0);
+              const finished = {
+                ...activeWorkout,
+                date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+                duration: durationMins,
+                totalVolume: totalVol,
+                totalCalories: totalCals,
+                isActive: false,
+              };
+              setWorkouts(prev => {
+                const updated = [finished, ...prev];
+                saveWorkouts(updated);
+                return updated;
+              });
               logBurned({
                 source: "workout",
                 name: activeWorkout.name,
                 calories: totalCals || activeCalories,
-                duration: Math.round(activeWorkoutSeconds / 60),
+                duration: durationMins,
               });
               toast.success(`${activeWorkout.name} complete! ${totalCals} kcal burned 🔥`);
               setActiveWorkout(null);

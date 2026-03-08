@@ -8,6 +8,18 @@ import AiMealPlanner from "@/components/planner/AiMealPlanner";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MEALS = ["Breakfast", "Lunch", "Snack", "Dinner"] as const;
+const PLANNER_KEY = "vitalflow_weekly_plan";
+
+function loadWeekPlan(): WeekPlan {
+  try {
+    const raw = localStorage.getItem(PLANNER_KEY);
+    return raw ? JSON.parse(raw) : defaultWeek;
+  } catch { return defaultWeek; }
+}
+
+function saveWeekPlan(plan: WeekPlan) {
+  localStorage.setItem(PLANNER_KEY, JSON.stringify(plan));
+}
 
 interface PlannedMeal {
   id: string;
@@ -41,7 +53,7 @@ const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
 const WeeklyPlanner = () => {
   const { profile } = useCalorieTracker();
   const calorieGoal = profile?.targetCalories || 2100;
-  const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
+  const [weekPlan, setWeekPlan] = useState<WeekPlan>(loadWeekPlan);
   const [activeTab, setActiveTab] = useState<"manual" | "ai">("manual");
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [showAdd, setShowAdd] = useState(false);
@@ -133,24 +145,32 @@ const WeeklyPlanner = () => {
       carbs: nutrition.carbs,
       fat: nutrition.fat,
     };
-    setWeekPlan((prev) => ({
-      ...prev,
-      [selectedDay]: {
-        ...prev[selectedDay],
-        [addMealType]: [...(prev[selectedDay]?.[addMealType] || []), entry],
-      },
-    }));
+    setWeekPlan((prev) => {
+      const updated = {
+        ...prev,
+        [selectedDay]: {
+          ...prev[selectedDay],
+          [addMealType]: [...(prev[selectedDay]?.[addMealType] || []), entry],
+        },
+      };
+      saveWeekPlan(updated);
+      return updated;
+    });
     closeModal();
   };
 
   const removeMeal = (mealType: string, id: string) => {
-    setWeekPlan((prev) => ({
-      ...prev,
-      [selectedDay]: {
-        ...prev[selectedDay],
-        [mealType]: prev[selectedDay][mealType].filter((m) => m.id !== id),
-      },
-    }));
+    setWeekPlan((prev) => {
+      const updated = {
+        ...prev,
+        [selectedDay]: {
+          ...prev[selectedDay],
+          [mealType]: prev[selectedDay][mealType].filter((m) => m.id !== id),
+        },
+      };
+      saveWeekPlan(updated);
+      return updated;
+    });
   };
 
   return (
@@ -209,6 +229,7 @@ const WeeklyPlanner = () => {
               }
             }
             setWeekPlan(newWeek);
+            saveWeekPlan(newWeek);
             setActiveTab("manual");
           }}
         />

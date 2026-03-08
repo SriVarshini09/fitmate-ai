@@ -75,18 +75,18 @@ function saveLogs(logs: FastingLog[]) {
 }
 
 const FastingTimer = () => {
-  // Restore state from localStorage on mount
-  const saved = loadFastingState();
-  const [isFasting, setIsFasting] = useState(!!saved);
-  const [fastStartTime, setFastStartTime] = useState<Date | null>(saved?.startTime || null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(
-    saved ? Math.floor((Date.now() - saved.startTime.getTime()) / 1000) : 0
-  );
+  // Restore state from localStorage on mount (lazy initialisers — run once)
+  const [isFasting, setIsFasting] = useState(() => !!loadFastingState());
+  const [fastStartTime, setFastStartTime] = useState<Date | null>(() => loadFastingState()?.startTime || null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(() => {
+    const saved = loadFastingState();
+    return saved ? Math.floor((Date.now() - saved.startTime.getTime()) / 1000) : 0;
+  });
   const [showHourPicker, setShowHourPicker] = useState(false);
   const [logs, setLogs] = useState<FastingLog[]>(loadLogs);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
-  const [fastingHours, setFastingHours] = useState(saved?.targetHours || 16);
+  const [fastingHours, setFastingHours] = useState(() => loadFastingState()?.targetHours || 16);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {

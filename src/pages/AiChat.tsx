@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Send, Bot, User, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -27,14 +28,16 @@ function getUserContext() {
 
     // Also grab today's calorie data
     const today = new Date().toISOString().slice(0, 10);
-    const eaten = JSON.parse(localStorage.getItem("vitalflow_eaten") || "[]");
+    const eatenData = JSON.parse(localStorage.getItem("vitalflow_eaten") || "{}");
     const burned = JSON.parse(localStorage.getItem("vitalflow_burned") || "[]");
-    const todayEaten = eaten
-      .filter((e: any) => e.date === today)
-      .reduce((sum: number, e: any) => sum + (e.calories || 0), 0);
-    const todayBurned = burned
-      .filter((e: any) => e.date === today)
-      .reduce((sum: number, e: any) => sum + (e.calories || 0), 0);
+    const todayEaten = typeof eatenData === "object" && !Array.isArray(eatenData)
+      ? (eatenData[today] || 0)
+      : 0;
+    const todayBurned = Array.isArray(burned)
+      ? burned
+          .filter((e: any) => e.date === today)
+          .reduce((sum: number, e: any) => sum + (e.calories || 0), 0)
+      : 0;
 
     return {
       ...data,
@@ -57,11 +60,13 @@ async function streamChat({
   onDelta: (text: string) => void;
   onDone: () => void;
 }) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ messages, userContext }),
   });

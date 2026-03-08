@@ -27,14 +27,8 @@ const PURPOSE_OPTIONS = [
   { key: "other", label: "Other / Prescribed", emoji: "🩺", icon: Pill },
 ];
 
-const DEFAULT_TABLETS: Tablet[] = [
-  { id: "1", name: "Vitamin D3", purpose: "vitamin", time: "08:00", taken: false, icon: "🌟" },
-  { id: "2", name: "Omega-3 Fish Oil", purpose: "heart", time: "09:00", taken: true, icon: "❤️" },
-  { id: "3", name: "Creatine", purpose: "fitness", time: "07:30", taken: false, icon: "💪" },
-];
-
 const TabletTracker = () => {
-  const [tablets, setTablets] = useState<Tablet[]>(DEFAULT_TABLETS);
+  const [tablets, setTablets] = useState<Tablet[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [expanded, setExpanded] = useState(true);
 

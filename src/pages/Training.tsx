@@ -94,6 +94,19 @@ const sampleActivities: Activity[] = [];
 
 const sampleWorkouts: Workout[] = [];
 
+const WORKOUTS_KEY = "vitalflow_workouts";
+
+function loadWorkouts(): Workout[] {
+  try {
+    const raw = localStorage.getItem(WORKOUTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveWorkouts(workouts: Workout[]) {
+  localStorage.setItem(WORKOUTS_KEY, JSON.stringify(workouts));
+}
+
 const formatDuration = (mins: number) => {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
@@ -112,7 +125,7 @@ const Training = () => {
   const [timerType, setTimerType] = useState("run");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [workouts, setWorkouts] = useState(sampleWorkouts);
+  const [workouts, setWorkouts] = useState<Workout[]>(loadWorkouts);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
   const [showNewWorkout, setShowNewWorkout] = useState(false);
   const [showExerciseLib, setShowExerciseLib] = useState(false);
@@ -261,7 +274,11 @@ const Training = () => {
       isActive: false,
     };
 
-    setWorkouts(prev => [finishedWorkout, ...prev]);
+    setWorkouts(prev => {
+      const updated = [finishedWorkout, ...prev];
+      saveWorkouts(updated);
+      return updated;
+    });
     logBurned({ source: "workout", name: activeWorkout.name, calories: totalCals, duration: durationMins });
     toast.success(`${activeWorkout.name} complete! ${totalCals} kcal burned 🔥`);
     setActiveWorkout(null);

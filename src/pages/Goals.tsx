@@ -13,6 +13,7 @@ interface Goal {
   categories: string[];
   target: number;
   current: number;
+  startingValue: number;
   unit: string;
   direction: "increase" | "decrease" | "maintain";
   deadline: string;
@@ -75,6 +76,7 @@ const Goals = () => {
         categories: newGoal.categories,
         target: parseFloat(newGoal.target),
         current: parseFloat(newGoal.current) || 0,
+        startingValue: parseFloat(newGoal.current) || 0,
         unit: newGoal.unit,
         direction: newGoal.direction,
         deadline: newGoal.deadline,
@@ -115,8 +117,13 @@ const Goals = () => {
     if (goal.target === 0) return 0;
     if (goal.direction === "decrease") {
       if (goal.current <= goal.target) return 100;
-      const initialDiff = Math.max(goal.current, goal.target * 1.5) - goal.target;
-      return Math.max(0, Math.min(100, ((initialDiff - (goal.current - goal.target)) / initialDiff) * 100));
+      const start = goal.startingValue ?? Math.max(goal.current, goal.target * 1.5);
+      const totalDiff = start - goal.target;
+      if (totalDiff <= 0) return goal.current <= goal.target ? 100 : 0;
+      return Math.max(0, Math.min(100, ((start - goal.current) / totalDiff) * 100));
+    }
+    if (goal.direction === "maintain") {
+      return goal.current === goal.target ? 100 : 0;
     }
     return Math.min(100, (goal.current / goal.target) * 100);
   };

@@ -8,6 +8,7 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import BadgePreview from "@/components/dashboard/BadgePreview";
 import TabletTracker from "@/components/dashboard/TabletTracker";
 import { useCalorieTracker } from "@/hooks/useCalorieTracker";
+import { useStreak } from "@/hooks/useStreak";
 
 const container = {
   hidden: { opacity: 0 },
@@ -20,6 +21,7 @@ const item = {
 
 const Index = () => {
   const { profile, totalBurnedToday, eatenToday } = useCalorieTracker();
+  const { currentStreak, longestStreak } = useStreak();
 
   const calorieGoal = profile?.targetCalories || 2100;
   const consumed = eatenToday || 0;
@@ -87,8 +89,8 @@ const Index = () => {
 
       {/* Steps & Streak */}
       <motion.div className="grid grid-cols-2 gap-4" variants={item}>
-        <StepsCard steps={6842} goal={10000} />
-        <StreakCard currentStreak={12} longestStreak={34} />
+        <StepsCard steps={0} goal={10000} />
+        <StreakCard currentStreak={currentStreak} longestStreak={longestStreak} />
       </motion.div>
 
       {/* Water */}

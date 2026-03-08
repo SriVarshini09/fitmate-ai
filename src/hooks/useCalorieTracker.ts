@@ -72,11 +72,6 @@ export function estimateWeightExerciseCalories(
   return Math.round((metCals + volCals) / 2);
 }
 
-// ── Calorie multipliers for activity types ──
-const ACTIVITY_CAL_PER_MIN: Record<string, number> = {
-  run: 11, ride: 8, swim: 9, walk: 4.5, hike: 7,
-};
-
 export function estimateActivityCalories(
   type: string,
   durationMinutes: number,

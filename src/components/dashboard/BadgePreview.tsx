@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 const badges = [
   { icon: Trophy, label: "Platinum", earned: false, color: "text-badge-platinum", bg: "bg-badge-platinum/10" },
-  { icon: Medal, label: "Gold", earned: true, color: "text-badge-gold", bg: "bg-badge-gold/10" },
-  { icon: Award, label: "Silver", earned: true, color: "text-badge-silver", bg: "bg-badge-silver/10" },
-  { icon: Star, label: "Bronze", earned: true, color: "text-badge-bronze", bg: "bg-badge-bronze/10" },
+  { icon: Medal, label: "Gold", earned: false, color: "text-badge-gold", bg: "bg-badge-gold/10" },
+  { icon: Award, label: "Silver", earned: false, color: "text-badge-silver", bg: "bg-badge-silver/10" },
+  { icon: Star, label: "Bronze", earned: false, color: "text-badge-bronze", bg: "bg-badge-bronze/10" },
 ];
 
 const BadgePreview = () => {

@@ -17,10 +17,24 @@ const samplePosts: Post[] = [];
 
 const tags = ["All", "Nutrition", "Question", "Meal Prep", "Motivation", "Workouts"];
 
+function getUserInitials(): string {
+  try {
+    const raw = localStorage.getItem("vitalflow_onboarding");
+    if (!raw) return "ME";
+    const data = JSON.parse(raw);
+    const name: string = data.name || data.display_name || data.username || "";
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return "ME";
+  } catch { return "ME"; }
+}
+
 const Community = () => {
   const [posts, setPosts] = useState(samplePosts);
   const [activeTag, setActiveTag] = useState("All");
   const [newPost, setNewPost] = useState("");
+  const userInitials = getUserInitials();
 
   const filtered = activeTag === "All" ? posts : posts.filter((p) => p.tag === activeTag);
 
@@ -28,7 +42,7 @@ const Community = () => {
     if (!newPost.trim()) return;
     setPosts([
       {
-        id: Date.now().toString(), author: "You", avatar: "JD", content: newPost,
+        id: Date.now().toString(), author: "You", avatar: userInitials, content: newPost,
         likes: 0, replies: 0, time: "now", tag: "Question",
       },
       ...posts,
@@ -46,7 +60,7 @@ const Community = () => {
       {/* New post */}
       <div className="glass-card p-4 flex gap-3">
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-bold text-primary font-display">JD</span>
+          <span className="text-xs font-bold text-primary font-display">{userInitials}</span>
         </div>
         <div className="flex-1 flex gap-2">
           <input

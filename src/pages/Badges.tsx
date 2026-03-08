@@ -12,18 +12,18 @@ interface BadgeInfo {
 }
 
 const allBadges: BadgeInfo[] = [
-  { icon: Flame, title: "Streak Master", description: "Maintain a daily streak", tier: "platinum", earned: false, progress: 60, requirement: "60-day streak" },
-  { icon: Flame, title: "Streak Pro", description: "30-day streak", tier: "gold", earned: false, progress: 40, requirement: "30-day streak" },
-  { icon: Flame, title: "Streak Builder", description: "14-day streak", tier: "silver", earned: true, progress: 100, requirement: "14-day streak" },
-  { icon: Flame, title: "Getting Started", description: "7-day streak", tier: "bronze", earned: true, progress: 100, requirement: "7-day streak" },
-  { icon: UtensilsCrossed, title: "Nutrition Guru", description: "Log meals for 60 days", tier: "platinum", earned: false, progress: 30, requirement: "60 days of logging" },
-  { icon: UtensilsCrossed, title: "Meal Tracker", description: "Log meals for 30 days", tier: "gold", earned: true, progress: 100, requirement: "30 days of logging" },
-  { icon: Footprints, title: "Marathon Walker", description: "Walk 1M steps total", tier: "platinum", earned: false, progress: 45, requirement: "1,000,000 total steps" },
-  { icon: Footprints, title: "Step Champion", description: "10K steps for 30 days", tier: "gold", earned: false, progress: 70, requirement: "30 days of 10K steps" },
-  { icon: Droplets, title: "Hydration Hero", description: "Hit water goal 60 days", tier: "gold", earned: false, progress: 50, requirement: "60 days of water goal" },
-  { icon: Droplets, title: "Water Warrior", description: "Hit water goal 14 days", tier: "silver", earned: true, progress: 100, requirement: "14 days of water goal" },
-  { icon: Dumbbell, title: "Gym Rat", description: "Log 100 workouts", tier: "platinum", earned: false, progress: 20, requirement: "100 workouts logged" },
-  { icon: Target, title: "Calorie Counter", description: "Stay within calorie goal 30 days", tier: "gold", earned: false, progress: 60, requirement: "30 days within goal" },
+  { icon: Flame, title: "Streak Master", description: "Maintain a daily streak", tier: "platinum", earned: false, progress: 0, requirement: "60-day streak" },
+  { icon: Flame, title: "Streak Pro", description: "30-day streak", tier: "gold", earned: false, progress: 0, requirement: "30-day streak" },
+  { icon: Flame, title: "Streak Builder", description: "14-day streak", tier: "silver", earned: false, progress: 0, requirement: "14-day streak" },
+  { icon: Flame, title: "Getting Started", description: "7-day streak", tier: "bronze", earned: false, progress: 0, requirement: "7-day streak" },
+  { icon: UtensilsCrossed, title: "Nutrition Guru", description: "Log meals for 60 days", tier: "platinum", earned: false, progress: 0, requirement: "60 days of logging" },
+  { icon: UtensilsCrossed, title: "Meal Tracker", description: "Log meals for 30 days", tier: "gold", earned: false, progress: 0, requirement: "30 days of logging" },
+  { icon: Footprints, title: "Marathon Walker", description: "Walk 1M steps total", tier: "platinum", earned: false, progress: 0, requirement: "1,000,000 total steps" },
+  { icon: Footprints, title: "Step Champion", description: "10K steps for 30 days", tier: "gold", earned: false, progress: 0, requirement: "30 days of 10K steps" },
+  { icon: Droplets, title: "Hydration Hero", description: "Hit water goal 60 days", tier: "gold", earned: false, progress: 0, requirement: "60 days of water goal" },
+  { icon: Droplets, title: "Water Warrior", description: "Hit water goal 14 days", tier: "silver", earned: false, progress: 0, requirement: "14 days of water goal" },
+  { icon: Dumbbell, title: "Gym Rat", description: "Log 100 workouts", tier: "platinum", earned: false, progress: 0, requirement: "100 workouts logged" },
+  { icon: Target, title: "Calorie Counter", description: "Stay within calorie goal 30 days", tier: "gold", earned: false, progress: 0, requirement: "30 days within goal" },
 ];
 
 const tierColors: Record<string, { text: string; bg: string; border: string }> = {

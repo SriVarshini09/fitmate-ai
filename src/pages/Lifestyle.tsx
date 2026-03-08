@@ -23,18 +23,20 @@ interface LifestyleEntry {
 }
 
 const SLEEP_TIMER_KEY = "vitalflow_sleep_timer";
+const LIFESTYLE_KEY = "vitalflow_lifestyle";
 const TABS = ["Sleep", "Mood", "Stress"] as const;
 type Tab = (typeof TABS)[number];
 
-const weekData: LifestyleEntry[] = [
-  { id: "1", date: "Mon", sleepHours: 7.5, sleepQuality: 4, mood: 4, stress: 1, notes: "" },
-  { id: "2", date: "Tue", sleepHours: 6, sleepQuality: 2, mood: 3, stress: 3, notes: "Slept late" },
-  { id: "3", date: "Wed", sleepHours: 8, sleepQuality: 5, mood: 5, stress: 0, notes: "" },
-  { id: "4", date: "Thu", sleepHours: 7, sleepQuality: 3, mood: 3, stress: 2, notes: "" },
-  { id: "5", date: "Fri", sleepHours: 6.5, sleepQuality: 3, mood: 4, stress: 2, notes: "" },
-  { id: "6", date: "Sat", sleepHours: 9, sleepQuality: 5, mood: 5, stress: 0, notes: "" },
-  { id: "7", date: "Sun", sleepHours: 7, sleepQuality: 4, mood: 4, stress: 1, notes: "" },
-];
+function loadEntries(): LifestyleEntry[] {
+  try {
+    const raw = localStorage.getItem(LIFESTYLE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveEntries(entries: LifestyleEntry[]) {
+  localStorage.setItem(LIFESTYLE_KEY, JSON.stringify(entries));
+}
 
 function formatDuration(ms: number) {
   const totalSec = Math.floor(ms / 1000);
@@ -52,7 +54,7 @@ function formatHoursMin(ms: number) {
 }
 
 const Lifestyle = () => {
-  const [entries] = useState(weekData);
+  const [entries, setEntries] = useState<LifestyleEntry[]>(loadEntries);
   const [activeTab, setActiveTab] = useState<Tab>("Sleep");
   const [todayMood, setTodayMood] = useState<number | null>(null);
   const [todayStress, setTodayStress] = useState<number | null>(null);
@@ -404,7 +406,24 @@ const Lifestyle = () => {
               <input value={todayNote} onChange={(e) => setTodayNote(e.target.value)}
                 placeholder="Any notes for today..." className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body" />
 
-              <button onClick={() => setShowLog(false)}
+              <button onClick={() => {
+                const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
+                const newEntry: LifestyleEntry = {
+                  id: Date.now().toString(),
+                  date: today,
+                  sleepHours: parseFloat(todaySleep) || 0,
+                  sleepQuality: 3,
+                  mood: todayMood ?? 3,
+                  stress: todayStress ?? 0,
+                  notes: todayNote,
+                };
+                const updated = [newEntry, ...entries.filter(e => e.date !== today)];
+                setEntries(updated);
+                saveEntries(updated);
+                setTodaySleep("");
+                setTodayNote("");
+                setShowLog(false);
+              }}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary">
                 Save Entry
               </button>

@@ -85,13 +85,14 @@ const Activities = () => {
     setShowTimer(false);
   };
 
-  // Simulate timer ticking
-  useState(() => {
+  // Timer ticking
+  useEffect(() => {
+    if (!timerRunning) return;
     const interval = setInterval(() => {
-      if (timerRunning) setTimerSeconds((s) => s + 1);
+      setTimerSeconds((s) => s + 1);
     }, 1000);
     return () => clearInterval(interval);
-  });
+  }, [timerRunning]);
 
   const formatTimer = (s: number) => {
     const h = Math.floor(s / 3600);

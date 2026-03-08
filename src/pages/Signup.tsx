@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, ArrowRight, ArrowLeft, Zap, User, Mail, Phone, Camera } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 type Step = "credentials" | "profile";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { session, loading: authLoading } = useAuth();
   const [step, setStep] = useState<Step>("credentials");
   const [loading, setLoading] = useState(false);
+
+  if (!authLoading && session) return <Navigate to="/dashboard" replace />;
 
   // Step 1: Credentials
   const [username, setUsername] = useState("");
@@ -87,17 +91,17 @@ const Signup = () => {
       }
     }
 
-    // 3. Update profile
+    // 3. Upsert profile (handles case where trigger row hasn't been created yet)
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({
+      .upsert({
+        user_id: userId,
         username: username.toLowerCase().trim(),
         display_name: displayName.trim(),
         phone: phone.trim() || null,
         recovery_email: recoveryEmail.trim() || null,
         avatar_url: avatarUrl,
-      })
-      .eq("user_id", userId);
+      });
 
     setLoading(false);
 

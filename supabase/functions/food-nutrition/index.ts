@@ -6,6 +6,69 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Fallback table (kcal, protein, carbs, fat, fiber) per 100g for common foods
+const FALLBACK: Record<string, [number, number, number, number, number]> = {
+  "rice": [130, 2.7, 28, 0.3, 0.4],
+  "white rice": [130, 2.7, 28, 0.3, 0.4],
+  "brown rice": [123, 2.6, 26, 1.0, 1.8],
+  "ragi": [336, 7.3, 72, 1.9, 3.6],
+  "ragi malt": [330, 7.0, 71, 1.8, 3.5],
+  "oats": [389, 17, 66, 7, 10.6],
+  "egg": [155, 13, 1.1, 11, 0],
+  "chicken breast": [165, 31, 0, 3.6, 0],
+  "banana": [89, 1.1, 23, 0.3, 2.6],
+  "apple": [52, 0.3, 14, 0.2, 2.4],
+  "milk": [61, 3.2, 4.8, 3.3, 0],
+  "bread": [265, 9, 49, 3.2, 2.7],
+  "potato": [77, 2, 17, 0.1, 2.2],
+  "dal": [116, 9, 20, 0.4, 7.9],
+  "lentils": [116, 9, 20, 0.4, 7.9],
+  "chapati": [297, 9.2, 55, 3.9, 4.6],
+  "roti": [297, 9.2, 55, 3.9, 4.6],
+  "idli": [58, 2, 11.5, 0.4, 0.5],
+  "dosa": [168, 3.5, 28, 5, 0.8],
+  "sambar": [56, 3.5, 8, 1.5, 2.5],
+  "paneer": [265, 18, 3.4, 20, 0],
+  "curd": [98, 3.5, 3.4, 4.3, 0],
+  "yogurt": [98, 3.5, 3.4, 4.3, 0],
+  "almonds": [579, 21, 22, 50, 12.5],
+  "peanut butter": [588, 25, 20, 50, 6],
+  "pasta": [158, 5.8, 31, 0.9, 1.8],
+  "salmon": [208, 20, 0, 13, 0],
+  "tuna": [132, 29, 0, 1, 0],
+  "broccoli": [34, 2.8, 7, 0.4, 2.6],
+  "spinach": [23, 2.9, 3.6, 0.4, 2.2],
+  "orange": [47, 0.9, 12, 0.1, 2.4],
+  "mango": [60, 0.8, 15, 0.4, 1.6],
+  "coffee": [2, 0.3, 0, 0, 0],
+  "tea": [1, 0, 0.2, 0, 0],
+};
+
+// Convert unit+quantity to grams
+function toGrams(qty: number, unit: string): number {
+  switch (unit) {
+    case "g": return qty;
+    case "ml": return qty;
+    case "L": return qty * 1000;
+    case "cup": return qty * 240;
+    case "tbsp": return qty * 15;
+    case "tsp": return qty * 5;
+    case "pcs": return qty * 100; // ~100g per piece as rough default
+    default: return qty;
+  }
+}
+
+function scale(per100: [number, number, number, number, number], grams: number) {
+  const f = grams / 100;
+  return {
+    calories: Math.round(per100[0] * f),
+    protein: Math.round(per100[1] * f * 10) / 10,
+    carbs: Math.round(per100[2] * f * 10) / 10,
+    fat: Math.round(per100[3] * f * 10) / 10,
+    fiber: Math.round(per100[4] * f * 10) / 10,
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,139 +84,82 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const qty = parseFloat(quantity) || 100;
+    const unitStr = unit || "g";
+    const grams = toGrams(qty, unitStr);
+    const searchName = foodName.trim().toLowerCase();
 
-    const systemPrompt = `You are a nutrition database. Given a food/dish/drink name with quantity and unit, return accurate estimated nutrition data.
-IMPORTANT: Pay close attention to the unit. "pcs" means pieces/whole items (e.g. 1 pcs egg = 1 whole egg ≈ 50g, 1 pcs banana = 1 whole banana ≈ 120g). "cup" means a standard measuring cup (~240ml). Always calculate nutrition for the TOTAL amount specified.
-You MUST respond with ONLY a valid JSON object, no other text. The JSON must have exactly these fields:
-{
-  "name": "recognized food name",
-  "calories": number (total kcal for the given quantity),
-  "protein": number (grams),
-  "carbs": number (grams),
-  "fat": number (grams),
-  "fiber": number (grams),
-  "servingDescription": "brief description like '1 whole egg (50g)' or '2 pieces (80g)'"
-}
-Be accurate. Use standard nutritional databases as reference. If the food is unknown, make your best estimate. Round to 1 decimal place for macros, whole numbers for calories.`;
-
-    const unitLabel = unit === "pcs" ? "pieces/whole items" : unit || "";
-    const userPrompt = `Food: "${foodName}", Quantity: ${quantity || "1"} ${unitLabel}`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "return_nutrition",
-              description: "Return nutrition data for the given food",
-              parameters: {
-                type: "object",
-                properties: {
-                  name: { type: "string", description: "Recognized food name" },
-                  calories: { type: "number", description: "Total kcal" },
-                  protein: { type: "number", description: "Protein in grams" },
-                  carbs: { type: "number", description: "Carbs in grams" },
-                  fat: { type: "number", description: "Fat in grams" },
-                  fiber: { type: "number", description: "Fiber in grams" },
-                  servingDescription: { type: "string", description: "Brief serving description" },
-                },
-                required: ["name", "calories", "protein", "carbs", "fat", "fiber", "servingDescription"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "return_nutrition" } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded, please try again shortly." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add credits in workspace settings." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to get nutrition data" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const responseText = await response.text();
-    if (!responseText) {
-      console.error("AI gateway returned empty response");
-      return new Response(
-        JSON.stringify({ error: "AI returned empty response, please try again" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    let data;
+    // 1. Try Open Food Facts search
     try {
-      data = JSON.parse(responseText);
-    } catch (parseErr) {
-      console.error("Failed to parse AI response:", responseText.slice(0, 200));
+      const searchUrl = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchName)}&search_simple=1&action=process&json=1&page_size=5&fields=product_name,nutriments`;
+      const offRes = await fetch(searchUrl, {
+        headers: { "User-Agent": "VitalFlow-App/1.0" },
+      });
+
+      if (offRes.ok) {
+        const offData = await offRes.json();
+        const products = offData.products || [];
+
+        for (const product of products) {
+          const n = product.nutriments;
+          if (!n) continue;
+          const cal = n["energy-kcal_100g"] ?? n["energy-kcal"] ?? null;
+          if (cal == null || cal === 0) continue;
+
+          const per100g = grams;
+          const f = per100g / 100;
+
+          const result = {
+            name: product.product_name || foodName,
+            calories: Math.round((cal ?? 0) * f),
+            protein: Math.round((n["proteins_100g"] ?? 0) * f * 10) / 10,
+            carbs: Math.round((n["carbohydrates_100g"] ?? 0) * f * 10) / 10,
+            fat: Math.round((n["fat_100g"] ?? 0) * f * 10) / 10,
+            fiber: Math.round((n["fiber_100g"] ?? 0) * f * 10) / 10,
+            servingDescription: `${qty}${unitStr} (≈${Math.round(grams)}g)`,
+          };
+
+          return new Response(JSON.stringify(result), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+    } catch (offErr) {
+      console.warn("Open Food Facts failed:", offErr);
+    }
+
+    // 2. Fallback: built-in table — try exact match, then partial
+    let match = FALLBACK[searchName];
+    if (!match) {
+      const key = Object.keys(FALLBACK).find(k => searchName.includes(k) || k.includes(searchName));
+      if (key) match = FALLBACK[key];
+    }
+
+    if (match) {
+      const macros = scale(match, grams);
       return new Response(
-        JSON.stringify({ error: "Invalid AI response, please try again" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          name: foodName,
+          ...macros,
+          servingDescription: `${qty}${unitStr} (≈${Math.round(grams)}g) — estimated`,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Extract from tool call
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (toolCall?.function?.arguments) {
-      try {
-        const args = typeof toolCall.function.arguments === "string" 
-          ? JSON.parse(toolCall.function.arguments) 
-          : toolCall.function.arguments;
-        return new Response(JSON.stringify(args), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      } catch (e) {
-        console.error("Failed to parse tool call arguments:", toolCall.function.arguments);
-      }
-    }
-
-    // Fallback: try parsing content directly
-    const content = data.choices?.[0]?.message?.content || "";
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const nutrition = JSON.parse(jsonMatch[0]);
-      return new Response(JSON.stringify(nutrition), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
+    // 3. Last resort: generic 2 kcal/g estimate
+    const genericCal = Math.round(grams * 2);
     return new Response(
-      JSON.stringify({ error: "Could not parse nutrition data" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        name: foodName,
+        calories: genericCal,
+        protein: Math.round(grams * 0.05 * 10) / 10,
+        carbs: Math.round(grams * 0.25 * 10) / 10,
+        fat: Math.round(grams * 0.05 * 10) / 10,
+        fiber: 0,
+        servingDescription: `${qty}${unitStr} — rough estimate`,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("food-nutrition error:", e);
