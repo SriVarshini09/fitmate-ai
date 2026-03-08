@@ -223,11 +223,10 @@ const Goals = () => {
                 <div className="flex items-start gap-3">
                   {/* Category badge */}
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isComplete ? "bg-primary/15" : "bg-secondary/60"}`}>
-                    {catIcons.length === 1 && catIcons[0] ? (
-                      <catIcons[0].icon className={`w-5 h-5 ${isComplete ? "text-primary" : "text-muted-foreground"}`} />
-                    ) : (
-                      <Target className={`w-5 h-5 ${isComplete ? "text-primary" : "text-muted-foreground"}`} />
-                    )}
+                    {(() => {
+                      const CatIcon = catIcons.length === 1 && catIcons[0] ? catIcons[0].icon : Target;
+                      return <CatIcon className={`w-5 h-5 ${isComplete ? "text-primary" : "text-muted-foreground"}`} />;
+                    })()}
                   </div>
 
                   <div className="flex-1 min-w-0">
