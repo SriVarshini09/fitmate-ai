@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2, Loader2 } from "lucide-react";
+import { Calendar, Flame, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCalorieTracker } from "@/hooks/useCalorieTracker";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MEALS = ["Breakfast", "Lunch", "Snack", "Dinner"] as const;
@@ -37,6 +38,8 @@ interface NutritionResult {
 const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
 
 const WeeklyPlanner = () => {
+  const { profile } = useCalorieTracker();
+  const calorieGoal = profile?.targetCalories || 2100;
   const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [showAdd, setShowAdd] = useState(false);
@@ -167,7 +170,9 @@ const WeeklyPlanner = () => {
           </button>
           <div className="text-center">
             <p className="text-lg font-bold font-display text-foreground">{selectedDay}</p>
-            <p className="text-xs text-muted-foreground font-body">{dayTotal} kcal planned</p>
+            <p className="text-xs text-muted-foreground font-body">
+              {dayTotal} / {calorieGoal} kcal planned
+            </p>
           </div>
           <button onClick={() => navigateDay(1)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
             <ChevronRight className="w-4 h-4 text-foreground" />
@@ -196,6 +201,37 @@ const WeeklyPlanner = () => {
           })}
         </div>
       </div>
+
+      {/* Calorie budget card */}
+      <motion.div 
+        className="glass-card p-4"
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold font-display text-foreground">Daily Budget</span>
+          </div>
+          <span className="text-sm font-bold font-display text-foreground">{calorieGoal} kcal</span>
+        </div>
+        <div className="h-2.5 bg-secondary rounded-full overflow-hidden mb-2">
+          <motion.div
+            className={`h-full rounded-full ${dayTotal > calorieGoal ? "bg-destructive" : "bg-primary"}`}
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min((dayTotal / calorieGoal) * 100, 100)}%` }}
+            transition={{ duration: 0.6 }}
+          />
+        </div>
+        <div className="flex justify-between text-xs font-body">
+          <span className="text-muted-foreground">Planned: <span className="text-foreground font-medium">{dayTotal} kcal</span></span>
+          <span className={dayTotal > calorieGoal ? "text-destructive font-medium" : "text-primary font-medium"}>
+            {dayTotal > calorieGoal 
+              ? `${dayTotal - calorieGoal} kcal over` 
+              : `${calorieGoal - dayTotal} kcal remaining`}
+          </span>
+        </div>
+      </motion.div>
 
       {/* Meal sections */}
       {MEALS.map((mealType) => {
@@ -269,7 +305,7 @@ const WeeklyPlanner = () => {
         <div className="space-y-2">
           {DAYS.map((day) => {
             const total = MEALS.reduce((s, m) => s + (weekPlan[day]?.[m]?.reduce((a, f) => a + f.calories, 0) || 0), 0);
-            const pct = Math.min((total / 2100) * 100, 100);
+            const pct = Math.min((total / calorieGoal) * 100, 100);
             return (
               <div key={day} className="flex items-center gap-3">
                 <span className={`text-xs font-medium w-8 font-body ${day === selectedDay ? "text-primary" : "text-muted-foreground"}`}>
