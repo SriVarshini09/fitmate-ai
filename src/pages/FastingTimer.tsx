@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 type FastingProtocol = "16:8" | "18:6" | "20:4" | "OMAD" | "Custom";
 
+
+
 interface FastingWindow {
   protocol: FastingProtocol;
   fastHours: number;
