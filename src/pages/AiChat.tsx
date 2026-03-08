@@ -11,20 +11,49 @@ interface Message {
 }
 
 const suggestedQuestions = [
-  "How many calories should I eat to lose weight?",
-  "What's a good high-protein breakfast?",
-  "How to calculate my macros?",
-  "Best exercises to burn belly fat?",
+  "What should I eat today based on my goals?",
+  "Create a workout plan for me",
+  "How am I doing with my calorie target?",
+  "Best exercises for my body type?",
 ];
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
 
+function getUserContext() {
+  try {
+    const raw = localStorage.getItem("vitalflow_onboarding");
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+
+    // Also grab today's calorie data
+    const today = new Date().toISOString().slice(0, 10);
+    const eaten = JSON.parse(localStorage.getItem("vitalflow_eaten") || "[]");
+    const burned = JSON.parse(localStorage.getItem("vitalflow_burned") || "[]");
+    const todayEaten = eaten
+      .filter((e: any) => e.date === today)
+      .reduce((sum: number, e: any) => sum + (e.calories || 0), 0);
+    const todayBurned = burned
+      .filter((e: any) => e.date === today)
+      .reduce((sum: number, e: any) => sum + (e.calories || 0), 0);
+
+    return {
+      ...data,
+      todayCaloriesEaten: todayEaten,
+      todayCaloriesBurned: todayBurned,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function streamChat({
   messages,
+  userContext,
   onDelta,
   onDone,
 }: {
   messages: { role: string; content: string }[];
+  userContext: any;
   onDelta: (text: string) => void;
   onDone: () => void;
 }) {
@@ -34,7 +63,7 @@ async function streamChat({
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, userContext }),
   });
 
   if (!resp.ok) {
@@ -79,7 +108,7 @@ const AiChat = () => {
     {
       id: "1",
       role: "assistant",
-      content: "Hey! 👋 I'm your AI Fitness Coach. Ask me anything about nutrition, workouts, calories, or your fitness journey. I'm here to help!",
+      content: "Hey! 👋 I'm your AI Fitness Coach. I already know your goals, stats, and progress — so just ask me anything and I'll give you personalized advice!",
     },
   ]);
   const [input, setInput] = useState("");
@@ -103,9 +132,12 @@ const AiChat = () => {
       .filter((m) => m.id !== "1")
       .map((m) => ({ role: m.role, content: m.content }));
 
+    const userContext = getUserContext();
+
     try {
       await streamChat({
         messages: chatHistory,
+        userContext,
         onDelta: (chunk) => {
           assistantContent += chunk;
           const content = assistantContent;
@@ -136,7 +168,7 @@ const AiChat = () => {
           <div>
             <h1 className="text-lg font-bold font-display text-foreground">AI Coach</h1>
             <p className="text-xs text-primary font-body flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> Online
+              <Sparkles className="w-3 h-3" /> Knows your goals & stats
             </p>
           </div>
         </div>
