@@ -114,7 +114,7 @@ const FoodLog = () => {
                     <div>
                       <p className="text-sm font-medium text-foreground font-body">{food.name}</p>
                       <p className="text-xs text-muted-foreground font-body">
-                        P: {food.protein}g · C: {food.carbs}g · F: {food.fat}g
+                        P: {food.protein}g · C: {food.carbs}g · F: {food.fat}g · Fiber: {food.fiber}g
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
