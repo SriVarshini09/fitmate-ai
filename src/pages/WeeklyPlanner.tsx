@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Camera, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2 } from "lucide-react";
+import { Calendar, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MEALS = ["Breakfast", "Lunch", "Snack", "Dinner"] as const;
@@ -22,13 +24,29 @@ const defaultWeek: WeekPlan = Object.fromEntries(
 );
 
 
+interface NutritionResult {
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  servingDescription: string;
+}
+
+const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
+
 const WeeklyPlanner = () => {
   const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [showAdd, setShowAdd] = useState(false);
   const [addMealType, setAddMealType] = useState<string>("Breakfast");
-  const [newMeal, setNewMeal] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [foodName, setFoodName] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("g");
+  const [aiResult, setAiResult] = useState<NutritionResult | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dayIndex = DAYS.indexOf(selectedDay);
 
@@ -41,32 +59,66 @@ const WeeklyPlanner = () => {
     return sum + (weekPlan[selectedDay]?.[meal]?.reduce((s, f) => s + f.calories, 0) || 0);
   }, 0);
 
+  // Debounced AI nutrition lookup
+  const lookupNutrition = useCallback(async (name: string, qty: string, unit: string) => {
+    if (!name.trim() || name.trim().length < 2) {
+      setAiResult(null);
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("food-nutrition", {
+        body: { foodName: name.trim(), quantity: qty || "1", unit },
+      });
+      if (error) { setAiResult(null); return; }
+      if (data?.error) {
+        if (data.error.includes("Rate limit")) toast.error("Too many requests. Please wait.");
+        setAiResult(null);
+        return;
+      }
+      setAiResult(data as NutritionResult);
+    } catch {
+      setAiResult(null);
+    } finally {
+      setAiLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!showAdd) return;
+    debounceRef.current = setTimeout(() => {
+      lookupNutrition(foodName, quantity, selectedUnit);
+    }, 800);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [foodName, quantity, selectedUnit, showAdd, lookupNutrition]);
+
   const openAdd = (mealType: string) => {
     setAddMealType(mealType);
-    setNewMeal({ name: "", calories: "", protein: "", carbs: "", fat: "" });
-    setImagePreview(null);
+    setFoodName("");
+    setQuantity("");
+    setSelectedUnit("g");
+    setAiResult(null);
     setShowAdd(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
+  const closeModal = () => {
+    setShowAdd(false);
+    setFoodName("");
+    setQuantity("");
+    setAiResult(null);
   };
 
   const addMeal = () => {
-    if (!newMeal.name) return;
+    if (!foodName.trim()) return;
+    const nutrition = aiResult || { calories: 0, protein: 0, carbs: 0, fat: 0 };
     const entry: PlannedMeal = {
       id: Date.now().toString(),
-      name: newMeal.name,
-      calories: parseInt(newMeal.calories) || 0,
-      protein: parseInt(newMeal.protein) || 0,
-      carbs: parseInt(newMeal.carbs) || 0,
-      fat: parseInt(newMeal.fat) || 0,
-      imageUrl: imagePreview || undefined,
+      name: aiResult?.name || foodName.trim(),
+      calories: nutrition.calories,
+      protein: nutrition.protein,
+      carbs: nutrition.carbs,
+      fat: nutrition.fat,
     };
     setWeekPlan((prev) => ({
       ...prev,
@@ -75,7 +127,7 @@ const WeeklyPlanner = () => {
         [addMealType]: [...(prev[selectedDay]?.[addMealType] || []), entry],
       },
     }));
-    setShowAdd(false);
+    closeModal();
   };
 
   const removeMeal = (mealType: string, id: string) => {
@@ -238,7 +290,7 @@ const WeeklyPlanner = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowAdd(false)}
+            onClick={closeModal}
           >
             <motion.div
               className="w-full max-w-lg glass-card-strong p-6 rounded-t-3xl space-y-4"
@@ -252,50 +304,87 @@ const WeeklyPlanner = () => {
                 <h2 className="text-lg font-bold font-display text-foreground">
                   Plan {addMealType} — {selectedDay}
                 </h2>
-                <button onClick={() => setShowAdd(false)}>
+                <button onClick={closeModal}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
 
-              {/* Image upload */}
-              <div className="flex gap-3">
-                <label className="flex-1 glass-card flex flex-col items-center justify-center py-6 cursor-pointer hover:border-primary/30 transition-colors">
-                  {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-20 h-20 rounded-xl object-cover" />
-                  ) : (
-                    <>
-                      <Camera className="w-8 h-8 text-muted-foreground mb-2" />
-                      <span className="text-xs text-muted-foreground font-body">Add a photo</span>
-                    </>
-                  )}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                </label>
-              </div>
-
+              {/* Food name input */}
               <input
-                value={newMeal.name}
-                onChange={(e) => setNewMeal({ ...newMeal, name: e.target.value })}
-                placeholder="What are you planning to eat?"
+                value={foodName}
+                onChange={(e) => setFoodName(e.target.value)}
+                placeholder="Type any food, dish, or drink..."
+                autoFocus
                 className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
               />
 
-              <div className="grid grid-cols-2 gap-3">
-                {(["calories", "protein", "carbs", "fat"] as const).map((field) => (
-                  <input
-                    key={field}
-                    value={newMeal[field]}
-                    onChange={(e) => setNewMeal({ ...newMeal, [field]: e.target.value })}
-                    placeholder={field.charAt(0).toUpperCase() + field.slice(1) + (field === "calories" ? " (kcal)" : " (g)")}
-                    type="number"
-                    className="bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
-                  />
-                ))}
+              {/* Quantity + unit */}
+              <div className="flex items-center gap-2">
+                <input
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  type="number"
+                  placeholder="Qty"
+                  className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
+                />
+                <div className="flex gap-1.5 overflow-x-auto">
+                  {UNITS.map((u) => (
+                    <button
+                      key={u}
+                      onClick={() => setSelectedUnit(u)}
+                      className={`px-3 py-2.5 rounded-xl text-xs font-medium font-body whitespace-nowrap transition-colors ${
+                        selectedUnit === u ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      {u}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* AI Nutrition Preview */}
+              {aiLoading && (
+                <div className="flex items-center justify-center gap-2 py-3">
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  <span className="text-xs text-muted-foreground font-body">Looking up nutrition...</span>
+                </div>
+              )}
+
+              {!aiLoading && aiResult && (
+                <div className="bg-secondary/50 rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-muted-foreground font-body">
+                      AI Match: <span className="text-foreground font-medium">{aiResult.name}</span>
+                    </p>
+                    <span className="text-[10px] text-muted-foreground font-body">{aiResult.servingDescription}</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { label: "Cal", value: aiResult.calories, unit: "" },
+                      { label: "Protein", value: aiResult.protein, unit: "g" },
+                      { label: "Carbs", value: aiResult.carbs, unit: "g" },
+                      { label: "Fat", value: aiResult.fat, unit: "g" },
+                      { label: "Fiber", value: aiResult.fiber, unit: "g" },
+                    ].map((m) => (
+                      <div key={m.label} className="text-center">
+                        <p className="text-xs text-muted-foreground font-body">{m.label}</p>
+                        <p className="text-sm font-semibold text-foreground font-display">{m.value}{m.unit}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!aiLoading && !aiResult && foodName.trim().length >= 2 && (
+                <p className="text-xs text-muted-foreground font-body text-center">
+                  Type to search any food — AI will estimate nutrition
+                </p>
+              )}
 
               <button
                 onClick={addMeal}
-                disabled={!newMeal.name}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary disabled:opacity-40 transition-opacity"
+                disabled={!foodName.trim() || aiLoading}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary disabled:opacity-50"
               >
                 Add to Plan
               </button>
