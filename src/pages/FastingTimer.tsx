@@ -273,33 +273,6 @@ const FastingTimer = () => {
         )}
       </motion.div>
 
-      {/* Fasting stages */}
-      {isFasting && (
-        <motion.div className="glass-card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h3 className="text-sm font-semibold font-display text-foreground mb-3">Fasting Stages</h3>
-          <div className="space-y-2">
-            {FASTING_STAGES.filter((s) => s.hours <= Math.max(fastingHours, 24)).map((stage) => {
-              const reached = elapsedHours >= stage.hours;
-              const isCurrent = currentStage.hours === stage.hours;
-              return (
-                <div key={stage.hours} className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${
-                  isCurrent ? "bg-primary/10 ring-1 ring-primary/20" : reached ? "bg-secondary/30" : "opacity-40"
-                }`}>
-                  <span className="text-lg">{stage.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className={`text-xs font-semibold font-display ${reached ? "text-foreground" : "text-muted-foreground"}`}>{stage.name}</p>
-                      <span className="text-[9px] text-muted-foreground font-body">{stage.hours}h+</span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground font-body truncate">{stage.description}</p>
-                  </div>
-                  {reached && <Zap className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
 
       {/* Schedule bar (when not fasting) */}
       {!isFasting && (
