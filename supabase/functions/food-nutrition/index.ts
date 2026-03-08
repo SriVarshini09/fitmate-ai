@@ -129,10 +129,16 @@ Be accurate. Use standard nutritional databases as reference. If the food is unk
     // Extract from tool call
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
-      const nutrition = JSON.parse(toolCall.function.arguments);
-      return new Response(JSON.stringify(nutrition), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      try {
+        const args = typeof toolCall.function.arguments === "string" 
+          ? JSON.parse(toolCall.function.arguments) 
+          : toolCall.function.arguments;
+        return new Response(JSON.stringify(args), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        console.error("Failed to parse tool call arguments:", toolCall.function.arguments);
+      }
     }
 
     // Fallback: try parsing content directly
