@@ -1,13 +1,13 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, UtensilsCrossed, MessageCircle, Bot, Trophy } from "lucide-react";
+import { Home, UtensilsCrossed, CalendarDays, MessageCircle, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 
 const navItems = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/food", icon: UtensilsCrossed, label: "Food" },
+  { path: "/planner", icon: CalendarDays, label: "Planner" },
   { path: "/community", icon: MessageCircle, label: "Community" },
   { path: "/ai-chat", icon: Bot, label: "AI Coach" },
-  { path: "/badges", icon: Trophy, label: "Badges" },
 ];
 
 const BottomNav = () => {

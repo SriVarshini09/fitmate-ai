@@ -24,6 +24,7 @@ const App = () => (
           <Route element={<AppLayout />}>
             <Route path="/" element={<Index />} />
             <Route path="/food" element={<FoodLog />} />
+            <Route path="/planner" element={<WeeklyPlanner />} />
             <Route path="/community" element={<Community />} />
             <Route path="/ai-chat" element={<AiChat />} />
             <Route path="/badges" element={<Badges />} />
