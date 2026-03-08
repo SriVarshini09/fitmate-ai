@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 type FastingProtocol = "16:8" | "18:6" | "20:4" | "OMAD" | "Custom";
 
+
+
 interface FastingWindow {
   protocol: FastingProtocol;
   fastHours: number;
@@ -79,6 +81,7 @@ const FastingTimer = () => {
   const [showProtocolPicker, setShowProtocolPicker] = useState(false);
   const [logs, setLogs] = useState<FastingLog[]>(sampleLogs);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [customHours, setCustomHours] = useState(16);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Tick every second while fasting
@@ -112,14 +115,14 @@ const FastingTimer = () => {
     const endTime = new Date();
     const actualHours = parseFloat(((endTime.getTime() - fastStartTime.getTime()) / 3600000).toFixed(1));
     const caloriesBurned = Math.round(actualHours > 4 ? (actualHours - 4) * 70 + 4 * 50 : actualHours * 50);
-    const completed = actualHours >= selectedProtocol.fastHours;
+    const completed = actualHours >= activeFastHours;
 
     const newLog: FastingLog = {
       id: Date.now().toString(),
-      protocol: selectedProtocol.protocol,
+      protocol: selectedProtocol.protocol === "Custom" ? "Custom" : selectedProtocol.protocol,
       startTime: fastStartTime,
       endTime,
-      targetHours: selectedProtocol.fastHours,
+      targetHours: activeFastHours,
       actualHours,
       completed,
       caloriesBurned,
@@ -132,17 +135,19 @@ const FastingTimer = () => {
     setShowEndConfirm(false);
 
     if (completed) {
-      toast.success(`🎉 ${selectedProtocol.protocol} fast completed!`, {
+      toast.success(`🎉 ${activeFastHours}h fast completed!`, {
         description: `${actualHours}h fasted · ${caloriesBurned} kcal burned`,
       });
     } else {
       toast(`Fast ended early at ${actualHours}h`, {
-        description: `Target was ${selectedProtocol.fastHours}h · ${caloriesBurned} kcal burned`,
+        description: `Target was ${activeFastHours}h · ${caloriesBurned} kcal burned`,
       });
     }
   };
 
-  const totalTargetSeconds = selectedProtocol.fastHours * 3600;
+  const activeFastHours = selectedProtocol.protocol === "Custom" ? customHours : selectedProtocol.fastHours;
+  const activeEatHours = 24 - activeFastHours;
+  const totalTargetSeconds = activeFastHours * 3600;
   const progressPct = Math.min(100, (elapsedSeconds / totalTargetSeconds) * 100);
   const elapsedHours = elapsedSeconds / 3600;
   const remainingSeconds = Math.max(0, totalTargetSeconds - elapsedSeconds);
@@ -224,8 +229,10 @@ const FastingTimer = () => {
               </>
             ) : (
               <>
-                <p className="text-4xl font-bold font-display text-foreground">{selectedProtocol.fastHours}h</p>
-                <p className="text-sm text-muted-foreground font-body mt-1">{selectedProtocol.protocol} Fast</p>
+                <p className="text-4xl font-bold font-display text-foreground">{activeFastHours}h</p>
+                <p className="text-sm text-muted-foreground font-body mt-1">
+                  {selectedProtocol.protocol === "Custom" ? "Custom Fast" : `${selectedProtocol.protocol} Fast`}
+                </p>
                 <p className="text-xs text-muted-foreground font-body mt-1">Tap below to start</p>
               </>
             )}
@@ -308,17 +315,41 @@ const FastingTimer = () => {
       {!isFasting && (
         <div className="glass-card p-5">
           <h3 className="text-sm font-semibold font-display text-foreground mb-3">Schedule</h3>
+          
+          {/* Custom hours slider */}
+          {selectedProtocol.protocol === "Custom" && (
+            <div className="mb-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-foreground font-body">Fasting Duration</span>
+                <span className="text-sm font-bold font-display text-primary">{customHours}h</span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={23}
+                value={customHours}
+                onChange={(e) => setCustomHours(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none bg-secondary accent-primary cursor-pointer"
+              />
+              <div className="flex justify-between text-[9px] text-muted-foreground font-body">
+                <span>1h</span>
+                <span>12h</span>
+                <span>23h</span>
+              </div>
+            </div>
+          )}
+
           <div className="h-6 rounded-full bg-secondary overflow-hidden flex mb-2">
-            <div className="h-full bg-primary/30 flex items-center justify-center" style={{ width: `${(selectedProtocol.fastHours / 24) * 100}%` }}>
+            <div className="h-full bg-primary/30 flex items-center justify-center" style={{ width: `${(activeFastHours / 24) * 100}%` }}>
               <span className="text-[9px] font-bold text-primary font-body">FASTING</span>
             </div>
-            <div className="h-full bg-success/20 flex items-center justify-center" style={{ width: `${(selectedProtocol.eatHours / 24) * 100}%` }}>
+            <div className="h-full bg-success/20 flex items-center justify-center" style={{ width: `${(activeEatHours / 24) * 100}%` }}>
               <span className="text-[9px] font-bold text-success font-body">EAT</span>
             </div>
           </div>
           <div className="flex justify-between text-[10px] text-muted-foreground font-body">
-            <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> Fast: {selectedProtocol.fastHours}h</span>
-            <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" /> Eat: {selectedProtocol.eatHours}h</span>
+            <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> Fast: {activeFastHours}h</span>
+            <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" /> Eat: {activeEatHours}h</span>
           </div>
         </div>
       )}
@@ -392,7 +423,7 @@ const FastingTimer = () => {
                 You've been fasting for <span className="font-bold text-foreground">{formatHM(elapsedSeconds)}</span>.
                 {progressPct >= 100
                   ? " 🎉 You've reached your goal!"
-                  : ` ${(100 - progressPct).toFixed(0)}% remaining to reach your ${selectedProtocol.fastHours}h target.`
+                  : ` ${(100 - progressPct).toFixed(0)}% remaining to reach your ${activeFastHours}h target.`
                 }
               </p>
               <div className="flex gap-3">
@@ -439,6 +470,25 @@ const FastingTimer = () => {
                     <p className="text-xs text-muted-foreground font-body">{p.description}</p>
                   </button>
                 ))}
+
+                {/* Custom option */}
+                <button
+                  onClick={() => {
+                    setSelectedProtocol({ protocol: "Custom", fastHours: customHours, eatHours: 24 - customHours, description: "Set your own fasting duration.", difficulty: "Beginner" });
+                    setShowProtocolPicker(false);
+                  }}
+                  className={`w-full p-4 rounded-xl text-left transition-colors ${
+                    selectedProtocol.protocol === "Custom" ? "bg-primary/10 ring-1 ring-primary/30" : "bg-secondary/50 hover:bg-secondary"
+                  }`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold font-display text-foreground">Custom</p>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/15 text-primary">Flexible</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-body">{customHours}h : {24 - customHours}h</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-body">Set your own fasting hours with the slider.</p>
+                </button>
               </div>
             </motion.div>
           </motion.div>
