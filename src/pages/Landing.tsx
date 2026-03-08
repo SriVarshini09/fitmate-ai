@@ -310,7 +310,7 @@ const Landing = () => {
           </motion.p>
           <motion.button
             variants={fadeUp}
-            onClick={() => navigate("/onboarding")}
+            onClick={() => navigate("/signup")}}
             className="group px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:brightness-110 transition-all active:scale-95 inline-flex items-center gap-2 glow-primary relative z-10"
           >
             Get Started Free
