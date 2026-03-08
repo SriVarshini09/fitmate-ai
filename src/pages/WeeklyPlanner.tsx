@@ -264,7 +264,7 @@ const WeeklyPlanner = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold font-display text-foreground">Daily Budget</span>
+            <span className="text-sm font-semibold font-display text-foreground">Daily Calorie Intake</span>
           </div>
           <span className="text-sm font-bold font-display text-foreground">{calorieGoal} kcal</span>
         </div>
