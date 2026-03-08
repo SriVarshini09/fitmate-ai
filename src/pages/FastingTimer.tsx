@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Timer, Play, Pause, Square, X, ChevronRight, Flame, TrendingUp,
-  Clock, Zap, Trophy, BarChart3, Coffee, UtensilsCrossed, Moon, Sun
+  Clock, Zap, Trophy, BarChart3, Coffee, UtensilsCrossed, Moon, Sun, Target
 } from "lucide-react";
 
 type FastingProtocol = "16:8" | "18:6" | "20:4" | "OMAD" | "Custom";
