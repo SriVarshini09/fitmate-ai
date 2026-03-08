@@ -33,15 +33,6 @@ const challenges: Challenge[] = [
   { id: "5", title: "No Sugar Week", description: "Avoid added sugar for a full week", duration: "7 days", progress: 3, total: 7, category: "Nutrition", emoji: "🚫", active: true },
 ];
 
-const milestones = [
-  { title: "First Workout Logged", earned: true, date: "Jan 15", emoji: "💪" },
-  { title: "7-Day Streak", earned: true, date: "Jan 22", emoji: "🔥" },
-  { title: "10,000 Steps Day", earned: true, date: "Feb 1", emoji: "🏃" },
-  { title: "30 Meals Tracked", earned: true, date: "Feb 10", emoji: "🍽️" },
-  { title: "Lost First 2kg", earned: true, date: "Feb 20", emoji: "⚖️" },
-  { title: "100 Workouts", earned: false, date: "", emoji: "🏆" },
-  { title: "Marathon Steps (42K in a day)", earned: false, date: "", emoji: "🥇" },
-];
 
 const Motivation = () => {
   const [quoteIndex, setQuoteIndex] = useState(0);
