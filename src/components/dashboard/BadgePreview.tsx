@@ -13,24 +13,24 @@ const BadgePreview = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-5 gradient-border">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold font-display text-foreground">Your Badges</h3>
         <button
           onClick={() => navigate("/badges")}
-          className="text-xs text-primary font-medium font-body hover:underline"
+          className="text-xs text-primary font-semibold font-body hover:underline"
         >
-          View All
+          View All →
         </button>
       </div>
       <div className="flex gap-3">
         {badges.map((badge, i) => (
           <motion.div
             key={badge.label}
-            className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-xl ${badge.bg} ${!badge.earned ? "opacity-30" : ""}`}
+            className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-2xl ${badge.bg} ${!badge.earned ? "opacity-30" : ""} transition-transform hover:scale-105`}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: i * 0.1, type: "spring" }}
+            transition={{ delay: i * 0.08, type: "spring" as const }}
           >
             <badge.icon className={`w-6 h-6 ${badge.color}`} />
             <span className="text-[10px] font-medium text-muted-foreground font-body">{badge.label}</span>

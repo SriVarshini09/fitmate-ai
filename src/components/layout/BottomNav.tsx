@@ -37,7 +37,7 @@ const BottomNav = () => {
       <AnimatePresence>
         {showMore && (
           <motion.div
-            className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-background/50 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -45,9 +45,10 @@ const BottomNav = () => {
           >
             <motion.div
               className="absolute bottom-20 left-0 right-0 max-w-lg mx-auto px-4"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
+              initial={{ y: 30, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 20, opacity: 0, scale: 0.97 }}
+              transition={{ type: "spring" as const, stiffness: 400, damping: 28 }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="glass-card-strong p-4 rounded-2xl">
@@ -59,11 +60,13 @@ const BottomNav = () => {
                         navigate(item.path);
                         setShowMore(false);
                       }}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-colors ${
-                        location.pathname === item.path ? "bg-primary/8 ring-1 ring-primary/20" : "hover:bg-secondary"
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${
+                        location.pathname === item.path
+                          ? "bg-primary/8 ring-1 ring-primary/20 scale-105"
+                          : "hover:bg-secondary hover:scale-105 active:scale-95"
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center`}>
+                      <div className={`w-10 h-10 rounded-2xl ${item.color} flex items-center justify-center`}>
                         <item.icon className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-medium text-muted-foreground font-body">{item.label}</span>
@@ -76,7 +79,13 @@ const BottomNav = () => {
         )}
       </AnimatePresence>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
+      <nav className="fixed bottom-0 left-0 right-0 z-50" style={{
+        background: "hsl(0 0% 100% / 0.85)",
+        backdropFilter: "blur(20px) saturate(1.2)",
+        WebkitBackdropFilter: "blur(20px) saturate(1.2)",
+        borderTop: "1px solid hsl(200 12% 85% / 0.5)",
+        boxShadow: "0 -4px 24px hsl(220 30% 12% / 0.04)",
+      }}>
         <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
           {mainNavItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -84,17 +93,17 @@ const BottomNav = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className="relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
+                className="relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all"
               >
                 {isActive && (
                   <motion.div
                     layoutId="nav-indicator"
                     className="absolute inset-0 bg-primary/10 rounded-xl"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    transition={{ type: "spring" as const, stiffness: 400, damping: 30 }}
                   />
                 )}
                 <item.icon className={`w-5 h-5 transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-[10px] font-medium transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                <span className={`text-[10px] font-medium transition-colors ${isActive ? "text-primary font-semibold" : "text-muted-foreground"}`}>
                   {item.label}
                 </span>
               </button>
@@ -104,13 +113,13 @@ const BottomNav = () => {
           {/* More button */}
           <button
             onClick={() => setShowMore(!showMore)}
-            className="relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
+            className="relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all"
           >
             {(isMoreActive || showMore) && (
               <motion.div
                 layoutId={showMore ? undefined : "nav-indicator"}
                 className="absolute inset-0 bg-primary/10 rounded-xl"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                transition={{ type: "spring" as const, stiffness: 400, damping: 30 }}
               />
             )}
             {showMore ? (
@@ -118,7 +127,7 @@ const BottomNav = () => {
             ) : (
               <MoreHorizontal className={`w-5 h-5 transition-colors ${isMoreActive ? "text-primary" : "text-muted-foreground"}`} />
             )}
-            <span className={`text-[10px] font-medium transition-colors ${isMoreActive || showMore ? "text-primary" : "text-muted-foreground"}`}>
+            <span className={`text-[10px] font-medium transition-colors ${isMoreActive || showMore ? "text-primary font-semibold" : "text-muted-foreground"}`}>
               More
             </span>
           </button>

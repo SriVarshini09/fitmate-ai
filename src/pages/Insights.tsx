@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Flame, Footprints, Droplets, UtensilsCrossed, BarChart3, Calendar, ArrowUp, ArrowDown } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, Tooltip, Area, AreaChart } from "recharts";
+import { TrendingDown, Flame, Footprints, UtensilsCrossed, BarChart3, ArrowUp, ArrowDown } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, AreaChart } from "recharts";
 
 const weeklyCalories = [
   { day: "Mon", consumed: 1850, burned: 420 },
@@ -42,13 +42,22 @@ const insights = [
 
 const tooltipStyle = {
   backgroundColor: "hsl(0, 0%, 100%)",
-  border: "1px solid hsl(200, 15%, 86%)",
+  border: "1px solid hsl(200, 12%, 85%)",
   borderRadius: 16,
   fontSize: 12,
-  boxShadow: "0 4px 20px hsl(220, 25%, 15%, 0.08)",
+  boxShadow: "0 8px 32px hsl(220, 30%, 12%, 0.08)",
 };
-const labelStyle = { color: "hsl(220, 25%, 15%)" };
-const tickStyle = { fill: "hsl(220, 10%, 50%)", fontSize: 11 };
+const labelStyle = { color: "hsl(220, 30%, 12%)" };
+const tickStyle = { fill: "hsl(220, 10%, 48%)", fontSize: 11 };
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
+};
 
 const Insights = () => {
   const avgCalories = Math.round(weeklyCalories.reduce((s, d) => s + d.consumed, 0) / 7);
@@ -56,34 +65,39 @@ const Insights = () => {
   const avgSteps = Math.round(stepsTrend.reduce((s, d) => s + d.steps, 0) / 7);
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div className="max-w-lg mx-auto px-4 py-6 space-y-5 relative" variants={container} initial="hidden" animate="show">
+      <div className="floating-blob w-36 h-36 top-0 right-0 bg-info/20" />
+      <div className="floating-blob w-28 h-28 top-80 -left-8 bg-accent/25" />
+
+      <motion.div variants={item}>
         <div className="flex items-center gap-2 mb-1">
-          <BarChart3 className="w-5 h-5 text-primary" />
-          <h1 className="text-2xl font-bold font-display text-foreground">Insights</h1>
+          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold font-display text-gradient-primary">Insights</h1>
         </div>
         <p className="text-sm text-muted-foreground font-body">Your weekly health overview</p>
       </motion.div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <motion.div className="grid grid-cols-3 gap-3" variants={item}>
         {[
-          { label: "Avg Calories", value: avgCalories, unit: "kcal", icon: UtensilsCrossed, color: "text-primary", bg: "bg-primary/10" },
-          { label: "Avg Burned", value: avgBurned, unit: "kcal", icon: Flame, color: "text-warning", bg: "bg-warning/10" },
-          { label: "Avg Steps", value: avgSteps.toLocaleString(), unit: "", icon: Footprints, color: "text-success", bg: "bg-success/10" },
+          { label: "Avg Calories", value: avgCalories, icon: UtensilsCrossed, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Avg Burned", value: avgBurned, icon: Flame, color: "text-warning", bg: "bg-warning/10" },
+          { label: "Avg Steps", value: avgSteps.toLocaleString(), icon: Footprints, color: "text-success", bg: "bg-success/10" },
         ].map((stat) => (
-          <div key={stat.label} className="glass-card p-4 text-center">
-            <div className={`w-9 h-9 rounded-xl ${stat.bg} flex items-center justify-center mx-auto mb-2`}>
+          <div key={stat.label} className="glass-card p-4 text-center gradient-border">
+            <div className={`w-9 h-9 rounded-2xl ${stat.bg} flex items-center justify-center mx-auto mb-2`}>
               <stat.icon className={`w-4 h-4 ${stat.color}`} />
             </div>
             <p className="text-lg font-bold font-display text-foreground">{stat.value}</p>
             <p className="text-[10px] text-muted-foreground font-body">{stat.label}</p>
           </div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Calorie chart */}
-      <div className="glass-card p-5">
+      <motion.div className="glass-card p-5 gradient-border" variants={item}>
         <h3 className="text-sm font-semibold font-display text-foreground mb-1">Calories This Week</h3>
         <p className="text-xs text-muted-foreground font-body mb-4">Consumed vs Burned</p>
         <div className="h-48">
@@ -91,20 +105,20 @@ const Insights = () => {
             <BarChart data={weeklyCalories} barGap={2}>
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis hide />
-              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-              <Bar dataKey="consumed" fill="hsl(82, 65%, 42%)" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="burned" fill="hsl(18, 80%, 70%)" radius={[6, 6, 0, 0]} />
+              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(200, 18%, 91%, 0.5)" }} />
+              <Bar dataKey="consumed" fill="hsl(82, 60%, 40%)" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="burned" fill="hsl(18, 85%, 72%)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex gap-4 mt-2">
+        <div className="flex gap-4 mt-3">
           <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-primary" /><span className="text-[10px] text-muted-foreground font-body">Consumed</span></div>
           <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-accent" /><span className="text-[10px] text-muted-foreground font-body">Burned</span></div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Weight trend */}
-      <div className="glass-card p-5">
+      <motion.div className="glass-card p-5 gradient-border" variants={item}>
         <h3 className="text-sm font-semibold font-display text-foreground mb-1">Weight Trend</h3>
         <p className="text-xs text-muted-foreground font-body mb-4">Last 8 weeks</p>
         <div className="h-40">
@@ -112,21 +126,21 @@ const Insights = () => {
             <AreaChart data={weightTrend}>
               <defs>
                 <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(82, 65%, 42%)" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="hsl(82, 65%, 42%)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(82, 60%, 40%)" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="hsl(82, 60%, 40%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="week" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis domain={["dataMin - 1", "dataMax + 1"]} hide />
               <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-              <Area type="monotone" dataKey="weight" stroke="hsl(82, 65%, 42%)" fill="url(#weightGrad)" strokeWidth={2.5} />
+              <Area type="monotone" dataKey="weight" stroke="hsl(82, 60%, 40%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: "hsl(82, 60%, 40%)", r: 3, strokeWidth: 0 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </motion.div>
 
       {/* Steps trend */}
-      <div className="glass-card p-5">
+      <motion.div className="glass-card p-5 gradient-border" variants={item}>
         <h3 className="text-sm font-semibold font-display text-foreground mb-1">Daily Steps</h3>
         <p className="text-xs text-muted-foreground font-body mb-4">This week</p>
         <div className="h-36">
@@ -134,26 +148,26 @@ const Insights = () => {
             <BarChart data={stepsTrend}>
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis hide />
-              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-              <Bar dataKey="steps" fill="hsl(150, 55%, 42%)" radius={[8, 8, 0, 0]} />
+              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(200, 18%, 91%, 0.5)" }} />
+              <Bar dataKey="steps" fill="hsl(155, 55%, 40%)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </motion.div>
 
       {/* AI Insights */}
-      <div className="glass-card p-5">
+      <motion.div className="glass-card p-5" variants={item}>
         <h3 className="text-sm font-semibold font-display text-foreground mb-3">Smart Insights</h3>
         <div className="space-y-3">
           {insights.map((insight, i) => (
             <motion.div
               key={i}
-              className="flex items-start gap-3 p-3 rounded-xl bg-secondary/60"
+              className="flex items-start gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: 0.3 + i * 0.08 }}
             >
-              <div className={`w-9 h-9 rounded-xl ${insight.bg} flex items-center justify-center flex-shrink-0`}>
+              <div className={`w-9 h-9 rounded-2xl ${insight.bg} flex items-center justify-center flex-shrink-0`}>
                 <insight.icon className={`w-4 h-4 ${insight.color}`} />
               </div>
               <div>
@@ -163,8 +177,8 @@ const Insights = () => {
             </motion.div>
           ))}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
