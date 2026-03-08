@@ -25,7 +25,7 @@ const CalorieRing = ({ consumed, goal, burned }: CalorieRingProps) => {
           <circle
             cx="100" cy="100" r={radius}
             className="fill-none"
-            stroke="hsl(200, 18%, 91%)"
+            stroke="hsl(80, 5%, 20%)"
             strokeWidth="14"
             strokeLinecap="round"
           />
@@ -33,7 +33,7 @@ const CalorieRing = ({ consumed, goal, burned }: CalorieRingProps) => {
           <circle
             cx="100" cy="100" r={radius + 0}
             className="fill-none"
-            stroke="hsl(18, 85%, 72%)"
+            stroke="hsl(66, 85%, 50%)"
             strokeWidth="14"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -54,8 +54,8 @@ const CalorieRing = ({ consumed, goal, burned }: CalorieRingProps) => {
           />
           <defs>
             <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="hsl(82, 60%, 40%)" />
-              <stop offset="100%" stopColor="hsl(82, 70%, 55%)" />
+              <stop offset="0%" stopColor="hsl(66, 85%, 50%)" />
+              <stop offset="100%" stopColor="hsl(66, 90%, 65%)" />
             </linearGradient>
           </defs>
         </svg>

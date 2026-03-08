@@ -80,11 +80,11 @@ const BottomNav = () => {
       </AnimatePresence>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50" style={{
-        background: "hsl(0 0% 100% / 0.85)",
+        background: "hsl(80 8% 10% / 0.92)",
         backdropFilter: "blur(20px) saturate(1.2)",
         WebkitBackdropFilter: "blur(20px) saturate(1.2)",
-        borderTop: "1px solid hsl(200 12% 85% / 0.5)",
-        boxShadow: "0 -4px 24px hsl(220 30% 12% / 0.04)",
+        borderTop: "1px solid hsl(80 5% 20% / 0.6)",
+        boxShadow: "0 -4px 24px hsl(0 0% 0% / 0.3)",
       }}>
         <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
           {mainNavItems.map((item) => {

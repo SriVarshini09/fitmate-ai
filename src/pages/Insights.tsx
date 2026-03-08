@@ -41,14 +41,15 @@ const insights = [
 ];
 
 const tooltipStyle = {
-  backgroundColor: "hsl(0, 0%, 100%)",
-  border: "1px solid hsl(200, 12%, 85%)",
+  backgroundColor: "hsl(80, 8%, 14%)",
+  border: "1px solid hsl(80, 5%, 24%)",
   borderRadius: 16,
   fontSize: 12,
-  boxShadow: "0 8px 32px hsl(220, 30%, 12%, 0.08)",
+  color: "hsl(60, 10%, 92%)",
+  boxShadow: "0 8px 32px hsl(0, 0%, 0%, 0.3)",
 };
-const labelStyle = { color: "hsl(220, 30%, 12%)" };
-const tickStyle = { fill: "hsl(220, 10%, 48%)", fontSize: 11 };
+const labelStyle = { color: "hsl(60, 10%, 92%)" };
+const tickStyle = { fill: "hsl(60, 5%, 55%)", fontSize: 11 };
 
 const container = {
   hidden: { opacity: 0 },
@@ -105,9 +106,9 @@ const Insights = () => {
             <BarChart data={weeklyCalories} barGap={2}>
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis hide />
-              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(200, 18%, 91%, 0.5)" }} />
-              <Bar dataKey="consumed" fill="hsl(82, 60%, 40%)" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="burned" fill="hsl(18, 85%, 72%)" radius={[8, 8, 0, 0]} />
+              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(80, 5%, 20%, 0.5)" }} />
+              <Bar dataKey="consumed" fill="hsl(66, 85%, 50%)" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="burned" fill="hsl(45, 85%, 50%)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -126,14 +127,14 @@ const Insights = () => {
             <AreaChart data={weightTrend}>
               <defs>
                 <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(82, 60%, 40%)" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="hsl(82, 60%, 40%)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(66, 85%, 50%)" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="hsl(66, 85%, 50%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="week" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis domain={["dataMin - 1", "dataMax + 1"]} hide />
               <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-              <Area type="monotone" dataKey="weight" stroke="hsl(82, 60%, 40%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: "hsl(82, 60%, 40%)", r: 3, strokeWidth: 0 }} />
+              <Area type="monotone" dataKey="weight" stroke="hsl(66, 85%, 50%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: "hsl(66, 85%, 50%)", r: 3, strokeWidth: 0 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -148,8 +149,8 @@ const Insights = () => {
             <BarChart data={stepsTrend}>
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis hide />
-              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(200, 18%, 91%, 0.5)" }} />
-              <Bar dataKey="steps" fill="hsl(155, 55%, 40%)" radius={[8, 8, 0, 0]} />
+              <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ fill: "hsl(80, 5%, 20%, 0.5)" }} />
+              <Bar dataKey="steps" fill="hsl(66, 85%, 50%)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
