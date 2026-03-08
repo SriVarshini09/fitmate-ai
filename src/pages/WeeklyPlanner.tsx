@@ -38,6 +38,8 @@ interface NutritionResult {
 const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
 
 const WeeklyPlanner = () => {
+  const { profile } = useCalorieTracker();
+  const calorieGoal = profile?.targetCalories || 2100;
   const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [showAdd, setShowAdd] = useState(false);
