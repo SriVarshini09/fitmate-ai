@@ -139,6 +139,9 @@ const FoodLog = () => {
         >
           <Plus className="w-5 h-5 text-primary-foreground" />
         </button>
+        <button className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center">
+          <Camera className="w-5 h-5 text-primary" />
+        </button>
       </div>
 
       {MEALS.map((meal) => {
