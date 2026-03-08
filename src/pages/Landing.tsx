@@ -69,7 +69,7 @@ const Landing = () => {
               Log in
             </button>
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/onboarding")}
               className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition-all active:scale-95"
             >
               Get Started
