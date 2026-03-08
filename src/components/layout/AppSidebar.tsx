@@ -1,10 +1,11 @@
 import {
   Home, UtensilsCrossed, BarChart3, Bot, Target, Brain, Zap,
   Calculator, Trophy, CalendarDays, MessageCircle, Heart, MapPin,
-  Dumbbell, Timer, Activity, Pill
+  Dumbbell, Timer, Activity, Pill, LogOut
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -47,8 +48,14 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -112,6 +119,20 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Sign out */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleSignOut} className="text-destructive hover:bg-destructive/10">
+                  <LogOut className="h-4 w-4" />
+                  {!collapsed && <span>Sign Out</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
