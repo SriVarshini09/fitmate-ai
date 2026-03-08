@@ -51,6 +51,13 @@ const FoodLog = () => {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
+  const totalProtein = foods.reduce((s, f) => s + f.protein, 0);
+  const totalCarbs = foods.reduce((s, f) => s + f.carbs, 0);
+  const totalFat = foods.reduce((s, f) => s + f.fat, 0);
+  const totalFiber = foods.reduce((s, f) => s + f.fiber, 0);
+
+  // Default goals (can be user-customizable later)
+  const goals = { protein: 92, carbs: 92, fat: 35, fiber: 25 };
 
   // Debounced AI nutrition lookup
   const lookupNutrition = useCallback(async (name: string, qty: string, unit: string) => {
