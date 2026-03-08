@@ -20,7 +20,7 @@ const Index = () => {
           <p className="text-sm text-muted-foreground font-body">Good morning 👋</p>
           <h1 className="text-2xl font-bold font-display text-foreground">Dashboard</h1>
         </div>
-        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
           <span className="text-sm font-bold text-primary font-display">JD</span>
         </div>
       </motion.div>
@@ -32,9 +32,9 @@ const Index = () => {
       <div className="glass-card p-5">
         <h3 className="text-sm font-semibold font-display text-foreground mb-3">Macros</h3>
         <div className="flex gap-4">
-          <MacroBar label="Protein" current={65} goal={150} color="hsl(82, 85%, 55%)" />
-          <MacroBar label="Carbs" current={120} goal={250} color="hsl(210, 80%, 55%)" />
-          <MacroBar label="Fat" current={35} goal={70} color="hsl(38, 92%, 50%)" />
+          <MacroBar label="Protein" current={65} goal={150} color="hsl(82, 65%, 42%)" />
+          <MacroBar label="Carbs" current={120} goal={250} color="hsl(210, 70%, 55%)" />
+          <MacroBar label="Fat" current={35} goal={70} color="hsl(18, 80%, 70%)" />
         </div>
       </div>
 
