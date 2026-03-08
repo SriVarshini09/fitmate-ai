@@ -16,6 +16,8 @@ import Insights from "./pages/Insights";
 import Lifestyle from "./pages/Lifestyle";
 import Motivation from "./pages/Motivation";
 import Tools from "./pages/Tools";
+import Activities from "./pages/Activities";
+import WorkoutLogger from "./pages/WorkoutLogger";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,8 @@ const App = () => (
             <Route path="/lifestyle" element={<Lifestyle />} />
             <Route path="/motivation" element={<Motivation />} />
             <Route path="/tools" element={<Tools />} />
+            <Route path="/activities" element={<Activities />} />
+            <Route path="/workout" element={<WorkoutLogger />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
