@@ -6,21 +6,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-type FastingProtocol = "16:8" | "18:6" | "20:4" | "OMAD" | "Custom";
-
-
-
-interface FastingWindow {
-  protocol: FastingProtocol;
-  fastHours: number;
-  eatHours: number;
-  description: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Expert";
-}
-
 interface FastingLog {
   id: string;
-  protocol: FastingProtocol;
   startTime: Date;
   endTime?: Date;
   targetHours: number;
@@ -28,20 +15,6 @@ interface FastingLog {
   completed: boolean;
   caloriesBurned: number;
 }
-
-const PROTOCOLS: FastingWindow[] = [
-  { protocol: "16:8", fastHours: 16, eatHours: 8, description: "Most popular. Fast 16h, eat in 8h window.", difficulty: "Beginner" },
-  { protocol: "18:6", fastHours: 18, eatHours: 6, description: "Extended fast. Eat in a 6h window.", difficulty: "Intermediate" },
-  { protocol: "20:4", fastHours: 20, eatHours: 4, description: "Warrior diet. 20h fast, 4h eating.", difficulty: "Advanced" },
-  { protocol: "OMAD", fastHours: 23, eatHours: 1, description: "One Meal A Day. Maximum fasting.", difficulty: "Expert" },
-];
-
-const difficultyColor: Record<string, string> = {
-  Beginner: "bg-success/15 text-success",
-  Intermediate: "bg-info/15 text-info",
-  Advanced: "bg-warning/15 text-warning",
-  Expert: "bg-destructive/15 text-destructive",
-};
 
 const FASTING_STAGES = [
   { hours: 0, name: "Fed State", icon: "🍽️", description: "Blood sugar elevated, insulin active", color: "text-info" },
