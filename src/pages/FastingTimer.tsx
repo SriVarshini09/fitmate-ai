@@ -423,7 +423,7 @@ const FastingTimer = () => {
                 You've been fasting for <span className="font-bold text-foreground">{formatHM(elapsedSeconds)}</span>.
                 {progressPct >= 100
                   ? " 🎉 You've reached your goal!"
-                  : ` ${(100 - progressPct).toFixed(0)}% remaining to reach your ${selectedProtocol.fastHours}h target.`
+                  : ` ${(100 - progressPct).toFixed(0)}% remaining to reach your ${activeFastHours}h target.`
                 }
               </p>
               <div className="flex gap-3">
