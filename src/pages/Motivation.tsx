@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Trophy, Target, RefreshCw, CheckCircle2, Flame } from "lucide-react";
+import { Zap, Target, RefreshCw, CheckCircle2, Flame } from "lucide-react";
 
 const QUOTES = [
   { text: "The only bad workout is the one that didn't happen.", author: "Unknown" },
