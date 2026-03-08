@@ -316,11 +316,11 @@ const FastingTimer = () => {
         </div>
       </div>
 
-      {/* History */}
+      {/* History — show max 3 */}
       <div>
         <h3 className="text-sm font-semibold font-display text-foreground mb-3">History</h3>
         <div className="space-y-2">
-          {logs.map((log) => (
+          {(showAllHistory ? logs : logs.slice(0, 3)).map((log) => (
             <motion.div key={log.id} className="glass-card p-4 space-y-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -336,8 +336,6 @@ const FastingTimer = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Stats row */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center p-2 rounded-lg bg-secondary/40">
                   <p className="text-xs font-bold font-display text-foreground">{log.actualHours}h</p>
@@ -352,8 +350,6 @@ const FastingTimer = () => {
                   <p className="text-[8px] text-muted-foreground font-body">Completed</p>
                 </div>
               </div>
-
-              {/* Progress bar */}
               <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                 <div className={`h-full rounded-full ${log.completed ? "bg-success/60" : "bg-warning/60"}`}
                   style={{ width: `${Math.min(100, (log.actualHours / log.targetHours) * 100)}%` }} />
@@ -361,6 +357,12 @@ const FastingTimer = () => {
             </motion.div>
           ))}
         </div>
+        {logs.length > 3 && (
+          <button onClick={() => setShowAllHistory(!showAllHistory)}
+            className="w-full mt-3 py-2.5 rounded-xl bg-secondary/50 text-xs font-medium text-muted-foreground font-body hover:text-foreground transition-colors">
+            {showAllHistory ? "Show Less" : `View All History (${logs.length})`}
+          </button>
+        )}
       </div>
 
       {/* End Fast Confirmation */}
