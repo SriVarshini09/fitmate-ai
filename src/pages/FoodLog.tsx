@@ -124,11 +124,15 @@ const FoodLog = () => {
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
-  // Auto-match typed food name to DB for nutrition lookup
+  // Auto-match typed food name to DB for nutrition lookup (checks each word in the DB name)
   const matchedFood = useMemo(() => {
     if (!foodName.trim()) return null;
-    const lower = foodName.toLowerCase();
-    return FOOD_DB.find((f) => f.name.toLowerCase().includes(lower) || lower.includes(f.name.toLowerCase())) || null;
+    const lower = foodName.toLowerCase().trim();
+    // Exact or partial match on name or any word/alias separated by " / "
+    return FOOD_DB.find((f) => {
+      const aliases = f.name.toLowerCase().split(/\s*\/\s*/);
+      return aliases.some(a => a.includes(lower) || lower.includes(a));
+    }) || null;
   }, [foodName]);
 
   const preview = useMemo(() => {
