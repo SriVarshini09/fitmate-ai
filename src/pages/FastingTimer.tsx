@@ -135,12 +135,12 @@ const FastingTimer = () => {
     setShowEndConfirm(false);
 
     if (completed) {
-      toast.success(`🎉 ${selectedProtocol.protocol} fast completed!`, {
+      toast.success(`🎉 ${activeFastHours}h fast completed!`, {
         description: `${actualHours}h fasted · ${caloriesBurned} kcal burned`,
       });
     } else {
       toast(`Fast ended early at ${actualHours}h`, {
-        description: `Target was ${selectedProtocol.fastHours}h · ${caloriesBurned} kcal burned`,
+        description: `Target was ${activeFastHours}h · ${caloriesBurned} kcal burned`,
       });
     }
   };
