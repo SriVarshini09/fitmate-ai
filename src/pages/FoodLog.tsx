@@ -51,6 +51,13 @@ const FoodLog = () => {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
+  const totalProtein = foods.reduce((s, f) => s + f.protein, 0);
+  const totalCarbs = foods.reduce((s, f) => s + f.carbs, 0);
+  const totalFat = foods.reduce((s, f) => s + f.fat, 0);
+  const totalFiber = foods.reduce((s, f) => s + f.fiber, 0);
+
+  // Default goals (can be user-customizable later)
+  const goals = { protein: 92, carbs: 92, fat: 35, fiber: 25 };
 
   // Debounced AI nutrition lookup
   const lookupNutrition = useCallback(async (name: string, qty: string, unit: string) => {
@@ -141,6 +148,45 @@ const FoodLog = () => {
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold font-display text-foreground">Food Log</h1>
         <p className="text-sm text-muted-foreground font-body">{totalCalories} kcal today</p>
+      </motion.div>
+
+      {/* Macros Summary Card */}
+      <motion.div 
+        className="glass-card p-5"
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <h3 className="text-sm font-semibold font-display text-foreground mb-4">Macros</h3>
+        <div className="grid grid-cols-4 gap-4">
+          {[
+            { label: "Protein", value: totalProtein, goal: goals.protein, color: "bg-success" },
+            { label: "Carbs", value: totalCarbs, goal: goals.carbs, color: "bg-info" },
+            { label: "Fat", value: totalFat, goal: goals.fat, color: "bg-warning" },
+            { label: "Fiber", value: totalFiber, goal: goals.fiber, color: "bg-success" },
+          ].map((macro) => {
+            const percent = Math.min((macro.value / macro.goal) * 100, 100);
+            return (
+              <div key={macro.label}>
+                <div className="flex items-baseline gap-1 mb-1.5">
+                  <span className="text-xs text-muted-foreground font-body">{macro.label}</span>
+                  <span className="text-sm font-bold text-foreground font-display ml-auto">
+                    {Math.round(macro.value)}
+                  </span>
+                  <span className="text-xs text-muted-foreground font-body">/{macro.goal}g</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    className={`h-full rounded-full ${macro.color}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${percent}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </motion.div>
 
       <div className="flex gap-3">
