@@ -470,6 +470,25 @@ const FastingTimer = () => {
                     <p className="text-xs text-muted-foreground font-body">{p.description}</p>
                   </button>
                 ))}
+
+                {/* Custom option */}
+                <button
+                  onClick={() => {
+                    setSelectedProtocol({ protocol: "Custom", fastHours: customHours, eatHours: 24 - customHours, description: "Set your own fasting duration.", difficulty: "Beginner" });
+                    setShowProtocolPicker(false);
+                  }}
+                  className={`w-full p-4 rounded-xl text-left transition-colors ${
+                    selectedProtocol.protocol === "Custom" ? "bg-primary/10 ring-1 ring-primary/30" : "bg-secondary/50 hover:bg-secondary"
+                  }`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold font-display text-foreground">Custom</p>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/15 text-primary">Flexible</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-body">{customHours}h : {24 - customHours}h</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-body">Set your own fasting hours with the slider.</p>
+                </button>
               </div>
             </motion.div>
           </motion.div>
