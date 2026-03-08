@@ -379,43 +379,42 @@ const FastingTimer = () => {
                 <button onClick={() => setShowHourPicker(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
 
-              {/* Clock dial */}
+              {/* Clock dial — HTML buttons */}
               <div className="flex flex-col items-center">
                 <div className="relative w-64 h-64">
-                  <svg viewBox="0 0 260 260" className="w-full h-full">
-                    {/* Outer circle */}
-                    <circle cx="130" cy="130" r="120" fill="none" stroke="hsl(var(--secondary))" strokeWidth="2" />
-                    {/* Filled arc showing fasting hours */}
-                    <circle cx="130" cy="130" r="120" fill="none"
-                      stroke="hsl(var(--primary))" strokeWidth="6" strokeLinecap="round"
-                      strokeDasharray={2 * Math.PI * 120}
-                      strokeDashoffset={2 * Math.PI * 120 * (1 - fastingHours / 24)}
+                  {/* Background ring */}
+                  <svg viewBox="0 0 260 260" className="absolute inset-0 w-full h-full pointer-events-none">
+                    <circle cx="130" cy="130" r="115" fill="none" stroke="hsl(var(--secondary))" strokeWidth="2" />
+                    <circle cx="130" cy="130" r="115" fill="none"
+                      stroke="hsl(var(--primary))" strokeWidth="5" strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 115}
+                      strokeDashoffset={2 * Math.PI * 115 * (1 - fastingHours / 24)}
                       transform="rotate(-90 130 130)" opacity="0.3" />
-                    {/* Hour marks */}
-                    {hourMarks.map((h) => {
-                      const angle = (h / 24) * 360 - 90;
-                      const rad = (angle * Math.PI) / 180;
-                      const isSelected = h === fastingHours;
-                      const r = 95;
-                      const x = 130 + r * Math.cos(rad);
-                      const y = 130 + r * Math.sin(rad);
-                      return (
-                        <g key={h} onClick={() => setFastingHours(h)} className="cursor-pointer">
-                          <circle cx={x} cy={y} r={isSelected ? 18 : 14}
-                            fill={isSelected ? "hsl(var(--primary))" : h <= fastingHours ? "hsl(var(--primary) / 0.15)" : "hsl(var(--secondary) / 0.5)"}
-                            className="transition-all duration-200" />
-                          <text x={x} y={y} textAnchor="middle" dominantBaseline="central"
-                            fontSize={isSelected ? "12" : "10"}
-                            fontWeight={isSelected ? "bold" : "normal"}
-                            fill={isSelected ? "hsl(var(--primary-foreground))" : h <= fastingHours ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}>
-                            {h}
-                          </text>
-                        </g>
-                      );
-                    })}
                   </svg>
+                  {/* Hour buttons */}
+                  {hourMarks.map((h) => {
+                    const angle = (h / 24) * 360 - 90;
+                    const rad = (angle * Math.PI) / 180;
+                    const isSelected = h === fastingHours;
+                    const r = 42; // percent from center
+                    const left = 50 + r * Math.cos(rad);
+                    const top = 50 + r * Math.sin(rad);
+                    return (
+                      <button key={h} onClick={() => setFastingHours(h)}
+                        className={`absolute z-10 rounded-full flex items-center justify-center transition-all duration-150 ${
+                          isSelected
+                            ? "w-9 h-9 bg-primary text-primary-foreground font-bold text-xs"
+                            : h <= fastingHours
+                              ? "w-7 h-7 bg-primary/20 text-primary text-[10px] font-medium"
+                              : "w-7 h-7 bg-secondary/60 text-muted-foreground text-[10px]"
+                        }`}
+                        style={{ left: `${left}%`, top: `${top}%`, transform: "translate(-50%, -50%)" }}>
+                        {h}
+                      </button>
+                    );
+                  })}
                   {/* Center display */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <p className="text-3xl font-bold font-display text-foreground">{fastingHours}h</p>
                     <p className="text-[10px] text-muted-foreground font-body">fasting</p>
                   </div>
