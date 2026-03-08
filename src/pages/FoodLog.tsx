@@ -100,7 +100,9 @@ const UNIT_TO_GRAMS: Record<string, number> = {
 };
 
 function calcNutrition(food: FoodDBEntry, qty: number, unit: string) {
-  const gramsEquiv = qty * (UNIT_TO_GRAMS[unit] || 1);
+  // For "pcs", use the food's default serving weight per piece
+  const gramsPerUnit = unit === "pcs" ? food.defaultServing : (UNIT_TO_GRAMS[unit] || 1);
+  const gramsEquiv = qty * gramsPerUnit;
   const factor = gramsEquiv / 100;
   return {
     calories: Math.round(food.caloriesPer100g * factor),
