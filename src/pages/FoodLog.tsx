@@ -10,6 +10,7 @@ interface FoodEntry {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
   meal: string;
 }
 
@@ -21,9 +22,9 @@ const MEALS = [
 ];
 
 const sampleFoods: FoodEntry[] = [
-  { id: "1", name: "Oatmeal with Banana", calories: 320, protein: 12, carbs: 58, fat: 6, meal: "breakfast" },
-  { id: "2", name: "Greek Yogurt", calories: 150, protein: 15, carbs: 12, fat: 4, meal: "breakfast" },
-  { id: "3", name: "Grilled Chicken Salad", calories: 420, protein: 38, carbs: 15, fat: 22, meal: "lunch" },
+  { id: "1", name: "Oatmeal with Banana", calories: 320, protein: 12, carbs: 58, fat: 6, fiber: 5, meal: "breakfast" },
+  { id: "2", name: "Greek Yogurt", calories: 150, protein: 15, carbs: 12, fat: 4, fiber: 0, meal: "breakfast" },
+  { id: "3", name: "Grilled Chicken Salad", calories: 420, protein: 38, carbs: 15, fat: 22, fiber: 4, meal: "lunch" },
 ];
 
 const FoodLog = () => {
@@ -31,7 +32,7 @@ const FoodLog = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState("breakfast");
   const [searchQuery, setSearchQuery] = useState("");
-  const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
+  const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "", fiber: "" });
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
 
@@ -44,10 +45,11 @@ const FoodLog = () => {
       protein: parseInt(newFood.protein) || 0,
       carbs: parseInt(newFood.carbs) || 0,
       fat: parseInt(newFood.fat) || 0,
+      fiber: parseInt(newFood.fiber) || 0,
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
-    setNewFood({ name: "", calories: "", protein: "", carbs: "", fat: "" });
+    setNewFood({ name: "", calories: "", protein: "", carbs: "", fat: "", fiber: "" });
     setShowAdd(false);
   };
 
@@ -112,7 +114,7 @@ const FoodLog = () => {
                     <div>
                       <p className="text-sm font-medium text-foreground font-body">{food.name}</p>
                       <p className="text-xs text-muted-foreground font-body">
-                        P: {food.protein}g · C: {food.carbs}g · F: {food.fat}g
+                        P: {food.protein}g · C: {food.carbs}g · F: {food.fat}g · Fiber: {food.fiber}g
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -175,7 +177,7 @@ const FoodLog = () => {
               />
 
               <div className="grid grid-cols-2 gap-3">
-                {(["calories", "protein", "carbs", "fat"] as const).map((field) => (
+                {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((field) => (
                   <input
                     key={field}
                     value={newFood[field]}

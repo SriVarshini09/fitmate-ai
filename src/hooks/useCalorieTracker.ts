@@ -21,7 +21,7 @@ export interface UserProfile {
   activityLevel: string;
   tdee: number;
   targetCalories: number;
-  macros: { protein: number; carbs: number; fat: number };
+  macros: { protein: number; carbs: number; fat: number; fiber: number };
 }
 
 const BURNED_KEY = "vitalflow_burned";
@@ -133,10 +133,18 @@ export function useCalorieTracker() {
       if (data.goal === "lose") targetCalories = Math.round(tdee - 500);
       if (data.goal === "gain") targetCalories = Math.round(tdee + 300);
 
-      const calcMacros = (cal: number, goal: string) => {
-        if (goal === "lose") return { protein: Math.round((cal * 0.35) / 4), carbs: Math.round((cal * 0.35) / 4), fat: Math.round((cal * 0.3) / 9) };
-        if (goal === "gain") return { protein: Math.round((cal * 0.3) / 4), carbs: Math.round((cal * 0.45) / 4), fat: Math.round((cal * 0.25) / 9) };
-        return { protein: Math.round((cal * 0.25) / 4), carbs: Math.round((cal * 0.45) / 4), fat: Math.round((cal * 0.3) / 9) };
+      // Fiber recommendation: ~14g per 1000 kcal, min 25g women / 38g men
+      const calcFiber = (cal: number, userSex: string) => {
+        const byCalorie = Math.round((cal / 1000) * 14);
+        const minimum = userSex === "female" ? 25 : 38;
+        return Math.max(byCalorie, minimum);
+      };
+
+      const calcMacros = (cal: number, goal: string, userSex: string) => {
+        const fiber = calcFiber(cal, userSex);
+        if (goal === "lose") return { protein: Math.round((cal * 0.35) / 4), carbs: Math.round((cal * 0.35) / 4), fat: Math.round((cal * 0.3) / 9), fiber };
+        if (goal === "gain") return { protein: Math.round((cal * 0.3) / 4), carbs: Math.round((cal * 0.45) / 4), fat: Math.round((cal * 0.25) / 9), fiber };
+        return { protein: Math.round((cal * 0.25) / 4), carbs: Math.round((cal * 0.45) / 4), fat: Math.round((cal * 0.3) / 9), fiber };
       };
 
       setProfile({
@@ -147,7 +155,7 @@ export function useCalorieTracker() {
         activityLevel: data.activityLevel || "moderate",
         tdee,
         targetCalories,
-        macros: calcMacros(targetCalories, data.goal),
+        macros: calcMacros(targetCalories, data.goal, sex),
       });
     } catch { /* ignore */ }
   }, []);

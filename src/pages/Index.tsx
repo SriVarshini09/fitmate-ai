@@ -25,7 +25,7 @@ const Index = () => {
   const consumed = eatenToday || 1240; // fallback to sample if no food logged yet
   const burned = totalBurnedToday || 0;
 
-  const macroGoals = profile?.macros || { protein: 150, carbs: 250, fat: 70 };
+  const macroGoals = profile?.macros || { protein: 150, carbs: 250, fat: 70, fiber: 30 };
 
   // Scale current macros proportionally to consumed/goal ratio
   const consumedRatio = consumed / calorieGoal;
@@ -33,6 +33,7 @@ const Index = () => {
     protein: Math.round(macroGoals.protein * consumedRatio),
     carbs: Math.round(macroGoals.carbs * consumedRatio),
     fat: Math.round(macroGoals.fat * consumedRatio),
+    fiber: Math.round((macroGoals.fiber || 30) * consumedRatio),
   };
 
   const greeting = profile?.name ? `Good morning, ${profile.name} 👋` : "Good morning 👋";
@@ -73,6 +74,7 @@ const Index = () => {
           <MacroBar label="Protein" current={currentMacros.protein} goal={macroGoals.protein} color="hsl(82, 60%, 40%)" />
           <MacroBar label="Carbs" current={currentMacros.carbs} goal={macroGoals.carbs} color="hsl(210, 70%, 52%)" />
           <MacroBar label="Fat" current={currentMacros.fat} goal={macroGoals.fat} color="hsl(18, 85%, 72%)" />
+          <MacroBar label="Fiber" current={currentMacros.fiber} goal={macroGoals.fiber || 30} color="hsl(150, 60%, 45%)" />
         </div>
       </motion.div>
 

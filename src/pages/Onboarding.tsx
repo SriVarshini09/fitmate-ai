@@ -58,23 +58,30 @@ function calcTargetCalories(tdee: number, goal: string) {
   return tdee;
 }
 
-function calcMacros(calories: number, goal: string) {
+function calcFiber(calories: number, sex: string) {
+  const byCalorie = Math.round((calories / 1000) * 14);
+  const minimum = sex === "female" ? 25 : 38;
+  return Math.max(byCalorie, minimum);
+}
+
+function calcMacros(calories: number, goal: string, sex: string = "male") {
+  const fiber = calcFiber(calories, sex);
   if (goal === "lose") {
     const protein = Math.round((calories * 0.35) / 4);
     const fat = Math.round((calories * 0.3) / 9);
     const carbs = Math.round((calories * 0.35) / 4);
-    return { protein, fat, carbs };
+    return { protein, fat, carbs, fiber };
   }
   if (goal === "gain") {
     const protein = Math.round((calories * 0.3) / 4);
     const fat = Math.round((calories * 0.25) / 9);
     const carbs = Math.round((calories * 0.45) / 4);
-    return { protein, fat, carbs };
+    return { protein, fat, carbs, fiber };
   }
   const protein = Math.round((calories * 0.25) / 4);
   const fat = Math.round((calories * 0.3) / 9);
   const carbs = Math.round((calories * 0.45) / 4);
-  return { protein, fat, carbs };
+  return { protein, fat, carbs, fiber };
 }
 
 function weeksToGoal(currentWeight: number, goalWeight: number, goal: string) {
@@ -411,7 +418,7 @@ function StepResults({ data }: { data: OnboardingData }) {
   const bmr = calcBMR(sex, w, h, a);
   const tdee = calcTDEE(bmr, activity);
   const targetCal = calcTargetCalories(tdee, goal);
-  const macros = calcMacros(targetCal, goal);
+  const macros = calcMacros(targetCal, goal, sex);
   const weeks = weeksToGoal(w, gw, goal);
 
   const deficit = goal === "lose" ? tdee - targetCal : goal === "gain" ? targetCal - tdee : 0;
@@ -441,11 +448,12 @@ function StepResults({ data }: { data: OnboardingData }) {
       </div>
 
       {/* Macros */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {[
           { label: "Protein", value: macros.protein, unit: "g", color: "text-primary" },
           { label: "Carbs", value: macros.carbs, unit: "g", color: "text-info" },
           { label: "Fat", value: macros.fat, unit: "g", color: "text-peach" },
+          { label: "Fiber", value: macros.fiber, unit: "g", color: "text-success" },
         ].map((m) => (
           <div key={m.label} className="glass-card p-4 text-center">
             <p className={`text-2xl font-bold font-display ${m.color}`}>{m.value}{m.unit}</p>
