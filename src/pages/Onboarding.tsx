@@ -58,23 +58,30 @@ function calcTargetCalories(tdee: number, goal: string) {
   return tdee;
 }
 
-function calcMacros(calories: number, goal: string) {
+function calcFiber(calories: number, sex: string) {
+  const byCalorie = Math.round((calories / 1000) * 14);
+  const minimum = sex === "female" ? 25 : 38;
+  return Math.max(byCalorie, minimum);
+}
+
+function calcMacros(calories: number, goal: string, sex: string = "male") {
+  const fiber = calcFiber(calories, sex);
   if (goal === "lose") {
     const protein = Math.round((calories * 0.35) / 4);
     const fat = Math.round((calories * 0.3) / 9);
     const carbs = Math.round((calories * 0.35) / 4);
-    return { protein, fat, carbs };
+    return { protein, fat, carbs, fiber };
   }
   if (goal === "gain") {
     const protein = Math.round((calories * 0.3) / 4);
     const fat = Math.round((calories * 0.25) / 9);
     const carbs = Math.round((calories * 0.45) / 4);
-    return { protein, fat, carbs };
+    return { protein, fat, carbs, fiber };
   }
   const protein = Math.round((calories * 0.25) / 4);
   const fat = Math.round((calories * 0.3) / 9);
   const carbs = Math.round((calories * 0.45) / 4);
-  return { protein, fat, carbs };
+  return { protein, fat, carbs, fiber };
 }
 
 function weeksToGoal(currentWeight: number, goalWeight: number, goal: string) {
