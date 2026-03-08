@@ -90,6 +90,7 @@ const Activities = () => {
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerType, setTimerType] = useState<ActivityType>("run");
+  const { logBurned, bodyWeight } = useCalorieTracker();
 
   const filtered = activeFilter === "all" ? activities : activities.filter((a) => a.type === activeFilter);
 
@@ -101,6 +102,19 @@ const Activities = () => {
 
   const toggleTimer = () => setTimerRunning(!timerRunning);
   const stopTimer = () => {
+    // Calculate and save calories burned
+    const durationMinutes = Math.round(timerSeconds / 60);
+    if (durationMinutes > 0) {
+      const calories = estimateActivityCalories(timerType, durationMinutes, bodyWeight);
+      const typeLabel = ACTIVITY_TYPES.find(a => a.key === timerType)?.label || timerType;
+      logBurned({
+        source: "activity",
+        name: typeLabel,
+        calories,
+        duration: durationMinutes,
+      });
+      toast.success(`${typeLabel} complete! ${calories} kcal burned 🔥`);
+    }
     setTimerRunning(false);
     setTimerSeconds(0);
     setShowTimer(false);
