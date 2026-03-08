@@ -293,6 +293,16 @@ const CycleTracker = () => {
               <p className="text-[8px] text-muted-foreground font-body">Logged</p>
             </div>
           </div>
+
+          {/* Next predicted period */}
+          {predictedPeriods.length > 0 && (
+            <div className="mt-3 p-3 rounded-xl bg-destructive/5 border border-destructive/10">
+              <p className="text-[10px] text-muted-foreground font-body mb-1">Next predicted period</p>
+              <p className="text-xs font-semibold text-foreground font-display">
+                {format(predictedPeriods[0].start, "MMM d")} – {format(predictedPeriods[0].end, "MMM d, yyyy")}
+              </p>
+            </div>
+          )}
         </motion.div>
       ) : (
         <motion.div className="glass-card-accent p-8 flex flex-col items-center text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
