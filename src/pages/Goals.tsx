@@ -112,7 +112,7 @@ const Goals = () => {
           const pct = Math.max(0, Math.min(progress, 100));
           const isComplete = pct >= 100;
           const DirectionIcon = goal.direction === "decrease" ? TrendingDown : goal.direction === "increase" ? TrendingUp : Minus;
-          const catEmoji = CATEGORIES.find((c) => c.key === goal.category)?.icon || "⭐";
+          const catEmojis = goal.categories.map(c => CATEGORIES.find(cat => cat.key === c)?.icon || "⭐").join(" ");
 
           return (
             <motion.div
