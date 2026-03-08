@@ -8,7 +8,7 @@ import AiMealPlanner from "@/components/planner/AiMealPlanner";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MEALS = ["Breakfast", "Lunch", "Snack", "Dinner"] as const;
-const PLANNER_KEY = "vitalflow_weekly_plan";
+const PLANNER_KEY = "GetFit_weekly_plan";
 
 function loadWeekPlan(): WeekPlan {
   try {

@@ -563,7 +563,7 @@ const Onboarding = () => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
-              <span className="font-bold font-display text-gradient-primary text-sm">VitalFlow</span>
+              <span className="font-bold font-display text-gradient-primary text-sm">GetFit</span>
             </div>
             <span className="text-xs text-muted-foreground font-body">
               {step + 1} / {TOTAL_STEPS}
@@ -612,7 +612,7 @@ const Onboarding = () => {
             {isResults ? (
               <button
                 onClick={() => {
-                  localStorage.setItem("vitalflow_onboarding", JSON.stringify(data));
+                  localStorage.setItem("GetFit_onboarding", JSON.stringify(data));
 
                   // Auto-generate goals from onboarding data
                   const goals: any[] = [];
@@ -683,9 +683,9 @@ const Onboarding = () => {
                   });
 
                   // Only save if no existing goals (don't overwrite)
-                  const existing = localStorage.getItem("vitalflow_goals");
+                  const existing = localStorage.getItem("GetFit_goals");
                   if (!existing || JSON.parse(existing).length === 0) {
-                    localStorage.setItem("vitalflow_goals", JSON.stringify(goals));
+                    localStorage.setItem("GetFit_goals", JSON.stringify(goals));
                   }
 
                   navigate("/dashboard");

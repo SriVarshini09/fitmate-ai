@@ -33,8 +33,8 @@ interface Symptom {
 }
 
 // ── Storage keys ──
-const CYCLES_KEY = "vitalflow_cycles";
-const SYMPTOMS_KEY = "vitalflow_symptoms";
+const CYCLES_KEY = "GetFit_cycles";
+const SYMPTOMS_KEY = "GetFit_symptoms";
 
 function loadCycles(): CycleLog[] {
   try {

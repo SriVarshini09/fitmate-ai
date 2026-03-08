@@ -20,7 +20,7 @@ const tags = ["All", "Nutrition", "Question", "Meal Prep", "Motivation", "Workou
 
 function getUserInfo(): { name: string; initials: string } {
   try {
-    const raw = localStorage.getItem("vitalflow_onboarding");
+    const raw = localStorage.getItem("GetFit_onboarding");
     if (!raw) return { name: "Anonymous", initials: "ME" };
     const data = JSON.parse(raw);
     const name: string = data.name || data.display_name || data.username || "Anonymous";

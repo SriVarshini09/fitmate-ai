@@ -63,7 +63,7 @@ export function AppSidebar() {
           <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shrink-0">
             <Activity className="w-4 h-4 text-primary-foreground" />
           </div>
-          {!collapsed && <span className="font-bold font-display text-gradient-primary text-lg">VitalFlow</span>}
+          {!collapsed && <span className="font-bold font-display text-gradient-primary text-lg">GetFit</span>}
         </div>
       </SidebarHeader>
 

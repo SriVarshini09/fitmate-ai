@@ -54,7 +54,7 @@ const Landing = () => {
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
               <Activity className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold font-display text-gradient-primary">VitalFlow</span>
+            <span className="text-xl font-bold font-display text-gradient-primary">GetFit</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
@@ -138,7 +138,7 @@ const Landing = () => {
                   </div>
                   <div className="flex-1 mx-4">
                     <div className="bg-muted rounded-lg py-1.5 px-4 text-xs text-muted-foreground text-center font-mono">
-                      vitalflow.app/dashboard
+                      GetFit.app/dashboard
                     </div>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ const Landing = () => {
             Ready to <span className="text-gradient-primary">level up</span>?
           </motion.h2>
           <motion.p variants={fadeUp} className="text-muted-foreground font-body mb-8 relative z-10">
-            Join thousands who transformed their health with VitalFlow. Start free, no credit card required.
+            Join thousands who transformed their health with GetFit. Start free, no credit card required.
           </motion.p>
           <motion.button
             variants={fadeUp}
@@ -326,14 +326,14 @@ const Landing = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Activity className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-bold font-display text-foreground">VitalFlow</span>
+            <span className="font-bold font-display text-foreground">GetFit</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground font-body">
             <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
             <a href="#" className="hover:text-foreground transition-colors">Terms</a>
             <a href="#" className="hover:text-foreground transition-colors">Support</a>
           </div>
-          <p className="text-xs text-muted-foreground font-body">© 2026 VitalFlow. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground font-body">© 2026 GetFit. All rights reserved.</p>
         </div>
       </footer>
     </div>

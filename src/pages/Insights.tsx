@@ -28,8 +28,8 @@ const item = {
 const Insights = () => {
   const weeklyCalories = useMemo(() => {
     try {
-      const eatenRaw = JSON.parse(localStorage.getItem("vitalflow_eaten") || "{}");
-      const burnedRaw: any[] = JSON.parse(localStorage.getItem("vitalflow_burned") || "[]");
+      const eatenRaw = JSON.parse(localStorage.getItem("GetFit_eaten") || "{}");
+      const burnedRaw: any[] = JSON.parse(localStorage.getItem("GetFit_burned") || "[]");
       return Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));

@@ -1,4 +1,4 @@
-const STREAK_KEY = "vitalflow_streak";
+const STREAK_KEY = "GetFit_streak";
 
 interface StreakData {
   current: number;

@@ -68,7 +68,7 @@ const EXERCISE_LIBRARY = [
 
 const MUSCLE_GROUPS = ["All", "Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
-const WORKOUTS_KEY = "vitalflow_workouts";
+const WORKOUTS_KEY = "GetFit_workouts";
 
 function loadWorkouts(): Workout[] {
   try {

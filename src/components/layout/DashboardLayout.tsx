@@ -21,7 +21,7 @@ const DashboardLayout = () => {
               <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center md:hidden">
                 <Activity className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-bold font-display text-foreground text-sm md:hidden">VitalFlow</span>
+              <span className="font-bold font-display text-foreground text-sm md:hidden">GetFit</span>
             </div>
             <div className="flex items-center gap-3">
               <button
