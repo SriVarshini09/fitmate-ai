@@ -115,14 +115,14 @@ const FastingTimer = () => {
     const endTime = new Date();
     const actualHours = parseFloat(((endTime.getTime() - fastStartTime.getTime()) / 3600000).toFixed(1));
     const caloriesBurned = Math.round(actualHours > 4 ? (actualHours - 4) * 70 + 4 * 50 : actualHours * 50);
-    const completed = actualHours >= selectedProtocol.fastHours;
+    const completed = actualHours >= activeFastHours;
 
     const newLog: FastingLog = {
       id: Date.now().toString(),
-      protocol: selectedProtocol.protocol,
+      protocol: selectedProtocol.protocol === "Custom" ? "Custom" : selectedProtocol.protocol,
       startTime: fastStartTime,
       endTime,
-      targetHours: selectedProtocol.fastHours,
+      targetHours: activeFastHours,
       actualHours,
       completed,
       caloriesBurned,
