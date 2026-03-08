@@ -223,16 +223,24 @@ const CycleTracker = () => {
   const todaySymptoms = symptoms.filter((s) => isSameDay(new Date(s.date), today));
 
   // Generate twinkling stars — use useMemo-like pattern with useState to keep stable across renders
-  const [stars] = useState(() =>
-    Array.from({ length: 40 }, (_, i) => ({
+  const [stars] = useState(() => {
+    const colors = [
+      "hsl(45 100% 88%)",   // warm white/gold
+      "hsl(210 60% 90%)",   // cool blue-white
+      "hsl(30 80% 85%)",    // soft amber
+      "hsl(0 0% 95%)",      // pure white
+      "hsl(50 90% 80%)",    // golden
+    ];
+    return Array.from({ length: 45 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 3 + 2,
+      size: Math.random() * 2.5 + 1.5,
       delay: Math.random() * 5,
       duration: Math.random() * 3 + 2,
-    }))
-  );
+      color: colors[Math.floor(Math.random() * colors.length)],
+    }));
+  });
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-28 relative min-h-screen">
@@ -247,12 +255,12 @@ const CycleTracker = () => {
               top: `${star.y}%`,
               width: star.size,
               height: star.size,
-              backgroundColor: `hsl(350 70% 75% / 0.8)`,
-              boxShadow: `0 0 ${star.size * 3}px ${star.size}px hsl(350 70% 75% / 0.3)`,
+              backgroundColor: star.color,
+              boxShadow: `0 0 ${star.size * 4}px ${star.size * 1.5}px ${star.color}`,
             }}
             animate={{
-              opacity: [0.15, 1, 0.15],
-              scale: [0.6, 1.4, 0.6],
+              opacity: [0.1, 1, 0.1],
+              scale: [0.5, 1.3, 0.5],
             }}
             transition={{
               duration: star.duration,
@@ -262,10 +270,6 @@ const CycleTracker = () => {
             }}
           />
         ))}
-        {/* Soft warm glow orbs */}
-        <div className="absolute top-[10%] left-[5%] w-[300px] h-[300px] rounded-full blur-[100px]" style={{ background: "hsl(340 60% 50% / 0.08)" }} />
-        <div className="absolute bottom-[15%] right-[0%] w-[250px] h-[250px] rounded-full blur-[80px]" style={{ background: "hsl(18 85% 72% / 0.07)" }} />
-        <div className="absolute top-[45%] left-[40%] w-[200px] h-[200px] rounded-full blur-[70px]" style={{ background: "hsl(280 40% 60% / 0.06)" }} />
       </div>
 
       {/* Content */}
