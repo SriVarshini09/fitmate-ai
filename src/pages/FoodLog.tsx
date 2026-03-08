@@ -10,6 +10,7 @@ interface FoodEntry {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
   meal: string;
 }
 
