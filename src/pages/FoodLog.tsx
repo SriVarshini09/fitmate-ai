@@ -102,24 +102,25 @@ const FoodLog = () => {
   const preview = useMemo(() => {
     if (!matchedFood) return null;
     const qty = parseFloat(quantity) || matchedFood.defaultServing;
-    return calcNutrition(matchedFood, qty);
-  }, [matchedFood, quantity]);
+    return calcNutrition(matchedFood, qty, selectedUnit);
+  }, [matchedFood, quantity, selectedUnit]);
 
   const addFood = () => {
     if (!foodName.trim()) return;
     const qty = parseFloat(quantity) || matchedFood?.defaultServing || 100;
-    const nutrition = matchedFood ? calcNutrition(matchedFood, qty) : { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+    const nutrition = matchedFood ? calcNutrition(matchedFood, qty, selectedUnit) : { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
     const entry: FoodEntry = {
       id: Date.now().toString(),
       name: foodName.trim(),
       quantity: qty,
-      unit: matchedFood?.unit || "g",
+      unit: selectedUnit,
       ...nutrition,
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
     setFoodName("");
     setQuantity("");
+    setSelectedUnit("g");
     setShowAdd(false);
   };
 
