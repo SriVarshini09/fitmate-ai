@@ -97,21 +97,20 @@ const FoodLog = () => {
   }, [matchedFood, quantity]);
 
   const addFood = () => {
-    if (!selectedFood) return;
-    const qty = parseFloat(quantity) || selectedFood.defaultServing;
-    const nutrition = calcNutrition(selectedFood, qty);
+    if (!foodName.trim()) return;
+    const qty = parseFloat(quantity) || matchedFood?.defaultServing || 100;
+    const nutrition = matchedFood ? calcNutrition(matchedFood, qty) : { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
     const entry: FoodEntry = {
       id: Date.now().toString(),
-      name: selectedFood.name,
+      name: foodName.trim(),
       quantity: qty,
-      unit: selectedFood.unit,
+      unit: matchedFood?.unit || "g",
       ...nutrition,
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
-    setSelectedFood(null);
+    setFoodName("");
     setQuantity("");
-    setAddSearch("");
     setShowAdd(false);
   };
 
