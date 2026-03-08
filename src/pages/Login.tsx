@@ -19,14 +19,27 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       toast.error(error.message);
-    } else {
-      toast.success("Welcome back! 💪");
-      navigate("/dashboard");
+      return;
     }
+    // Fetch display name from profile
+    const userId = data.user?.id;
+    let displayName = "champ";
+    if (userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, username")
+        .eq("user_id", userId)
+        .single();
+      if (profile?.display_name) displayName = profile.display_name;
+      else if (profile?.username) displayName = profile.username;
+    }
+    setLoading(false);
+    toast.success(`Hey ${displayName}! Welcome back! 💪🔥`);
+    navigate("/dashboard");
   };
 
   return (
