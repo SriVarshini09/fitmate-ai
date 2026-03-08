@@ -24,7 +24,7 @@ const StepsCard = ({ steps, goal }: StepsCardProps) => {
       <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg, hsl(82, 60%, 40%), hsl(82, 70%, 55%))" }}
+          style={{ background: "linear-gradient(90deg, hsl(66, 85%, 50%), hsl(66, 90%, 65%))" }}
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 1, ease: "easeOut" }}

@@ -134,7 +134,7 @@ const Insights = () => {
               <XAxis dataKey="week" axisLine={false} tickLine={false} tick={tickStyle} />
               <YAxis domain={["dataMin - 1", "dataMax + 1"]} hide />
               <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-              <Area type="monotone" dataKey="weight" stroke="hsl(82, 60%, 40%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: "hsl(82, 60%, 40%)", r: 3, strokeWidth: 0 }} />
+              <Area type="monotone" dataKey="weight" stroke="hsl(66, 85%, 50%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: "hsl(66, 85%, 50%)", r: 3, strokeWidth: 0 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
