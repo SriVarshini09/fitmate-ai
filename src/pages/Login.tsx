@@ -78,9 +78,9 @@ const Login = () => {
           className={`absolute ${item.size} select-none pointer-events-none opacity-30`}
           style={{ top: item.top, left: item.left, right: (item as any).right, bottom: (item as any).bottom }}
           animate={{
-            y: [0, -18, 0, 12, 0],
-            rotate: [0, 8, -8, 4, 0],
-            scale: [1, 1.1, 0.95, 1.05, 1],
+            y: [0, -10, 0, 8, 0],
+            rotate: [0, 5, -5, 3, 0],
+            scale: [1, 1.05, 0.98, 1.02, 1],
           }}
           transition={{
             duration: item.duration,
