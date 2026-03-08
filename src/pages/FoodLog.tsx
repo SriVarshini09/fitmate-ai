@@ -73,7 +73,7 @@ const FoodLog = () => {
       });
 
       if (error) {
-        console.error("Nutrition lookup error:", error);
+        console.warn("Nutrition lookup error (non-critical):", error.message);
         setAiResult(null);
         return;
       }

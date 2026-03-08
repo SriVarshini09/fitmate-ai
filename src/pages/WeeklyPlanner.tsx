@@ -70,14 +70,22 @@ const WeeklyPlanner = () => {
       const { data, error } = await supabase.functions.invoke("food-nutrition", {
         body: { foodName: name.trim(), quantity: qty || "1", unit },
       });
-      if (error) { setAiResult(null); return; }
+      if (error) {
+        console.warn("Nutrition lookup error (non-critical):", error.message);
+        setAiResult(null);
+        return;
+      }
       if (data?.error) {
-        if (data.error.includes("Rate limit")) toast.error("Too many requests. Please wait.");
+        if (typeof data.error === "string" && data.error.includes("Rate limit")) {
+          toast.error("Too many requests. Please wait.");
+        }
         setAiResult(null);
         return;
       }
       setAiResult(data as NutritionResult);
-    } catch {
+    } catch (e) {
+      // Silently handle - likely a cancelled request from debounce
+      console.warn("Nutrition lookup failed (non-critical):", e);
       setAiResult(null);
     } finally {
       setAiLoading(false);
