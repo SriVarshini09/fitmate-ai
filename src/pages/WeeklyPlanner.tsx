@@ -392,5 +392,8 @@ const WeeklyPlanner = () => {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+};
 
 export default WeeklyPlanner;
