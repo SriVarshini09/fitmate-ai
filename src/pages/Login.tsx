@@ -66,6 +66,20 @@ const Login = () => {
           <p className="text-muted-foreground font-body mt-2">Sign in to continue your journey</p>
         </div>
 
+        {/* Aggressive motivational quote */}
+        <motion.div
+          className="relative p-4 rounded-2xl bg-primary/10 border border-primary/20 overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <div className="absolute -top-2 -right-2 text-5xl opacity-10 select-none">🔥</div>
+          <p className="text-sm font-bold font-display text-primary leading-snug uppercase tracking-wide">
+            "Nobody cares about your excuses. Nobody pities you for procrastinating. Nobody is going to come knock on your door and make you do the work. It's YOUR life. GET UP."
+          </p>
+          <p className="text-[10px] text-primary/60 font-body mt-1.5 text-right">— Your future self</p>
+        </motion.div>
+
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
           <div className="space-y-2">
