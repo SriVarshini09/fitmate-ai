@@ -5,7 +5,7 @@ import { Target, Plus, X, Check, TrendingDown, TrendingUp, Minus, Trophy, Chevro
 interface Goal {
   id: string;
   title: string;
-  category: string;
+  categories: string[];
   target: number;
   current: number;
   unit: string;
@@ -30,24 +30,33 @@ const Goals = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [expandedGoal, setExpandedGoal] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState<{
-    title: string; category: string; target: string; current: string; unit: string; direction: "decrease" | "increase" | "maintain"; deadline: string;
+    title: string; categories: string[]; target: string; current: string; unit: string; direction: "decrease" | "increase" | "maintain"; deadline: string;
   }>({
-    title: "", category: "weight", target: "", current: "", unit: "", direction: "decrease", deadline: "",
+    title: "", categories: [], target: "", current: "", unit: "", direction: "decrease", deadline: "",
   });
 
   const addGoal = () => {
-    if (!newGoal.title || !newGoal.target) return;
+    if (!newGoal.title || !newGoal.target || newGoal.categories.length === 0) return;
     setGoals([
       ...goals,
       {
-        id: Date.now().toString(), title: newGoal.title, category: newGoal.category,
+        id: Date.now().toString(), title: newGoal.title, categories: newGoal.categories,
         target: parseFloat(newGoal.target), current: parseFloat(newGoal.current) || 0,
         unit: newGoal.unit, direction: newGoal.direction, deadline: newGoal.deadline,
         milestones: [],
       },
     ]);
-    setNewGoal({ title: "", category: "weight", target: "", current: "", unit: "", direction: "decrease", deadline: "" });
+    setNewGoal({ title: "", categories: [], target: "", current: "", unit: "", direction: "decrease", deadline: "" });
     setShowAdd(false);
+  };
+
+  const toggleCategory = (key: string) => {
+    setNewGoal(prev => ({
+      ...prev,
+      categories: prev.categories.includes(key)
+        ? prev.categories.filter(c => c !== key)
+        : [...prev.categories, key]
+    }));
   };
 
   const updateProgress = (id: string, newValue: number) => {
@@ -103,7 +112,7 @@ const Goals = () => {
           const pct = Math.max(0, Math.min(progress, 100));
           const isComplete = pct >= 100;
           const DirectionIcon = goal.direction === "decrease" ? TrendingDown : goal.direction === "increase" ? TrendingUp : Minus;
-          const catEmoji = CATEGORIES.find((c) => c.key === goal.category)?.icon || "⭐";
+          const catEmojis = goal.categories.map(c => CATEGORIES.find(cat => cat.key === c)?.icon || "⭐").join(" ");
 
           return (
             <motion.div
@@ -118,7 +127,7 @@ const Goals = () => {
                 className="w-full p-5 text-left"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xl">{catEmoji}</span>
+                  <span className="text-xl">{catEmojis}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold font-display text-foreground truncate">{goal.title}</p>
@@ -216,9 +225,9 @@ const Goals = () => {
 
               <div className="grid grid-cols-3 gap-2">
                 {CATEGORIES.map((cat) => (
-                  <button key={cat.key} onClick={() => setNewGoal({ ...newGoal, category: cat.key })}
+                  <button key={cat.key} onClick={() => toggleCategory(cat.key)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-body transition-colors ${
-                      newGoal.category === cat.key ? "bg-primary/15 ring-1 ring-primary text-foreground" : "bg-secondary text-muted-foreground"
+                      newGoal.categories.includes(cat.key) ? "bg-primary/15 ring-1 ring-primary text-foreground" : "bg-secondary text-muted-foreground"
                     }`}>
                     <span>{cat.icon}</span>{cat.label}
                   </button>
