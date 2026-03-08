@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Camera, PenLine, Dumbbell, Footprints } from "lucide-react";
+import { Camera, PenLine, Dumbbell, Footprints, Heart } from "lucide-react";
 
 const actions = [
   { icon: Camera, label: "Scan Food", path: "/food", color: "bg-primary/15 text-primary" },
   { icon: PenLine, label: "Log Meal", path: "/food", color: "bg-info/15 text-info" },
+  { icon: Heart, label: "Cycle", path: "/cycle", color: "bg-destructive/15 text-destructive" },
   { icon: Dumbbell, label: "Workout", path: "/", color: "bg-warning/15 text-warning" },
   { icon: Footprints, label: "Activity", path: "/", color: "bg-success/15 text-success" },
 ];
