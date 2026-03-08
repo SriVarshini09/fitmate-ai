@@ -21,6 +21,7 @@ import Tools from "./pages/Tools";
 import Activities from "./pages/Activities";
 import WorkoutLogger from "./pages/WorkoutLogger";
 import FastingTimer from "./pages/FastingTimer";
+import Tablets from "./pages/Tablets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

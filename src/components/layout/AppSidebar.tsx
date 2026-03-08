@@ -1,7 +1,7 @@
 import {
   Home, UtensilsCrossed, BarChart3, Bot, Target, Brain, Zap,
   Calculator, Trophy, CalendarDays, MessageCircle, Heart, MapPin,
-  Dumbbell, Timer, Activity
+  Dumbbell, Timer, Activity, Pill
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
