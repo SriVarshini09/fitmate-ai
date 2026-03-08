@@ -89,6 +89,7 @@ const FastingTimer = () => {
   const [showHourPicker, setShowHourPicker] = useState(false);
   const [logs, setLogs] = useState<FastingLog[]>(loadLogs);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
   const [fastingHours, setFastingHours] = useState(saved?.targetHours || 16);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
