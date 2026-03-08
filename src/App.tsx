@@ -70,6 +70,8 @@ const App = () => (
               <Route path="training" element={<Training />} />
               <Route path="fasting" element={<FastingTimer />} />
               <Route path="tablets" element={<Tablets />} />
+              <Route path="workout" element={<WorkoutLogger />} />
+              <Route path="activities" element={<Activities />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

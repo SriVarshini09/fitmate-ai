@@ -3,11 +3,11 @@ import { motion } from "framer-motion";
 import { Camera, PenLine, Dumbbell, Footprints, Heart } from "lucide-react";
 
 const actions = [
-  { icon: Camera, label: "Scan Food", path: "/food", color: "bg-primary/10 text-primary" },
-  { icon: PenLine, label: "Log Meal", path: "/food", color: "bg-info/10 text-info" },
-  { icon: Heart, label: "Cycle", path: "/cycle", color: "bg-destructive/10 text-destructive" },
-  { icon: Dumbbell, label: "Workout", path: "/workout", color: "bg-warning/10 text-warning" },
-  { icon: Footprints, label: "Activity", path: "/activities", color: "bg-success/10 text-success" },
+  { icon: Camera, label: "Scan Food", path: "/dashboard/food", color: "bg-primary/10 text-primary" },
+  { icon: PenLine, label: "Log Meal", path: "/dashboard/food", color: "bg-info/10 text-info" },
+  { icon: Heart, label: "Cycle", path: "/dashboard/cycle", color: "bg-destructive/10 text-destructive" },
+  { icon: Dumbbell, label: "Workout", path: "/dashboard/workout", color: "bg-warning/10 text-warning" },
+  { icon: Footprints, label: "Activity", path: "/dashboard/activities", color: "bg-success/10 text-success" },
 ];
 
 const QuickActions = () => {
