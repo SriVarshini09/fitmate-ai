@@ -49,7 +49,7 @@ const FoodLog = () => {
       meal: selectedMeal,
     };
     setFoods([...foods, entry]);
-    setNewFood({ name: "", calories: "", protein: "", carbs: "", fat: "" });
+    setNewFood({ name: "", calories: "", protein: "", carbs: "", fat: "", fiber: "" });
     setShowAdd(false);
   };
 
