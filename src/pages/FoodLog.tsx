@@ -62,8 +62,16 @@ const MEALS = [
   { key: "dinner", label: "Dinner", icon: Moon, time: "6:00 - 9:00 PM" },
 ];
 
-function calcNutrition(food: FoodDBEntry, qty: number) {
-  const factor = qty / 100;
+const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
+
+// Conversion to grams equivalent for nutrition calc
+const UNIT_TO_GRAMS: Record<string, number> = {
+  g: 1, ml: 1, L: 1000, pcs: 50, cup: 240, tbsp: 15, tsp: 5,
+};
+
+function calcNutrition(food: FoodDBEntry, qty: number, unit: string) {
+  const gramsEquiv = qty * (UNIT_TO_GRAMS[unit] || 1);
+  const factor = gramsEquiv / 100;
   return {
     calories: Math.round(food.caloriesPer100g * factor),
     protein: Math.round(food.proteinPer100g * factor * 10) / 10,
