@@ -407,8 +407,7 @@ const Training = () => {
           </div>
 
           <div className="glass-card p-4 ring-1 ring-primary/20">
-            <div className="grid grid-cols-4 gap-2">
-              <div className="text-center"><Clock className="w-3.5 h-3.5 text-primary mx-auto mb-0.5" /><p className="text-sm font-bold font-display text-foreground tabular-nums">{formatActiveTime(activeWorkoutSeconds)}</p><p className="text-[8px] text-muted-foreground font-body">Duration</p></div>
+            <div className="grid grid-cols-3 gap-2">
               <div className="text-center"><Dumbbell className="w-3.5 h-3.5 text-warning mx-auto mb-0.5" /><p className="text-sm font-bold font-display text-foreground">{(activeVolume / 1000).toFixed(1)}k</p><p className="text-[8px] text-muted-foreground font-body">Volume</p></div>
               <div className="text-center"><Flame className="w-3.5 h-3.5 text-destructive mx-auto mb-0.5" /><p className="text-sm font-bold font-display text-foreground">{activeCalories}</p><p className="text-[8px] text-muted-foreground font-body">kcal</p></div>
               <div className="text-center"><TrendingUp className="w-3.5 h-3.5 text-success mx-auto mb-0.5" /><p className="text-sm font-bold font-display text-foreground">{activeCompletedSets}/{activeTotalSets}</p><p className="text-[8px] text-muted-foreground font-body">Sets</p></div>
