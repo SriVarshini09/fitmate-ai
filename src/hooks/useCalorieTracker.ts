@@ -155,7 +155,7 @@ export function useCalorieTracker() {
         activityLevel: data.activityLevel || "moderate",
         tdee,
         targetCalories,
-        macros: calcMacros(targetCalories, data.goal),
+        macros: calcMacros(targetCalories, data.goal, sex),
       });
     } catch { /* ignore */ }
   }, []);

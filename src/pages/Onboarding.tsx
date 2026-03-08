@@ -448,11 +448,12 @@ function StepResults({ data }: { data: OnboardingData }) {
       </div>
 
       {/* Macros */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {[
           { label: "Protein", value: macros.protein, unit: "g", color: "text-primary" },
           { label: "Carbs", value: macros.carbs, unit: "g", color: "text-info" },
           { label: "Fat", value: macros.fat, unit: "g", color: "text-peach" },
+          { label: "Fiber", value: macros.fiber, unit: "g", color: "text-success" },
         ].map((m) => (
           <div key={m.label} className="glass-card p-4 text-center">
             <p className={`text-2xl font-bold font-display ${m.color}`}>{m.value}{m.unit}</p>

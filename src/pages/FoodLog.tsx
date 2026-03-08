@@ -177,7 +177,7 @@ const FoodLog = () => {
               />
 
               <div className="grid grid-cols-2 gap-3">
-                {(["calories", "protein", "carbs", "fat"] as const).map((field) => (
+                {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((field) => (
                   <input
                     key={field}
                     value={newFood[field]}

@@ -74,6 +74,7 @@ const Index = () => {
           <MacroBar label="Protein" current={currentMacros.protein} goal={macroGoals.protein} color="hsl(82, 60%, 40%)" />
           <MacroBar label="Carbs" current={currentMacros.carbs} goal={macroGoals.carbs} color="hsl(210, 70%, 52%)" />
           <MacroBar label="Fat" current={currentMacros.fat} goal={macroGoals.fat} color="hsl(18, 85%, 72%)" />
+          <MacroBar label="Fiber" current={currentMacros.fiber} goal={macroGoals.fiber || 30} color="hsl(150, 60%, 45%)" />
         </div>
       </motion.div>
 
