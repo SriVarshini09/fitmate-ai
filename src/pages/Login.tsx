@@ -5,8 +5,54 @@ import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, ArrowRight, Zap } from "lucide-react";
 import { toast } from "sonner";
 
+const Login = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    setLoading(true);
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      toast.error(error.message);
+      return;
+    }
+    const userId = data.user?.id;
+    let displayName = "champ";
+    if (userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, username")
+        .eq("user_id", userId)
+        .single();
+      if (profile?.display_name) displayName = profile.display_name;
+      else if (profile?.username) displayName = profile.username;
+    }
+    setLoading(false);
+    toast.success(`Hey ${displayName}! Welcome back! 💪🔥`);
+    navigate("/dashboard");
+  };
 
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-48 h-48 rounded-full bg-accent/10 blur-3xl" />
+
+      <motion.div
+        className="w-full max-w-md space-y-8 relative z-10"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
         {/* Logo */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
