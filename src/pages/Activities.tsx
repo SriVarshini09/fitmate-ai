@@ -4,6 +4,8 @@ import {
   Play, Pause, Square, MapPin, Clock, Flame, TrendingUp, Trophy,
   ChevronRight, Bike, Waves, Footprints, Mountain, Timer, X, Plus, Heart, ThumbsUp, MessageSquare
 } from "lucide-react";
+import { useCalorieTracker, estimateActivityCalories } from "@/hooks/useCalorieTracker";
+import { toast } from "sonner";
 
 type ActivityType = "run" | "ride" | "swim" | "walk" | "hike";
 
@@ -88,6 +90,7 @@ const Activities = () => {
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerType, setTimerType] = useState<ActivityType>("run");
+  const { logBurned, bodyWeight } = useCalorieTracker();
 
   const filtered = activeFilter === "all" ? activities : activities.filter((a) => a.type === activeFilter);
 
@@ -99,6 +102,19 @@ const Activities = () => {
 
   const toggleTimer = () => setTimerRunning(!timerRunning);
   const stopTimer = () => {
+    // Calculate and save calories burned
+    const durationMinutes = Math.round(timerSeconds / 60);
+    if (durationMinutes > 0) {
+      const calories = estimateActivityCalories(timerType, durationMinutes, bodyWeight);
+      const typeLabel = ACTIVITY_TYPES.find(a => a.key === timerType)?.label || timerType;
+      logBurned({
+        source: "activity",
+        name: typeLabel,
+        calories,
+        duration: durationMinutes,
+      });
+      toast.success(`${typeLabel} complete! ${calories} kcal burned 🔥`);
+    }
     setTimerRunning(false);
     setTimerSeconds(0);
     setShowTimer(false);

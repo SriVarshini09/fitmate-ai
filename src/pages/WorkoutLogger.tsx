@@ -5,6 +5,8 @@ import {
   RotateCcw, Play, Pause, Square, Trophy, Calendar
 } from "lucide-react";
 import WorkoutDetailCard from "@/components/workout/WorkoutDetailCard";
+import { useCalorieTracker, estimateWeightExerciseCalories } from "@/hooks/useCalorieTracker";
+import { toast } from "sonner";
 
 interface ExerciseSet {
   id: string;
@@ -185,6 +187,7 @@ const WorkoutLogger = () => {
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
   const [filterGroup, setFilterGroup] = useState("All");
   const [searchEx, setSearchEx] = useState("");
+  const { logBurned, bodyWeight } = useCalorieTracker();
 
   // Active workout state
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
@@ -306,7 +309,12 @@ const WorkoutLogger = () => {
   const activeTotalSets = activeWorkout
     ? activeWorkout.exercises.reduce((sum, ex) => sum + ex.sets.length, 0)
     : 0;
-  const activeCalories = Math.round(activeWorkoutSeconds / 60 * 6.5);
+  const activeCalories = activeWorkout
+    ? activeWorkout.exercises.reduce((sum, ex) => {
+        const completedSetsData = ex.sets.filter(s => s.completed).map(s => ({ weight: s.weight, reps: s.reps }));
+        return sum + (completedSetsData.length > 0 ? estimateWeightExerciseCalories(ex.name, completedSetsData, bodyWeight) : 0);
+      }, 0)
+    : 0;
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
@@ -380,7 +388,21 @@ const WorkoutLogger = () => {
             <h3 className="text-sm font-semibold font-display text-primary flex items-center gap-2">
               <Play className="w-4 h-4" /> {activeWorkout.name} — Active
             </h3>
-            <button onClick={() => setActiveWorkout(null)} className="text-xs text-primary font-body hover:underline">
+            <button onClick={() => {
+              // Save burned calories
+              const totalCals = activeWorkout.exercises.reduce((sum, ex) => {
+                const completedSets = ex.sets.filter(s => s.completed).map(s => ({ weight: s.weight, reps: s.reps }));
+                return sum + (completedSets.length > 0 ? estimateWeightExerciseCalories(ex.name, completedSets, bodyWeight) : 0);
+              }, 0);
+              logBurned({
+                source: "workout",
+                name: activeWorkout.name,
+                calories: totalCals || activeCalories,
+                duration: Math.round(activeWorkoutSeconds / 60),
+              });
+              toast.success(`${activeWorkout.name} complete! ${totalCals} kcal burned 🔥`);
+              setActiveWorkout(null);
+            }} className="text-xs text-primary font-body hover:underline">
               Finish
             </button>
           </div>
