@@ -125,7 +125,7 @@ const Training = () => {
   const [timerType, setTimerType] = useState("run");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [workouts] = useState(sampleWorkouts);
+  const [workouts, setWorkouts] = useState(sampleWorkouts);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
   const [showNewWorkout, setShowNewWorkout] = useState(false);
   const [showExerciseLib, setShowExerciseLib] = useState(false);
