@@ -247,15 +247,27 @@ const FoodLog = () => {
               />
 
               {/* Quantity input */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <input
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   type="number"
-                  placeholder={`Quantity (${matchedFood ? matchedFood.defaultServing + matchedFood.unit : "g"})`}
+                  placeholder="Qty"
                   className="flex-1 bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body"
                 />
-                <span className="text-sm text-muted-foreground font-body min-w-[20px]">{matchedFood?.unit || "g"}</span>
+                <div className="flex gap-1.5 overflow-x-auto">
+                  {UNITS.map((u) => (
+                    <button
+                      key={u}
+                      onClick={() => setSelectedUnit(u)}
+                      className={`px-3 py-2.5 rounded-xl text-xs font-medium font-body whitespace-nowrap transition-colors ${
+                        selectedUnit === u ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      {u}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Nutrition preview */}
