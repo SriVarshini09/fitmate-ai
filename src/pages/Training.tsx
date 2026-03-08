@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Play, Pause, Square, MapPin, Clock, Flame, TrendingUp, Trophy,
-  ChevronRight, Bike, Waves, Footprints, Mountain, X, Plus, Heart,
-  ThumbsUp, MessageSquare, Dumbbell, Check, RotateCcw, Calendar, Timer, Zap
+  Play, Pause, Square, Clock, Flame, TrendingUp,
+  ChevronRight, Bike, Waves, Footprints, Mountain, X, Plus,
+  Dumbbell, Check, Timer, Zap
 } from "lucide-react";
 import WorkoutDetailCard from "@/components/workout/WorkoutDetailCard";
 import { useCalorieTracker, estimateActivityCalories, estimateWeightExerciseCalories } from "@/hooks/useCalorieTracker";
 import { toast } from "sonner";
 
-// ── Session Types ──
+// ── Types ──
 type SessionCategory = "cardio" | "strength";
 
 interface SessionType {
@@ -30,54 +30,26 @@ const SESSION_TYPES: SessionType[] = [
   { key: "strength", label: "Strength", icon: Dumbbell, category: "strength", color: "bg-warning/15 text-warning" },
 ];
 
-// ── Cardio types ──
 interface Activity {
-  id: string;
-  type: string;
-  title: string;
-  date: string;
-  distance: number;
-  duration: number;
-  calories: number;
-  elevation?: number;
-  pace?: string;
-  heartRateAvg?: number;
-  heartRateMax?: number;
-  splits?: { km: number; pace: string }[];
-  isPR?: boolean;
-  kudos: number;
-  comments: number;
+  id: string; type: string; title: string; date: string;
+  distance: number; duration: number; calories: number;
+  pace?: string; isPR?: boolean;
 }
 
-// ── Strength types ──
 interface ExerciseSet {
-  id: string;
-  weight: number;
-  reps: number;
-  completed: boolean;
-  isWarmup?: boolean;
-  rpe?: number;
+  id: string; weight: number; reps: number; completed: boolean;
+  isWarmup?: boolean; rpe?: number;
 }
 
 interface Exercise {
-  id: string;
-  name: string;
-  muscleGroup: string;
-  sets: ExerciseSet[];
-  notes?: string;
-  caloriesBurned?: number;
+  id: string; name: string; muscleGroup: string;
+  sets: ExerciseSet[]; notes?: string; caloriesBurned?: number;
 }
 
 interface Workout {
-  id: string;
-  name: string;
-  date: string;
-  duration: number;
-  exercises: Exercise[];
-  totalVolume: number;
-  totalCalories?: number;
-  avgHeartRate?: number;
-  peakHeartRate?: number;
+  id: string; name: string; date: string; duration: number;
+  exercises: Exercise[]; totalVolume: number;
+  totalCalories?: number; avgHeartRate?: number; peakHeartRate?: number;
   muscleGroupsHit?: string[];
   intensity?: "Light" | "Moderate" | "Intense" | "Max Effort";
   isActive?: boolean;
@@ -118,15 +90,14 @@ const TEMPLATES = [
   { name: "Full Body", exercises: ["Squat", "Bench Press", "Deadlift", "Overhead Press", "Pull-ups"] },
 ];
 
-// ── Sample data ──
 const sampleActivities: Activity[] = [
-  { id: "a1", type: "run", title: "Morning Run", date: "Today, 7:15 AM", distance: 5.2, duration: 28, calories: 420, elevation: 45, pace: "5:23/km", heartRateAvg: 155, heartRateMax: 178, isPR: true, kudos: 12, comments: 3, splits: [{ km: 1, pace: "5:30" }, { km: 2, pace: "5:25" }, { km: 3, pace: "5:20" }, { km: 4, pace: "5:18" }, { km: 5, pace: "5:22" }] },
-  { id: "a2", type: "ride", title: "Evening Cycle", date: "Yesterday, 6:00 PM", distance: 22.5, duration: 55, calories: 580, elevation: 180, pace: "24.5 km/h", heartRateAvg: 142, heartRateMax: 165, kudos: 8, comments: 1 },
-  { id: "a3", type: "swim", title: "Pool Session", date: "Mar 6, 12:00 PM", distance: 1.5, duration: 40, calories: 350, pace: "2:40/100m", heartRateAvg: 135, heartRateMax: 158, kudos: 5, comments: 0 },
+  { id: "a1", type: "run", title: "Morning Run", date: "Today, 7:15 AM", distance: 5.2, duration: 28, calories: 420, pace: "5:23/km", isPR: true },
+  { id: "a2", type: "ride", title: "Evening Cycle", date: "Yesterday, 6:00 PM", distance: 22.5, duration: 55, calories: 580, pace: "24.5 km/h" },
+  { id: "a3", type: "swim", title: "Pool Session", date: "Mar 6, 12:00 PM", distance: 1.5, duration: 40, calories: 350, pace: "2:40/100m" },
 ];
 
 const sampleWorkouts: Workout[] = [
-  { id: "w1", name: "Push Day", date: "Today", duration: 58, totalVolume: 12450, totalCalories: 380, avgHeartRate: 128, peakHeartRate: 156, intensity: "Intense", muscleGroupsHit: ["Chest", "Shoulders", "Arms"], exercises: [
+  { id: "w1", name: "Push Day", date: "Today", duration: 58, totalVolume: 12450, totalCalories: 380, intensity: "Intense", muscleGroupsHit: ["Chest", "Shoulders", "Arms"], exercises: [
     { id: "e1", name: "Bench Press", muscleGroup: "Chest", caloriesBurned: 120, sets: [{ id: "s1", weight: 80, reps: 8, completed: true, rpe: 7 }, { id: "s2", weight: 85, reps: 6, completed: true, rpe: 8 }, { id: "s3", weight: 85, reps: 6, completed: true, rpe: 9 }] },
     { id: "e2", name: "Overhead Press", muscleGroup: "Shoulders", caloriesBurned: 95, sets: [{ id: "s5", weight: 50, reps: 8, completed: true, rpe: 7 }, { id: "s6", weight: 55, reps: 6, completed: true, rpe: 8 }] },
   ]},
@@ -145,20 +116,15 @@ const formatDuration = (mins: number) => {
 const Training = () => {
   const { logBurned, bodyWeight } = useCalorieTracker();
 
-  // ── Shared state ──
-  const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  // ── State ──
   const [showSessionPicker, setShowSessionPicker] = useState(false);
-
-  // ── Cardio state ──
   const [activities] = useState(sampleActivities);
-  const [expandedActivityId, setExpandedActivityId] = useState<string | null>(null);
   const [showTimer, setShowTimer] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerType, setTimerType] = useState("run");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Strength state ──
   const [workouts] = useState(sampleWorkouts);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
   const [showNewWorkout, setShowNewWorkout] = useState(false);
@@ -173,10 +139,9 @@ const Training = () => {
   const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const workoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Tab: show all, cardio feed, or strength feed ──
-  const [feedFilter, setFeedFilter] = useState<"all" | "cardio" | "strength">("all");
+  const [tab, setTab] = useState<"cardio" | "strength">("strength");
 
-  // ── Cardio timer effect ──
+  // ── Effects ──
   useEffect(() => {
     if (timerRunning) {
       timerRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
@@ -184,7 +149,6 @@ const Training = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [timerRunning]);
 
-  // ── Rest timer effect ──
   useEffect(() => {
     if (restRunning && restTimer > 0) {
       restIntervalRef.current = setInterval(() => {
@@ -194,7 +158,6 @@ const Training = () => {
     return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current); };
   }, [restRunning, restTimer]);
 
-  // ── Workout timer effect ──
   useEffect(() => {
     if (activeWorkout) {
       workoutTimerRef.current = setInterval(() => setActiveWorkoutSeconds(s => s + 1), 1000);
@@ -207,7 +170,6 @@ const Training = () => {
     const session = SESSION_TYPES.find(s => s.key === key);
     if (!session) return;
     setShowSessionPicker(false);
-
     if (session.category === "strength") {
       setShowNewWorkout(true);
     } else {
@@ -305,13 +267,10 @@ const Training = () => {
   const startRest = () => { setRestTimer(restDuration); setRestRunning(true); };
 
   const formatTimer = (s: number) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
+    const m = Math.floor(s / 60);
     const sec = s % 60;
-    return `${h > 0 ? h + ":" : ""}${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
-
-  const formatActiveTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
   const activeVolume = activeWorkout
     ? activeWorkout.exercises.reduce((sum, ex) => sum + ex.sets.filter(s => s.completed).reduce((s, set) => s + set.weight * set.reps, 0), 0) : 0;
@@ -327,253 +286,204 @@ const Training = () => {
     (filterGroup === "All" || e.group === filterGroup) && e.name.toLowerCase().includes(searchEx.toLowerCase())
   );
 
-  const weekCardioStats = { distance: 35.7, time: "5h 25m", activities: 4, calories: 1970 };
-  const weekStrengthStats = { workouts: workouts.length, volume: workouts.reduce((s, w) => s + w.totalVolume, 0), calories: workouts.reduce((s, w) => s + (w.totalCalories || 0), 0) };
-
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Zap className="w-5 h-5 text-primary" />
-            <h1 className="text-2xl font-bold font-display text-foreground">Training</h1>
-          </div>
-          <p className="text-sm text-muted-foreground font-body">Cardio & strength in one place</p>
+          <h1 className="text-xl font-bold font-display text-foreground">Training</h1>
+          <p className="text-xs text-muted-foreground font-body">Track your workouts</p>
         </div>
-        <button onClick={() => setShowSessionPicker(true)} className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center glow-primary">
+        <button onClick={() => setShowSessionPicker(true)} className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center glow-primary">
           <Plus className="w-5 h-5 text-primary-foreground" />
         </button>
       </motion.div>
 
-      {/* Week summary */}
-      <div className="glass-card p-5">
-        <h3 className="text-sm font-semibold font-display text-foreground mb-3">This Week</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-xl bg-secondary/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Footprints className="w-4 h-4 text-primary" />
-              <span className="text-xs font-medium text-muted-foreground font-body">Cardio</span>
-            </div>
-            <div className="flex gap-3">
-              <div><p className="text-sm font-bold font-display text-foreground">{weekCardioStats.distance}km</p><p className="text-[9px] text-muted-foreground font-body">Distance</p></div>
-              <div><p className="text-sm font-bold font-display text-foreground">{weekCardioStats.calories}</p><p className="text-[9px] text-muted-foreground font-body">kcal</p></div>
-            </div>
-          </div>
-          <div className="p-3 rounded-xl bg-secondary/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Dumbbell className="w-4 h-4 text-warning" />
-              <span className="text-xs font-medium text-muted-foreground font-body">Strength</span>
-            </div>
-            <div className="flex gap-3">
-              <div><p className="text-sm font-bold font-display text-foreground">{(weekStrengthStats.volume / 1000).toFixed(1)}k</p><p className="text-[9px] text-muted-foreground font-body">Volume</p></div>
-              <div><p className="text-sm font-bold font-display text-foreground">{weekStrengthStats.calories}</p><p className="text-[9px] text-muted-foreground font-body">kcal</p></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Rest Timer */}
-      {restTimer > 0 && (
-        <motion.div className="glass-card p-4 flex items-center justify-between ring-1 ring-primary/30" initial={{ scale: 0.95 }} animate={{ scale: 1 }}>
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-primary" />
-            <div>
-              <p className="text-xs text-muted-foreground font-body">Rest Timer</p>
-              <p className="text-2xl font-bold font-display text-foreground tabular-nums">
-                {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, "0")}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => setRestRunning(!restRunning)} className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
-              {restRunning ? <Pause className="w-4 h-4 text-foreground" /> : <Play className="w-4 h-4 text-foreground" />}
-            </button>
-            <button onClick={() => { setRestTimer(0); setRestRunning(false); }} className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
-              <X className="w-4 h-4 text-destructive" />
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Active Strength Workout */}
-      {activeWorkout && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold font-display text-primary flex items-center gap-2">
-              <Play className="w-4 h-4" /> {activeWorkout.name} — Active
-            </h3>
-            <button onClick={finishWorkout} className="text-xs text-primary font-body hover:underline">Finish</button>
-          </div>
-
-          <div className="glass-card p-4 ring-1 ring-primary/20">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center"><Dumbbell className="w-3.5 h-3.5 text-warning mx-auto mb-0.5" /><p className="text-sm font-bold font-display text-foreground">{(activeVolume / 1000).toFixed(1)}k</p><p className="text-[8px] text-muted-foreground font-body">Volume</p></div>
-              <div className="text-center"><Flame className="w-3.5 h-3.5 text-destructive mx-auto mb-0.5" /><p className="text-sm font-bold font-display text-foreground">{activeCalories}</p><p className="text-[8px] text-muted-foreground font-body">kcal</p></div>
-              <div className="text-center"><TrendingUp className="w-3.5 h-3.5 text-success mx-auto mb-0.5" /><p className="text-sm font-bold font-display text-foreground">{activeCompletedSets}/{activeTotalSets}</p><p className="text-[8px] text-muted-foreground font-body">Sets</p></div>
-            </div>
-          </div>
-
-          {activeWorkout.exercises.map(ex => (
-            <div key={ex.id} className="glass-card p-4 ring-1 ring-primary/20">
-              <p className="text-sm font-semibold font-display text-foreground mb-3">{ex.name}</p>
-              <div className="space-y-2">
-                <div className="grid grid-cols-12 gap-2 text-[10px] text-muted-foreground font-body px-1">
-                  <span className="col-span-1">Set</span><span className="col-span-4">Weight (kg)</span><span className="col-span-4">Reps</span><span className="col-span-3 text-center">Done</span>
-                </div>
-                {ex.sets.map((set, si) => (
-                  <div key={set.id} className={`grid grid-cols-12 gap-2 items-center ${set.completed ? "opacity-60" : ""}`}>
-                    <span className="col-span-1 text-xs text-muted-foreground font-body">{si + 1}</span>
-                    <input type="number" value={set.weight || ""} onChange={e => updateSet(ex.id, set.id, "weight", parseFloat(e.target.value) || 0)}
-                      className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
-                    <input type="number" value={set.reps || ""} onChange={e => updateSet(ex.id, set.id, "reps", parseInt(e.target.value) || 0)}
-                      className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
-                    <div className="col-span-3 flex justify-center">
-                      <button onClick={() => { toggleSet(ex.id, set.id); if (!set.completed) startRest(); }}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.completed ? "bg-primary/20" : "bg-secondary"}`}>
-                        <Check className={`w-4 h-4 ${set.completed ? "text-primary" : "text-muted-foreground"}`} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => addSet(ex.id)} className="mt-2 text-xs text-primary font-body hover:underline flex items-center gap-1">
-                <Plus className="w-3 h-3" /> Add Set
-              </button>
-            </div>
-          ))}
-
-          <button onClick={() => setShowExerciseLib(true)} className="w-full py-3 rounded-xl bg-secondary text-foreground font-medium font-body text-sm flex items-center justify-center gap-2">
-            <Plus className="w-4 h-4" /> Add Exercise
+      {/* Simple tab switch */}
+      <div className="flex rounded-xl bg-secondary/50 p-1">
+        {(["strength", "cardio"] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`flex-1 py-2.5 rounded-lg text-xs font-medium font-body transition-all capitalize ${
+              tab === t ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+            }`}>
+            {t === "strength" ? "🏋️ Strength" : "🏃 Cardio"}
           </button>
-
-          <div className="flex gap-2">
-            {[60, 90, 120, 180].map(s => (
-              <button key={s} onClick={() => { setRestDuration(s); setRestTimer(s); setRestRunning(true); }}
-                className={`flex-1 py-2 rounded-xl text-xs font-body transition-colors ${restDuration === s ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
-                {s < 120 ? `${s}s` : `${s / 60}m`}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Feed filter tabs */}
-      <div className="flex gap-2">
-        {(["all", "cardio", "strength"] as const).map(f => (
-          <button key={f} onClick={() => setFeedFilter(f)}
-            className={`px-4 py-2 rounded-xl text-xs font-medium font-body transition-colors capitalize ${
-              feedFilter === f ? "bg-primary text-primary-foreground" : "glass-card text-muted-foreground"
-            }`}>{f}</button>
         ))}
       </div>
 
-      {/* Activity feed */}
-      {(feedFilter === "all" || feedFilter === "cardio") && (
-        <div className="space-y-3">
-          {activities.map((activity, i) => {
-            const typeInfo = SESSION_TYPES.find(t => t.key === activity.type)!;
-            const isExpanded = expandedActivityId === activity.id;
-            return (
-              <motion.div key={activity.id} className={`glass-card overflow-hidden ${activity.isPR ? "ring-1 ring-badge-gold/30" : ""}`}
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <button onClick={() => setExpandedActivityId(isExpanded ? null : activity.id)} className="w-full p-5 text-left">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`w-10 h-10 rounded-xl ${typeInfo?.color || "bg-secondary"} flex items-center justify-center shrink-0`}>
-                      {typeInfo && <typeInfo.icon className="w-5 h-5" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold font-display text-foreground truncate">{activity.title}</p>
-                        {activity.isPR && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-badge-gold/15 text-badge-gold">PR</span>}
-                      </div>
-                      <p className="text-xs text-muted-foreground font-body">{activity.date}</p>
-                    </div>
-                    <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform shrink-0 ${isExpanded ? "rotate-90" : ""}`} />
+      {/* Rest Timer (floating) */}
+      <AnimatePresence>
+        {restTimer > 0 && (
+          <motion.div className="glass-card p-3 flex items-center justify-between ring-1 ring-primary/20"
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <div className="flex items-center gap-3">
+              <Clock className="w-4 h-4 text-primary" />
+              <div>
+                <p className="text-[10px] text-muted-foreground font-body">Rest</p>
+                <p className="text-lg font-bold font-display text-foreground tabular-nums">
+                  {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, "0")}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setRestRunning(!restRunning)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
+                {restRunning ? <Pause className="w-3.5 h-3.5 text-foreground" /> : <Play className="w-3.5 h-3.5 text-foreground" />}
+              </button>
+              <button onClick={() => { setRestTimer(0); setRestRunning(false); }} className="w-9 h-9 rounded-xl bg-destructive/15 flex items-center justify-center">
+                <X className="w-3.5 h-3.5 text-destructive" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ STRENGTH TAB ═══ */}
+      {tab === "strength" && (
+        <div className="space-y-4">
+          {/* Active Workout */}
+          {activeWorkout && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold font-display text-foreground flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  {activeWorkout.name}
+                </p>
+                <button onClick={finishWorkout} className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium font-body">
+                  Finish
+                </button>
+              </div>
+
+              {/* Live stats */}
+              <div className="glass-card p-3 ring-1 ring-primary/15">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <Dumbbell className="w-3.5 h-3.5 text-warning mx-auto mb-0.5" />
+                    <p className="text-sm font-bold font-display text-foreground">{(activeVolume / 1000).toFixed(1)}k</p>
+                    <p className="text-[8px] text-muted-foreground font-body">Volume</p>
                   </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[{ v: activity.distance, l: "km" }, { v: formatDuration(activity.duration), l: "time" }, { v: activity.pace || "--", l: "pace" }, { v: activity.calories, l: "kcal" }].map(s => (
-                      <div key={s.l} className="text-center p-2 rounded-lg bg-secondary/40">
-                        <p className="text-sm font-bold font-display text-foreground">{s.v}</p>
-                        <p className="text-[9px] text-muted-foreground font-body">{s.l}</p>
+                  <div className="text-center">
+                    <Flame className="w-3.5 h-3.5 text-destructive mx-auto mb-0.5" />
+                    <p className="text-sm font-bold font-display text-foreground">{activeCalories}</p>
+                    <p className="text-[8px] text-muted-foreground font-body">kcal</p>
+                  </div>
+                  <div className="text-center">
+                    <TrendingUp className="w-3.5 h-3.5 text-success mx-auto mb-0.5" />
+                    <p className="text-sm font-bold font-display text-foreground">{activeCompletedSets}/{activeTotalSets}</p>
+                    <p className="text-[8px] text-muted-foreground font-body">Sets</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Exercise cards — clean & simple */}
+              {activeWorkout.exercises.map(ex => (
+                <div key={ex.id} className="glass-card p-4 space-y-3">
+                  <p className="text-sm font-semibold font-display text-foreground">{ex.name}</p>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-12 gap-2 text-[10px] text-muted-foreground font-body px-1">
+                      <span className="col-span-1">#</span>
+                      <span className="col-span-4">kg</span>
+                      <span className="col-span-4">Reps</span>
+                      <span className="col-span-3 text-center">✓</span>
+                    </div>
+                    {ex.sets.map((set, si) => (
+                      <div key={set.id} className={`grid grid-cols-12 gap-2 items-center ${set.completed ? "opacity-50" : ""}`}>
+                        <span className="col-span-1 text-xs text-muted-foreground font-body">{si + 1}</span>
+                        <input type="number" value={set.weight || ""} onChange={e => updateSet(ex.id, set.id, "weight", parseFloat(e.target.value) || 0)}
+                          className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
+                        <input type="number" value={set.reps || ""} onChange={e => updateSet(ex.id, set.id, "reps", parseInt(e.target.value) || 0)}
+                          className="col-span-4 bg-secondary rounded-lg px-2 py-2 text-sm text-foreground outline-none font-body text-center" placeholder="0" />
+                        <div className="col-span-3 flex justify-center">
+                          <button onClick={() => { toggleSet(ex.id, set.id); if (!set.completed) startRest(); }}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.completed ? "bg-primary/20" : "bg-secondary"}`}>
+                            <Check className={`w-4 h-4 ${set.completed ? "text-primary" : "text-muted-foreground"}`} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
-                </button>
+                  <button onClick={() => addSet(ex.id)} className="text-xs text-primary font-body flex items-center gap-1">
+                    <Plus className="w-3 h-3" /> Add Set
+                  </button>
+                </div>
+              ))}
 
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div className="px-5 pb-5 space-y-4" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
-                      {activity.heartRateAvg && (
-                        <div className="flex gap-3">
-                          <div className="flex-1 p-3 rounded-xl bg-destructive/10 text-center">
-                            <Heart className="w-4 h-4 text-destructive mx-auto mb-1" />
-                            <p className="text-sm font-bold font-display text-foreground">{activity.heartRateAvg}</p>
-                            <p className="text-[9px] text-muted-foreground font-body">Avg HR</p>
-                          </div>
-                          <div className="flex-1 p-3 rounded-xl bg-destructive/10 text-center">
-                            <Heart className="w-4 h-4 text-destructive mx-auto mb-1" />
-                            <p className="text-sm font-bold font-display text-foreground">{activity.heartRateMax}</p>
-                            <p className="text-[9px] text-muted-foreground font-body">Max HR</p>
-                          </div>
-                          {activity.elevation && (
-                            <div className="flex-1 p-3 rounded-xl bg-success/10 text-center">
-                              <Mountain className="w-4 h-4 text-success mx-auto mb-1" />
-                              <p className="text-sm font-bold font-display text-foreground">{activity.elevation}m</p>
-                              <p className="text-[9px] text-muted-foreground font-body">Elevation</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {activity.splits && (
-                        <div>
-                          <p className="text-xs text-muted-foreground font-body mb-2">Splits</p>
-                          <div className="space-y-1">
-                            {activity.splits.map(split => {
-                              const paceNum = split.pace.split(":").reduce((a, b) => a * 60 + parseInt(b), 0);
-                              const pct = Math.max(0, Math.min(100, ((360 - paceNum) / 60) * 100));
-                              return (
-                                <div key={split.km} className="flex items-center gap-2">
-                                  <span className="text-[10px] text-muted-foreground font-body w-8">Km {split.km}</span>
-                                  <div className="flex-1 h-4 bg-secondary rounded overflow-hidden">
-                                    <motion.div className="h-full bg-primary/70 rounded flex items-center justify-end pr-1"
-                                      initial={{ width: 0 }} animate={{ width: `${Math.max(30, pct)}%` }} transition={{ duration: 0.5 }}>
-                                      <span className="text-[9px] font-bold text-primary-foreground font-body">{split.pace}</span>
-                                    </motion.div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              <button onClick={() => setShowExerciseLib(true)} className="w-full py-3 rounded-xl bg-secondary/60 text-foreground font-medium font-body text-sm flex items-center justify-center gap-2">
+                <Plus className="w-4 h-4" /> Add Exercise
+              </button>
+
+              {/* Quick rest presets */}
+              <div className="flex gap-2">
+                {[60, 90, 120, 180].map(s => (
+                  <button key={s} onClick={() => { setRestDuration(s); setRestTimer(s); setRestRunning(true); }}
+                    className={`flex-1 py-2 rounded-xl text-xs font-body transition-colors ${restDuration === s ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground"}`}>
+                    {s < 120 ? `${s}s` : `${s / 60}m`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Strength history — only when no active workout */}
+          {!activeWorkout && (
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-muted-foreground font-body uppercase tracking-wider">Recent Workouts</p>
+              {workouts.map((workout, i) => (
+                <WorkoutDetailCard key={workout.id} workout={workout} isExpanded={expandedWorkout === workout.id}
+                  onToggle={() => setExpandedWorkout(expandedWorkout === workout.id ? null : workout.id)}
+                  onRepeat={w => startFromTemplate({ name: w.name, exercises: w.exercises.map(e => e.name) })}
+                  index={i} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══ CARDIO TAB ═══ */}
+      {tab === "cardio" && (
+        <div className="space-y-3">
+          <p className="text-xs font-medium text-muted-foreground font-body uppercase tracking-wider">Recent Activities</p>
+          {activities.map((activity, i) => {
+            const typeInfo = SESSION_TYPES.find(t => t.key === activity.type);
+            return (
+              <motion.div key={activity.id} className={`glass-card p-4 ${activity.isPR ? "ring-1 ring-badge-gold/30" : ""}`}
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${typeInfo?.color || "bg-secondary"} flex items-center justify-center shrink-0`}>
+                    {typeInfo && <typeInfo.icon className="w-5 h-5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold font-display text-foreground truncate">{activity.title}</p>
+                      {activity.isPR && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-badge-gold/15 text-badge-gold">PR</span>}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground font-body">{activity.date}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-2 mt-3">
+                  <div className="text-center p-2 rounded-lg bg-secondary/40">
+                    <p className="text-xs font-bold font-display text-foreground">{activity.distance}</p>
+                    <p className="text-[8px] text-muted-foreground font-body">km</p>
+                  </div>
+                  <div className="text-center p-2 rounded-lg bg-secondary/40">
+                    <p className="text-xs font-bold font-display text-foreground">{formatDuration(activity.duration)}</p>
+                    <p className="text-[8px] text-muted-foreground font-body">time</p>
+                  </div>
+                  <div className="text-center p-2 rounded-lg bg-secondary/40">
+                    <p className="text-xs font-bold font-display text-foreground">{activity.pace || "--"}</p>
+                    <p className="text-[8px] text-muted-foreground font-body">pace</p>
+                  </div>
+                  <div className="text-center p-2 rounded-lg bg-secondary/40">
+                    <p className="text-xs font-bold font-display text-foreground">{activity.calories}</p>
+                    <p className="text-[8px] text-muted-foreground font-body">kcal</p>
+                  </div>
+                </div>
               </motion.div>
             );
           })}
         </div>
       )}
 
-      {/* Strength history */}
-      {(feedFilter === "all" || feedFilter === "strength") && (
-        <div>
-          <h3 className="text-sm font-semibold font-display text-foreground mb-3 flex items-center gap-2">
-            <Dumbbell className="w-4 h-4 text-warning" /> Strength History
-          </h3>
-          <div className="space-y-3">
-            {workouts.map((workout, i) => (
-              <WorkoutDetailCard key={workout.id} workout={workout} isExpanded={expandedWorkout === workout.id}
-                onToggle={() => setExpandedWorkout(expandedWorkout === workout.id ? null : workout.id)}
-                onRepeat={w => startFromTemplate({ name: w.name, exercises: w.exercises.map(e => e.name) })}
-                index={i} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Session Picker Modal ── */}
+      {/* ── Session Picker ── */}
       <AnimatePresence>
         {showSessionPicker && (
           <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm"
@@ -585,36 +495,32 @@ const Training = () => {
                 <h2 className="text-lg font-bold font-display text-foreground">Start Session</h2>
                 <button onClick={() => setShowSessionPicker(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
-              <p className="text-xs text-muted-foreground font-body">Choose your session type</p>
 
               <div>
-                <p className="text-xs font-semibold text-muted-foreground font-body mb-2 uppercase tracking-wider">Cardio</p>
+                <p className="text-[10px] font-medium text-muted-foreground font-body mb-2 uppercase tracking-wider">Cardio</p>
                 <div className="grid grid-cols-3 gap-2">
                   {SESSION_TYPES.filter(s => s.category === "cardio").map(s => (
                     <button key={s.key} onClick={() => handleSessionSelect(s.key)}
-                      className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
-                      <div className={`w-12 h-12 rounded-2xl ${s.color} flex items-center justify-center`}>
-                        <s.icon className="w-6 h-6" />
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
+                      <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center`}>
+                        <s.icon className="w-5 h-5" />
                       </div>
-                      <span className="text-xs font-medium text-foreground font-body">{s.label}</span>
+                      <span className="text-[10px] font-medium text-foreground font-body">{s.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-muted-foreground font-body mb-2 uppercase tracking-wider">Strength</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {SESSION_TYPES.filter(s => s.category === "strength").map(s => (
-                    <button key={s.key} onClick={() => handleSessionSelect(s.key)}
-                      className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
-                      <div className={`w-12 h-12 rounded-2xl ${s.color} flex items-center justify-center`}>
-                        <s.icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-xs font-medium text-foreground font-body">{s.label}</span>
-                    </button>
-                  ))}
-                </div>
+                <p className="text-[10px] font-medium text-muted-foreground font-body mb-2 uppercase tracking-wider">Strength</p>
+                <button onClick={() => handleSessionSelect("strength")}
+                  className="w-full flex items-center gap-3 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center">
+                    <Dumbbell className="w-5 h-5 text-warning" />
+                  </div>
+                  <span className="text-sm font-medium text-foreground font-body">Start Strength Workout</span>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -628,23 +534,13 @@ const Training = () => {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <button onClick={stopCardioTimer} className="absolute top-6 right-6"><X className="w-6 h-6 text-muted-foreground" /></button>
 
-            <div className="flex gap-2 mb-8">
-              {SESSION_TYPES.filter(s => s.category === "cardio").map(t => (
-                <button key={t.key} onClick={() => setTimerType(t.key)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-body transition-colors ${
-                    timerType === t.key ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                  }`}>
-                  <t.icon className="w-4 h-4" />{t.label}
-                </button>
-              ))}
-            </div>
+            <p className="text-sm text-muted-foreground font-body mb-4 capitalize">{SESSION_TYPES.find(s => s.key === timerType)?.label}</p>
 
-            <motion.p className="text-6xl font-bold font-display text-foreground mb-2 tabular-nums"
+            <motion.p className="text-6xl font-bold font-display text-foreground mb-8 tabular-nums"
               animate={{ scale: timerRunning ? [1, 1.02, 1] : 1 }}
               transition={{ duration: 1, repeat: timerRunning ? Infinity : 0 }}>
               {formatTimer(timerSeconds)}
             </motion.p>
-            <p className="text-sm text-muted-foreground font-body mb-12 capitalize">{SESSION_TYPES.find(s => s.key === timerType)?.label}</p>
 
             <div className="flex gap-6">
               <button onClick={() => setTimerRunning(!timerRunning)}
@@ -657,19 +553,11 @@ const Training = () => {
                 </button>
               )}
             </div>
-
-            {timerRunning && (
-              <div className="grid grid-cols-3 gap-6 mt-12">
-                <div className="text-center"><p className="text-lg font-bold font-display text-foreground">0.0</p><p className="text-[10px] text-muted-foreground font-body">km</p></div>
-                <div className="text-center"><p className="text-lg font-bold font-display text-foreground">--:--</p><p className="text-[10px] text-muted-foreground font-body">pace</p></div>
-                <div className="text-center"><p className="text-lg font-bold font-display text-foreground">0</p><p className="text-[10px] text-muted-foreground font-body">kcal</p></div>
-              </div>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── New Workout Modal (Strength) ── */}
+      {/* ── Template Picker ── */}
       <AnimatePresence>
         {showNewWorkout && (
           <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm"
@@ -678,24 +566,23 @@ const Training = () => {
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }} onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold font-display text-foreground">Start Strength Session</h2>
+                <h2 className="text-lg font-bold font-display text-foreground">Choose Workout</h2>
                 <button onClick={() => setShowNewWorkout(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
-              <p className="text-xs text-muted-foreground font-body">Choose a template or start empty</p>
               <div className="space-y-2">
                 {TEMPLATES.map(t => (
                   <button key={t.name} onClick={() => startFromTemplate(t)}
                     className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
                     <div className="text-left">
                       <p className="text-sm font-semibold font-display text-foreground">{t.name}</p>
-                      <p className="text-xs text-muted-foreground font-body">{t.exercises.join(", ")}</p>
+                      <p className="text-[10px] text-muted-foreground font-body mt-0.5">{t.exercises.length} exercises</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </button>
                 ))}
               </div>
               <button onClick={() => startFromTemplate({ name: "Custom Workout", exercises: [] })}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary">
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display text-sm glow-primary">
                 Empty Workout
               </button>
             </motion.div>
@@ -703,7 +590,7 @@ const Training = () => {
         )}
       </AnimatePresence>
 
-      {/* ── Exercise Library Modal ── */}
+      {/* ── Exercise Library ── */}
       <AnimatePresence>
         {showExerciseLib && (
           <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-sm"
