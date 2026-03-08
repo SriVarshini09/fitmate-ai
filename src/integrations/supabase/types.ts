@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      community_posts: {
+        Row: {
+          id: string
+          user_id: string
+          author_name: string
+          author_initials: string
+          content: string
+          tag: string
+          likes: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          author_name?: string
+          author_initials?: string
+          content: string
+          tag?: string
+          likes?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          author_name?: string
+          author_initials?: string
+          content?: string
+          tag?: string
+          likes?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
