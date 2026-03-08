@@ -222,20 +222,22 @@ const CycleTracker = () => {
 
   const todaySymptoms = symptoms.filter((s) => isSameDay(new Date(s.date), today));
 
-  // Generate twinkling stars
-  const stars = Array.from({ length: 30 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 2.5 + 1,
-    delay: Math.random() * 4,
-    duration: Math.random() * 2 + 2,
-  }));
+  // Generate twinkling stars — use useMemo-like pattern with useState to keep stable across renders
+  const [stars] = useState(() =>
+    Array.from({ length: 40 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 2,
+      delay: Math.random() * 5,
+      duration: Math.random() * 3 + 2,
+    }))
+  );
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-28 relative">
+    <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-28 relative min-h-screen">
       {/* Twinkling stars background */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
         {stars.map((star) => (
           <motion.div
             key={star.id}
@@ -245,11 +247,12 @@ const CycleTracker = () => {
               top: `${star.y}%`,
               width: star.size,
               height: star.size,
-              background: `radial-gradient(circle, hsl(var(--destructive) / 0.6), hsl(var(--peach) / 0.3))`,
+              backgroundColor: `hsl(350 70% 75% / 0.8)`,
+              boxShadow: `0 0 ${star.size * 3}px ${star.size}px hsl(350 70% 75% / 0.3)`,
             }}
             animate={{
-              opacity: [0.1, 0.8, 0.1],
-              scale: [0.8, 1.2, 0.8],
+              opacity: [0.15, 1, 0.15],
+              scale: [0.6, 1.4, 0.6],
             }}
             transition={{
               duration: star.duration,
@@ -260,9 +263,9 @@ const CycleTracker = () => {
           />
         ))}
         {/* Soft warm glow orbs */}
-        <div className="absolute top-[15%] left-[10%] w-[250px] h-[250px] rounded-full bg-[hsl(350_60%_50%/0.06)] blur-[80px]" />
-        <div className="absolute bottom-[20%] right-[5%] w-[200px] h-[200px] rounded-full bg-[hsl(18_85%_72%/0.05)] blur-[70px]" />
-        <div className="absolute top-[50%] left-[50%] w-[180px] h-[180px] rounded-full bg-[hsl(280_40%_50%/0.04)] blur-[60px]" />
+        <div className="absolute top-[10%] left-[5%] w-[300px] h-[300px] rounded-full blur-[100px]" style={{ background: "hsl(340 60% 50% / 0.08)" }} />
+        <div className="absolute bottom-[15%] right-[0%] w-[250px] h-[250px] rounded-full blur-[80px]" style={{ background: "hsl(18 85% 72% / 0.07)" }} />
+        <div className="absolute top-[45%] left-[40%] w-[200px] h-[200px] rounded-full blur-[70px]" style={{ background: "hsl(280 40% 60% / 0.06)" }} />
       </div>
 
       {/* Content */}
