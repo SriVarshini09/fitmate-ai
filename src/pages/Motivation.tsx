@@ -33,15 +33,6 @@ const challenges: Challenge[] = [
   { id: "5", title: "No Sugar Week", description: "Avoid added sugar for a full week", duration: "7 days", progress: 3, total: 7, category: "Nutrition", emoji: "🚫", active: true },
 ];
 
-const milestones = [
-  { title: "First Workout Logged", earned: true, date: "Jan 15", emoji: "💪" },
-  { title: "7-Day Streak", earned: true, date: "Jan 22", emoji: "🔥" },
-  { title: "10,000 Steps Day", earned: true, date: "Feb 1", emoji: "🏃" },
-  { title: "30 Meals Tracked", earned: true, date: "Feb 10", emoji: "🍽️" },
-  { title: "Lost First 2kg", earned: true, date: "Feb 20", emoji: "⚖️" },
-  { title: "100 Workouts", earned: false, date: "", emoji: "🏆" },
-  { title: "Marathon Steps (42K in a day)", earned: false, date: "", emoji: "🥇" },
-];
 
 const Motivation = () => {
   const [quoteIndex, setQuoteIndex] = useState(0);
@@ -136,39 +127,6 @@ const Motivation = () => {
         </div>
       </div>
 
-      {/* Milestones */}
-      <div className="glass-card p-5">
-        <h3 className="text-sm font-semibold font-display text-foreground mb-4 flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-badge-gold" /> Milestones
-        </h3>
-        <div className="relative">
-          <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-secondary" />
-          <div className="space-y-4">
-            {milestones.map((m, i) => (
-              <motion.div
-                key={i}
-                className={`flex items-center gap-4 relative ${!m.earned ? "opacity-40" : ""}`}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: m.earned ? 1 : 0.4, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
-                  m.earned ? "bg-primary/20" : "bg-secondary"
-                }`}>
-                  <span className="text-sm">{m.emoji}</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground font-body">{m.title}</p>
-                  {m.date && <p className="text-[10px] text-muted-foreground font-body">{m.date}</p>}
-                </div>
-                {m.earned && <CheckCircle2 className="w-4 h-4 text-primary" />}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Daily tip */}
       <div className="glass-card p-5 bg-gradient-to-br from-card/60 to-primary/5">
         <div className="flex items-center gap-2 mb-2">
           <Flame className="w-4 h-4 text-warning" />
