@@ -41,14 +41,15 @@ const insights = [
 ];
 
 const tooltipStyle = {
-  backgroundColor: "hsl(0, 0%, 100%)",
-  border: "1px solid hsl(200, 12%, 85%)",
+  backgroundColor: "hsl(80, 8%, 14%)",
+  border: "1px solid hsl(80, 5%, 24%)",
   borderRadius: 16,
   fontSize: 12,
-  boxShadow: "0 8px 32px hsl(220, 30%, 12%, 0.08)",
+  color: "hsl(60, 10%, 92%)",
+  boxShadow: "0 8px 32px hsl(0, 0%, 0%, 0.3)",
 };
-const labelStyle = { color: "hsl(220, 30%, 12%)" };
-const tickStyle = { fill: "hsl(220, 10%, 48%)", fontSize: 11 };
+const labelStyle = { color: "hsl(60, 10%, 92%)" };
+const tickStyle = { fill: "hsl(60, 5%, 55%)", fontSize: 11 };
 
 const container = {
   hidden: { opacity: 0 },
