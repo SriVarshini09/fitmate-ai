@@ -169,7 +169,18 @@ const FoodLog = () => {
                   <p className="text-xs text-muted-foreground font-body">{meal.time}</p>
                 </div>
               </div>
-              <span className="text-sm font-semibold text-foreground font-display">{mealCals} kcal</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-foreground font-display">{mealCals} kcal</span>
+                <button
+                  onClick={() => { setSelectedMeal(meal.key); setShowAdd(true); }}
+                  className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center hover:bg-primary/25 transition-colors"
+                >
+                  <Plus className="w-4 h-4 text-primary" />
+                </button>
+                <button className="w-8 h-8 rounded-xl bg-secondary/80 flex items-center justify-center hover:bg-secondary transition-colors">
+                  <Camera className="w-4 h-4 text-primary" />
+                </button>
+              </div>
             </div>
             {mealFoods.length > 0 ? (
               <div className="space-y-2">
