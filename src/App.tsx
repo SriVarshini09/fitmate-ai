@@ -10,6 +10,7 @@ import FoodLog from "./pages/FoodLog";
 import Community from "./pages/Community";
 import AiChat from "./pages/AiChat";
 import Badges from "./pages/Badges";
+import CycleTracker from "./pages/CycleTracker";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
