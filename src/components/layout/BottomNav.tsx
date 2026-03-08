@@ -4,23 +4,23 @@ import { Home, UtensilsCrossed, BarChart3, Bot, MoreHorizontal, X, Target, Brain
 import { motion, AnimatePresence } from "framer-motion";
 
 const mainNavItems = [
-  { path: "/", icon: Home, label: "Home" },
-  { path: "/food", icon: UtensilsCrossed, label: "Food" },
-  { path: "/insights", icon: BarChart3, label: "Insights" },
-  { path: "/ai-chat", icon: Bot, label: "AI Coach" },
+  { path: "/dashboard", icon: Home, label: "Home" },
+  { path: "/dashboard/food", icon: UtensilsCrossed, label: "Food" },
+  { path: "/dashboard/insights", icon: BarChart3, label: "Insights" },
+  { path: "/dashboard/ai-chat", icon: Bot, label: "AI Coach" },
 ];
 
 const moreItems = [
-  { path: "/training", icon: Zap, label: "Training", color: "bg-primary/10 text-primary" },
-  { path: "/fasting", icon: Timer, label: "Fasting", color: "bg-info/10 text-info" },
-  { path: "/goals", icon: Target, label: "Goals", color: "bg-primary/10 text-primary" },
-  { path: "/planner", icon: CalendarDays, label: "Meal Planner", color: "bg-info/10 text-info" },
-  { path: "/lifestyle", icon: Brain, label: "Lifestyle", color: "bg-info/10 text-info" },
-  { path: "/motivation", icon: Zap, label: "Motivation", color: "bg-warning/10 text-warning" },
-  { path: "/tools", icon: Calculator, label: "Tools", color: "bg-success/10 text-success" },
-  { path: "/badges", icon: Trophy, label: "Badges", color: "bg-badge-gold/10 text-badge-gold" },
-  { path: "/community", icon: MessageCircle, label: "Community", color: "bg-primary/10 text-primary" },
-  { path: "/cycle", icon: Heart, label: "Cycle Tracker", color: "bg-destructive/10 text-destructive" },
+  { path: "/dashboard/training", icon: Zap, label: "Training", color: "bg-primary/10 text-primary" },
+  { path: "/dashboard/fasting", icon: Timer, label: "Fasting", color: "bg-info/10 text-info" },
+  { path: "/dashboard/goals", icon: Target, label: "Goals", color: "bg-primary/10 text-primary" },
+  { path: "/dashboard/planner", icon: CalendarDays, label: "Meal Planner", color: "bg-info/10 text-info" },
+  { path: "/dashboard/lifestyle", icon: Brain, label: "Lifestyle", color: "bg-info/10 text-info" },
+  { path: "/dashboard/motivation", icon: Zap, label: "Motivation", color: "bg-warning/10 text-warning" },
+  { path: "/dashboard/tools", icon: Calculator, label: "Tools", color: "bg-success/10 text-success" },
+  { path: "/dashboard/badges", icon: Trophy, label: "Badges", color: "bg-badge-gold/10 text-badge-gold" },
+  { path: "/dashboard/community", icon: MessageCircle, label: "Community", color: "bg-primary/10 text-primary" },
+  { path: "/dashboard/cycle", icon: Heart, label: "Cycle Tracker", color: "bg-destructive/10 text-destructive" },
 ];
 
 const BottomNav = () => {
