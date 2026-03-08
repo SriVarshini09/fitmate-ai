@@ -29,6 +29,7 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/ai-chat" element={<AiChat />} />
             <Route path="/badges" element={<Badges />} />
+            <Route path="/cycle" element={<CycleTracker />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
