@@ -4,6 +4,7 @@ import { Calendar, Flame, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, T
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCalorieTracker } from "@/hooks/useCalorieTracker";
+import AiMealPlanner from "@/components/planner/AiMealPlanner";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MEALS = ["Breakfast", "Lunch", "Snack", "Dinner"] as const;
