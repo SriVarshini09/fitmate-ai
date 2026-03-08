@@ -24,8 +24,7 @@ import Insights from "./pages/Insights";
 import Lifestyle from "./pages/Lifestyle";
 import Motivation from "./pages/Motivation";
 import Tools from "./pages/Tools";
-import Activities from "./pages/Activities";
-import WorkoutLogger from "./pages/WorkoutLogger";
+import Training from "./pages/Training";
 import FastingTimer from "./pages/FastingTimer";
 import Tablets from "./pages/Tablets";
 import NotFound from "./pages/NotFound";
@@ -66,8 +65,7 @@ const App = () => (
               <Route path="lifestyle" element={<Lifestyle />} />
               <Route path="motivation" element={<Motivation />} />
               <Route path="tools" element={<Tools />} />
-              <Route path="activities" element={<Activities />} />
-              <Route path="workout" element={<WorkoutLogger />} />
+              <Route path="training" element={<Training />} />
               <Route path="fasting" element={<FastingTimer />} />
               <Route path="tablets" element={<Tablets />} />
             </Route>

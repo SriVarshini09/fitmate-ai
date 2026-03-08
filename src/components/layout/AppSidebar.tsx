@@ -1,7 +1,7 @@
 import {
   Home, UtensilsCrossed, BarChart3, Bot, Target, Brain, Zap,
-  Calculator, Trophy, CalendarDays, MessageCircle, Heart, MapPin,
-  Dumbbell, Timer, Activity, Pill, LogOut
+  Calculator, Trophy, CalendarDays, MessageCircle, Heart,
+  Timer, Activity, Pill, LogOut
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -27,8 +27,7 @@ const mainItems = [
 ];
 
 const trackingItems = [
-  { title: "Activities", url: "/dashboard/activities", icon: MapPin },
-  { title: "Workouts", url: "/dashboard/workout", icon: Dumbbell },
+  { title: "Training", url: "/dashboard/training", icon: Zap },
   { title: "Fasting", url: "/dashboard/fasting", icon: Timer },
   { title: "Tablets", url: "/dashboard/tablets", icon: Pill },
   { title: "Goals", url: "/dashboard/goals", icon: Target },

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, UtensilsCrossed, BarChart3, Bot, MoreHorizontal, X, Target, Brain, Zap, Calculator, Trophy, CalendarDays, MessageCircle, Heart, MapPin, Dumbbell, Timer } from "lucide-react";
+import { Home, UtensilsCrossed, BarChart3, Bot, MoreHorizontal, X, Target, Brain, Zap, Calculator, Trophy, CalendarDays, MessageCircle, Heart, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const mainNavItems = [
@@ -11,8 +11,7 @@ const mainNavItems = [
 ];
 
 const moreItems = [
-  { path: "/activities", icon: MapPin, label: "Activities", color: "bg-primary/10 text-primary" },
-  { path: "/workout", icon: Dumbbell, label: "Workouts", color: "bg-warning/10 text-warning" },
+  { path: "/training", icon: Zap, label: "Training", color: "bg-primary/10 text-primary" },
   { path: "/fasting", icon: Timer, label: "Fasting", color: "bg-info/10 text-info" },
   { path: "/goals", icon: Target, label: "Goals", color: "bg-primary/10 text-primary" },
   { path: "/planner", icon: CalendarDays, label: "Meal Planner", color: "bg-info/10 text-info" },
