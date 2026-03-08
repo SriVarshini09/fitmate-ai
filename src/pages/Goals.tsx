@@ -36,18 +36,27 @@ const Goals = () => {
   });
 
   const addGoal = () => {
-    if (!newGoal.title || !newGoal.target) return;
+    if (!newGoal.title || !newGoal.target || newGoal.categories.length === 0) return;
     setGoals([
       ...goals,
       {
-        id: Date.now().toString(), title: newGoal.title, category: newGoal.category,
+        id: Date.now().toString(), title: newGoal.title, categories: newGoal.categories,
         target: parseFloat(newGoal.target), current: parseFloat(newGoal.current) || 0,
         unit: newGoal.unit, direction: newGoal.direction, deadline: newGoal.deadline,
         milestones: [],
       },
     ]);
-    setNewGoal({ title: "", category: "weight", target: "", current: "", unit: "", direction: "decrease", deadline: "" });
+    setNewGoal({ title: "", categories: [], target: "", current: "", unit: "", direction: "decrease", deadline: "" });
     setShowAdd(false);
+  };
+
+  const toggleCategory = (key: string) => {
+    setNewGoal(prev => ({
+      ...prev,
+      categories: prev.categories.includes(key)
+        ? prev.categories.filter(c => c !== key)
+        : [...prev.categories, key]
+    }));
   };
 
   const updateProgress = (id: string, newValue: number) => {
