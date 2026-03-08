@@ -29,6 +29,7 @@ const trackingItems = [
   { title: "Activities", url: "/dashboard/activities", icon: MapPin },
   { title: "Workouts", url: "/dashboard/workout", icon: Dumbbell },
   { title: "Fasting", url: "/dashboard/fasting", icon: Timer },
+  { title: "Tablets", url: "/dashboard/tablets", icon: Pill },
   { title: "Goals", url: "/dashboard/goals", icon: Target },
   { title: "Cycle Tracker", url: "/dashboard/cycle", icon: Heart },
 ];
