@@ -489,6 +489,8 @@ const WeeklyPlanner = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      </>
+      )}
     </div>
   );
 };
