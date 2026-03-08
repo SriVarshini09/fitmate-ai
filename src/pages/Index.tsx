@@ -6,6 +6,7 @@ import StreakCard from "@/components/dashboard/StreakCard";
 import MacroBar from "@/components/dashboard/MacroBar";
 import QuickActions from "@/components/dashboard/QuickActions";
 import BadgePreview from "@/components/dashboard/BadgePreview";
+import TabletTracker from "@/components/dashboard/TabletTracker";
 
 const container = {
   hidden: { opacity: 0 },
