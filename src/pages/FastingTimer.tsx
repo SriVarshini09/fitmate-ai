@@ -271,24 +271,6 @@ const FastingTimer = () => {
       </motion.div>
 
 
-      {/* Schedule bar (when not fasting) */}
-      {!isFasting && (
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-semibold font-display text-foreground mb-3">Schedule</h3>
-          <div className="h-6 rounded-full bg-secondary overflow-hidden flex mb-2">
-            <div className="h-full bg-primary/30 flex items-center justify-center" style={{ width: `${(fastingHours / 24) * 100}%` }}>
-              <span className="text-[9px] font-bold text-primary font-body">FASTING</span>
-            </div>
-            <div className="h-full bg-success/20 flex items-center justify-center" style={{ width: `${(eatHours / 24) * 100}%` }}>
-              <span className="text-[9px] font-bold text-success font-body">EAT</span>
-            </div>
-          </div>
-          <div className="flex justify-between text-[10px] text-muted-foreground font-body">
-            <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> Fast: {fastingHours}h</span>
-            <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" /> Eat: {eatHours}h</span>
-          </div>
-        </div>
-      )}
 
       {/* Weekly Stats */}
       <div className="glass-card p-5">
