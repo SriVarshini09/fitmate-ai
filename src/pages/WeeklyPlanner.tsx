@@ -42,6 +42,7 @@ const WeeklyPlanner = () => {
   const { profile } = useCalorieTracker();
   const calorieGoal = profile?.targetCalories || 2100;
   const [weekPlan, setWeekPlan] = useState<WeekPlan>(defaultWeek);
+  const [activeTab, setActiveTab] = useState<"manual" | "ai">("manual");
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
   const [showAdd, setShowAdd] = useState(false);
   const [addMealType, setAddMealType] = useState<string>("Breakfast");
