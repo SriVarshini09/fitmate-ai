@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Camera, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2 } from "lucide-react";
+import { Calendar, Plus, X, ChevronLeft, ChevronRight, UtensilsCrossed, Trash2, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MEALS = ["Breakfast", "Lunch", "Snack", "Dinner"] as const;
