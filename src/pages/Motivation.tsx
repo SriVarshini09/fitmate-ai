@@ -1,6 +1,104 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Target, RefreshCw, CheckCircle2, Flame } from "lucide-react";
+
+const CHALLENGES_KEY = "Cals Crumble Fit_challenges";
+
+function loadChallengeProgress(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(CHALLENGES_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveChallengeProgress(progress: Record<string, number>) {
+  localStorage.setItem(CHALLENGES_KEY, JSON.stringify(progress));
+}
+
+function calcRealProgress(): Record<string, number> {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Steps: count last 7 days that hit 10000
+  let stepsGoalDays = 0;
+  try {
+    const raw = localStorage.getItem("Cals Crumble Fit_steps");
+    if (raw) {
+      const data: Record<string, number> = JSON.parse(raw);
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if ((data[key] || 0) >= 10000) stepsGoalDays++;
+      }
+    }
+  } catch {}
+
+  // Water: count last 7 days that had entries (we persist as key=date, value=ml total)
+  let waterGoalDays = 0;
+  try {
+    const raw = localStorage.getItem("Cals Crumble Fit_water");
+    if (raw) {
+      const data: Record<string, number> = JSON.parse(raw);
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if ((data[key] || 0) >= 2000) waterGoalDays++;
+      }
+    }
+  } catch {}
+
+  // Workouts: count last 7 days with a completed workout
+  let workoutDays = 0;
+  try {
+    const raw = localStorage.getItem("Cals Crumble Fit_workouts");
+    if (raw) {
+      const workouts: Array<{ date: string }> = JSON.parse(raw);
+      const datesSet = new Set(workouts.map((w) => w.date));
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if (datesSet.has(key)) workoutDays++;
+      }
+    }
+  } catch {}
+
+  // Sleep: count last 7 lifestyle entries with mood logged (proxy for consistency)
+  let sleepLogDays = 0;
+  try {
+    const raw = localStorage.getItem("Cals Crumble Fit_lifestyle");
+    if (raw) {
+      const entries: Array<{ date: string; sleepHours: number }> = JSON.parse(raw);
+      const recent = entries.filter((e) => {
+        const d = new Date(e.date);
+        const diff = (new Date(today).getTime() - d.getTime()) / 86400000;
+        return diff >= 0 && diff < 7;
+      });
+      sleepLogDays = recent.filter((e) => e.sleepHours >= 7).length;
+    }
+  } catch {}
+
+  // Food: count last 7 days with food logged
+  let foodDays = 0;
+  try {
+    const raw = localStorage.getItem("Cals Crumble Fit_foods");
+    if (raw) {
+      const foods: Array<{ date: string }> = JSON.parse(raw);
+      const datesSet = new Set(foods.map((f) => f.date));
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if (datesSet.has(key)) foodDays++;
+      }
+    }
+  } catch {}
+
+  return {
+    "1": stepsGoalDays,
+    "2": foodDays,
+    "3": waterGoalDays,
+    "4": sleepLogDays,
+    "5": workoutDays,
+  };
+}
 
 const QUOTES = [
   { text: "The only bad workout is the one that didn't happen.", author: "Unknown" },
@@ -25,18 +123,31 @@ interface Challenge {
   active: boolean;
 }
 
-const challenges: Challenge[] = [
-  { id: "1", title: "10K Steps Challenge", description: "Walk 10,000 steps every day for 7 days", duration: "7 days", progress: 5, total: 7, category: "Steps", emoji: "👟", active: true },
-  { id: "2", title: "Protein Champion", description: "Hit your protein goal for 7 consecutive days", duration: "7 days", progress: 4, total: 7, category: "Nutrition", emoji: "🥩", active: true },
-  { id: "3", title: "Hydration Hero", description: "Drink 8 glasses of water daily for 7 days", duration: "7 days", progress: 7, total: 7, category: "Water", emoji: "💧", active: true },
-  { id: "4", title: "Early Bird", description: "Sleep before 11 PM for 7 days straight", duration: "7 days", progress: 2, total: 7, category: "Sleep", emoji: "🌅", active: true },
-  { id: "5", title: "No Sugar Week", description: "Avoid added sugar for a full week", duration: "7 days", progress: 3, total: 7, category: "Nutrition", emoji: "🚫", active: true },
+const CHALLENGE_DEFS = [
+  { id: "1", title: "10K Steps Challenge", description: "Walk 10,000 steps every day for 7 days", duration: "7 days", total: 7, category: "Steps", emoji: "👟" },
+  { id: "2", title: "Food Log Streak", description: "Log your food every day for 7 days", duration: "7 days", total: 7, category: "Nutrition", emoji: "�" },
+  { id: "3", title: "Hydration Hero", description: "Drink 2L of water daily for 7 days", duration: "7 days", total: 7, category: "Water", emoji: "💧" },
+  { id: "4", title: "Sleep 7+ Hours", description: "Get 7+ hours of sleep for 7 days", duration: "7 days", total: 7, category: "Sleep", emoji: "🌅" },
+  { id: "5", title: "Workout Week", description: "Complete a workout every day for 7 days", duration: "7 days", total: 7, category: "Fitness", emoji: "�" },
 ];
 
 
 const Motivation = () => {
   const [quoteIndex, setQuoteIndex] = useState(0);
-  const [activeChallenges, setActiveChallenges] = useState(challenges);
+  const [manualProgress, setManualProgress] = useState<Record<string, number>>(() => loadChallengeProgress());
+  const [realProgress, setRealProgress] = useState<Record<string, number>>({});
+
+  // Calculate real progress only once on mount
+  useEffect(() => {
+    setRealProgress(calcRealProgress());
+  }, []);
+
+  const activeChallenges: Challenge[] = CHALLENGE_DEFS.map((def) => ({
+    ...def,
+    // Use whichever is higher: real computed or manually tapped
+    progress: Math.max(realProgress[def.id] ?? 0, manualProgress[def.id] ?? 0),
+    active: true,
+  }));
 
   useEffect(() => {
     setQuoteIndex(Math.floor(Math.random() * QUOTES.length));
@@ -46,9 +157,11 @@ const Motivation = () => {
   const quote = QUOTES[quoteIndex];
 
   const completeDay = (id: string) => {
-    setActiveChallenges((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, progress: Math.min(c.progress + 1, c.total) } : c))
-    );
+    const current = activeChallenges.find((c) => c.id === id)?.progress ?? 0;
+    const next = Math.min(current + 1, 7);
+    const updated = { ...manualProgress, [id]: next };
+    setManualProgress(updated);
+    saveChallengeProgress(updated);
   };
 
   return (

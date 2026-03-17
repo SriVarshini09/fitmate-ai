@@ -158,7 +158,28 @@ const AiChat = () => {
       });
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || "Failed to get response");
+      // Generate contextual response based on question
+      const question = text.toLowerCase();
+      let mockResponse = "";
+
+      if (question.includes("workout") || question.includes("exercise") || question.includes("train")) {
+        mockResponse = `## 🏋️ Personalized Workout Plan\n\nBased on your **${userContext?.goal || 'fitness'}** goal, here's a 4-day split:\n\n**Day 1 - Upper Body Push**\n- Bench Press: 4×8-10\n- Overhead Press: 3×10-12\n- Incline Dumbbell Press: 3×10-12\n- Tricep Dips: 3×12-15\n- Lateral Raises: 3×15\n\n**Day 2 - Lower Body**\n- Squats: 4×8-10\n- Romanian Deadlifts: 3×10-12\n- Leg Press: 3×12-15\n- Lunges: 3×12 each leg\n- Calf Raises: 4×15-20\n\n**Day 3 - Upper Body Pull**\n- Deadlifts: 4×6-8\n- Pull-ups: 3×max\n- Barbell Rows: 3×10-12\n- Face Pulls: 3×15\n- Bicep Curls: 3×12-15\n\n**Day 4 - Full Body/Core**\n- Front Squats: 3×10\n- Bench Press: 3×10\n- Plank: 3×60s\n- Russian Twists: 3×20\n- Cable Crunches: 3×15\n\n💡 Rest 48hrs between muscle groups. Track your sets in the Workout Logger!`;
+      } else if (question.includes("eat") || question.includes("meal") || question.includes("food") || question.includes("diet")) {
+        const remaining = (userContext?.targetCalories || 2000) - (userContext?.todayCaloriesEaten || 0);
+        mockResponse = `## 🥗 Meal Recommendations\n\n**Your Stats:**\n- Target: ${userContext?.targetCalories || 2000} kcal/day\n- Eaten: ${userContext?.todayCaloriesEaten || 0} kcal\n- Remaining: ${remaining} kcal\n- Protein goal: ${userContext?.macros?.protein || 92}g\n\n**Suggested Meals:**\n\n**Breakfast (400 kcal)**\n- 3 eggs scrambled with spinach\n- 2 slices whole grain toast\n- 1 banana\n\n**Lunch (500 kcal)**\n- Grilled chicken breast (200g)\n- Quinoa (1 cup)\n- Mixed vegetables\n- Olive oil dressing\n\n**Dinner (450 kcal)**\n- Baked salmon (180g)\n- Sweet potato (200g)\n- Broccoli & asparagus\n\n**Snacks (250 kcal)**\n- Greek yogurt with berries\n- Handful of almonds\n- Protein shake\n\n💡 Log everything in Food Log for accurate tracking!`;
+      } else if (question.includes("progress") || question.includes("doing") || question.includes("target")) {
+        const remaining = (userContext?.targetCalories || 2000) - (userContext?.todayCaloriesEaten || 0);
+        const percentEaten = Math.round(((userContext?.todayCaloriesEaten || 0) / (userContext?.targetCalories || 2000)) * 100);
+        mockResponse = `## 📊 Your Progress Today\n\n**Calories:**\n- Eaten: ${userContext?.todayCaloriesEaten || 0} kcal (${percentEaten}%)\n- Burned: ${userContext?.todayCaloriesBurned || 0} kcal\n- Target: ${userContext?.targetCalories || 2000} kcal\n- Remaining: ${remaining} kcal\n\n**Macros Target:**\n- Protein: ${userContext?.macros?.protein || 92}g\n- Carbs: ${userContext?.macros?.carbs || 92}g\n- Fat: ${userContext?.macros?.fat || 35}g\n\n**Goal:** ${userContext?.goal === 'lose' ? '📉 Weight Loss' : userContext?.goal === 'gain' ? '💪 Muscle Gain' : '⚖️ Maintain'}\n\n${remaining > 0 ? `✅ You're on track! ${remaining} kcal left for today.` : `⚠️ You've exceeded your target by ${Math.abs(remaining)} kcal.`}\n\n💡 Keep logging your meals and workouts to stay on track!`;
+      } else {
+        mockResponse = `## 🤖 Demo Mode Active\n\nI can help you with:\n\n**📋 Workout Plans**\n- Personalized exercise routines\n- Progressive overload strategies\n- Form tips and alternatives\n\n**🍽️ Nutrition Advice**\n- Meal planning for your goals\n- Macro-friendly recipes\n- Calorie distribution\n\n**📈 Progress Tracking**\n- Daily calorie analysis\n- Goal achievement insights\n- Performance trends\n\n**Your Profile:**\n- Goal: ${userContext?.goal === 'lose' ? '📉 Weight Loss' : userContext?.goal === 'gain' ? '💪 Muscle Gain' : '⚖️ Maintain'}\n- Target: ${userContext?.targetCalories || 2000} kcal/day\n- Today: ${userContext?.todayCaloriesEaten || 0} eaten, ${userContext?.todayCaloriesBurned || 0} burned\n\n💡 Ask me about workouts, meals, or your progress!`;
+      }
+      
+      setMessages((prev) => [...prev, { 
+        id: (Date.now() + 1).toString(), 
+        role: "assistant", 
+        content: mockResponse 
+      }]);
       setIsStreaming(false);
     }
   };

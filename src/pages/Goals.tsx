@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Target, Plus, X, Check, TrendingDown, TrendingUp, Minus,
@@ -6,6 +6,8 @@ import {
   Dumbbell, Star, Scale, Trash2, Pencil
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Goal {
   id: string;
@@ -46,7 +48,9 @@ function saveGoals(goals: Goal[]) {
 }
 
 const Goals = () => {
+  const { user } = useAuth();
   const [goals, setGoals] = useState<Goal[]>(loadGoals);
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [expandedGoal, setExpandedGoal] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState({
@@ -59,43 +63,91 @@ const Goals = () => {
     deadline: "",
   });
 
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    
+    (async () => {
+      try {
+        const { data, error } = await supabase.from("goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+        clearTimeout(timeout);
+        if (!error && data && data.length > 0) {
+          const mapped: Goal[] = data.map((r) => ({
+            id: r.id,
+            title: r.title,
+            categories: r.categories,
+            target: r.target,
+            current: r.current_value,
+            startingValue: r.starting_value,
+            unit: r.unit,
+            direction: r.direction as Goal["direction"],
+            deadline: r.deadline || "",
+            createdAt: r.created_at,
+          }));
+          setGoals(mapped);
+          saveGoals(mapped);
+        }
+        setLoading(false);
+      } catch (err) {
+        clearTimeout(timeout);
+        console.error(err);
+        setLoading(false);
+      }
+    })();
+  }, [user]);
+
   const resetForm = () => {
     setNewGoal({ title: "", categories: [], target: "", current: "", unit: "", direction: "decrease", deadline: "" });
   };
 
-  const addGoal = () => {
+  const addGoal = async () => {
     if (!newGoal.title || !newGoal.target || newGoal.categories.length === 0) {
       toast.error("Please fill in all required fields");
       return;
     }
-    const updated = [
-      ...goals,
-      {
-        id: Date.now().toString(),
-        title: newGoal.title,
-        categories: newGoal.categories,
-        target: parseFloat(newGoal.target),
-        current: parseFloat(newGoal.current) || 0,
-        startingValue: parseFloat(newGoal.current) || 0,
-        unit: newGoal.unit,
-        direction: newGoal.direction,
-        deadline: newGoal.deadline,
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    const entry: Goal = {
+      id: Date.now().toString(),
+      title: newGoal.title,
+      categories: newGoal.categories,
+      target: parseFloat(newGoal.target),
+      current: parseFloat(newGoal.current) || 0,
+      startingValue: parseFloat(newGoal.current) || 0,
+      unit: newGoal.unit,
+      direction: newGoal.direction,
+      deadline: newGoal.deadline,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [entry, ...goals];
     setGoals(updated);
     saveGoals(updated);
     resetForm();
     setShowAdd(false);
     toast.success("🎯 Goal created!");
+    if (user) {
+      const { data, error } = await supabase.from("goals").insert({
+        user_id: user.id,
+        title: entry.title,
+        categories: entry.categories,
+        target: entry.target,
+        current_value: entry.current,
+        starting_value: entry.startingValue,
+        unit: entry.unit,
+        direction: entry.direction,
+        deadline: entry.deadline || null,
+      }).select().single();
+      if (!error && data) {
+        setGoals((prev) => prev.map((g) => g.id === entry.id ? { ...g, id: data.id } : g));
+      }
+    }
   };
 
-  const deleteGoal = (id: string) => {
+  const deleteGoal = async (id: string) => {
     const updated = goals.filter((g) => g.id !== id);
     setGoals(updated);
     saveGoals(updated);
     setExpandedGoal(null);
     toast("Goal removed");
+    if (user) await supabase.from("goals").delete().eq("id", id).eq("user_id", user.id);
   };
 
   const toggleCategory = (key: string) => {
@@ -107,10 +159,11 @@ const Goals = () => {
     }));
   };
 
-  const updateProgress = (id: string, newValue: number) => {
+  const updateProgress = async (id: string, newValue: number) => {
     const updated = goals.map((g) => (g.id === id ? { ...g, current: newValue } : g));
     setGoals(updated);
     saveGoals(updated);
+    if (user) await supabase.from("goals").update({ current_value: newValue }).eq("id", id).eq("user_id", user.id);
   };
 
   const getProgress = (goal: Goal) => {
@@ -132,6 +185,13 @@ const Goals = () => {
   const overallPct = goals.length > 0 ? Math.round(goals.reduce((sum, g) => sum + getProgress(g), 0) / goals.length) : 0;
 
   const DirectionIcons = { decrease: TrendingDown, increase: TrendingUp, maintain: Minus };
+
+  if (loading) return (
+    <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-28">
+      <div className="h-8 w-32 bg-secondary rounded-xl animate-pulse" />
+      {[1,2,3].map((i) => <div key={i} className="h-24 bg-secondary rounded-2xl animate-pulse" />)}
+    </div>
+  );
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-28">

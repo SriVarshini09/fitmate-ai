@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Plus, X, Apple, Coffee, UtensilsCrossed, Moon } from "lucide-react";
+import { Camera, Plus, X, Apple, Coffee, UtensilsCrossed, Moon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCalorieTracker } from "@/hooks/useCalorieTracker";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 // Built-in nutrition table per 100g: [kcal, protein, carbs, fat, fiber]
 const NUTRITION_TABLE: Record<string, [number, number, number, number, number]> = {
@@ -116,6 +118,7 @@ function todayISO() { return new Date().toISOString().slice(0, 10); }
 
 const FoodLog = () => {
   const { logEaten, profile } = useCalorieTracker();
+  const { user } = useAuth();
   const [foods, setFoods] = useState<FoodEntry[]>(() => {
     try {
       const raw = localStorage.getItem(FOODS_KEY);
@@ -124,6 +127,7 @@ const FoodLog = () => {
       return all.filter((f) => f.date === todayISO());
     } catch { return []; }
   });
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState("breakfast");
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,6 +146,51 @@ const FoodLog = () => {
   const totalFiber = foods.reduce((s, f) => s + f.fiber, 0);
 
   const goals = profile?.macros ?? { protein: 92, carbs: 92, fat: 35, fiber: 25 };
+
+  // Load today's food from Supabase on mount
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    const today = todayISO();
+    
+    // Set timeout to prevent infinite loading
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("food_logs")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("logged_date", today)
+          .order("created_at", { ascending: true });
+        
+        clearTimeout(timeout);
+        if (error) { console.error(error); setLoading(false); return; }
+        if (data && data.length > 0) {
+          const mapped: FoodEntry[] = data.map((r) => ({
+            id: r.id,
+            name: r.name,
+            quantity: r.quantity,
+            unit: r.unit,
+            calories: r.calories,
+            protein: r.protein,
+            carbs: r.carbs,
+            fat: r.fat,
+            fiber: r.fiber,
+            meal: r.meal,
+          }));
+          setFoods(mapped);
+          saveAndSync(mapped);
+        }
+        setLoading(false);
+      } catch (err) {
+        clearTimeout(timeout);
+        console.error(err);
+        setLoading(false);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Nutrition lookup: built-in table first, then generic estimate
   const lookupNutrition = useCallback((name: string, qty: string, unit: string) => {
@@ -205,12 +254,16 @@ const FoodLog = () => {
     } catch {}
   }, []);
 
-  const addFood = () => {
+  const addFood = async () => {
     if (!foodName.trim()) return;
     const qty = parseFloat(quantity) || 1;
     const nutrition = aiResult || { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+    const today = todayISO();
+
+    // Optimistic local update
+    const tempId = Date.now().toString();
     const entry: FoodEntry = {
-      id: Date.now().toString(),
+      id: tempId,
       name: aiResult?.name || foodName.trim(),
       quantity: qty,
       unit: selectedUnit,
@@ -224,19 +277,47 @@ const FoodLog = () => {
     const updated = [...foods, entry];
     setFoods(updated);
     saveAndSync(updated);
-    if (nutrition.calories > 0) logEaten(0); // trigger re-read via saveAndSync
+    if (nutrition.calories > 0) logEaten(0);
     setFoodName("");
     setQuantity("");
     setSelectedUnit("g");
     setAiResult(null);
     setShowAdd(false);
     toast.success(`Added ${entry.name} — ${entry.calories} kcal`);
+
+    // Persist to Supabase
+    if (user) {
+      const { data, error } = await supabase.from("food_logs").insert({
+        user_id: user.id,
+        name: entry.name,
+        meal: entry.meal,
+        quantity: entry.quantity,
+        unit: entry.unit,
+        calories: entry.calories,
+        protein: entry.protein,
+        carbs: entry.carbs,
+        fat: entry.fat,
+        fiber: entry.fiber,
+        logged_date: today,
+      }).select().single();
+      if (!error && data) {
+        // Replace temp id with real UUID
+        setFoods((prev) => {
+          const real = prev.map((f) => f.id === tempId ? { ...f, id: data.id } : f);
+          saveAndSync(real);
+          return real;
+        });
+      }
+    }
   };
 
-  const removeFood = (id: string) => {
+  const removeFood = async (id: string) => {
     const updated = foods.filter((f) => f.id !== id);
     setFoods(updated);
     saveAndSync(updated);
+    if (user) {
+      await supabase.from("food_logs").delete().eq("id", id).eq("user_id", user.id);
+    }
   };
 
   const closeModal = () => {
@@ -245,6 +326,13 @@ const FoodLog = () => {
     setQuantity("");
     setAiResult(null);
   };
+
+  if (loading) return (
+    <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-32">
+      <div className="h-8 w-40 bg-secondary rounded-xl animate-pulse" />
+      {[1,2,3].map((i) => <div key={i} className="h-20 bg-secondary rounded-2xl animate-pulse" />)}
+    </div>
+  );
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-32">

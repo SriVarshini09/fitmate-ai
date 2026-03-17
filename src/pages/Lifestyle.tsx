@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Moon, Smile, Brain, BedDouble, Plus, X, Play, Square, Timer } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const MOODS = [
   { emoji: "😄", label: "Great", value: 5 },
@@ -54,6 +56,7 @@ function formatHoursMin(ms: number) {
 }
 
 const Lifestyle = () => {
+  const { user } = useAuth();
   const [entries, setEntries] = useState<LifestyleEntry[]>(loadEntries);
   const [activeTab, setActiveTab] = useState<Tab>("Sleep");
   const [todayMood, setTodayMood] = useState<number | null>(null);
@@ -72,6 +75,35 @@ const Lifestyle = () => {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isSleeping = sleepStartTime !== null;
+
+  // Load lifestyle entries from Supabase
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("lifestyle_logs").select("*").eq("user_id", user.id)
+      .order("logged_date", { ascending: false }).limit(14)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const mapped: LifestyleEntry[] = data.map((r) => ({
+            id: r.id,
+            date: r.logged_date,
+            sleepHours: r.sleep_hours,
+            sleepQuality: r.sleep_quality,
+            mood: r.mood,
+            stress: r.stress,
+            notes: r.notes || "",
+          }));
+          setEntries(mapped);
+          saveEntries(mapped);
+          // Restore today's selections
+          const today = new Date().toISOString().slice(0, 10);
+          const todayEntry = mapped.find((e) => e.date === today);
+          if (todayEntry) {
+            setTodayMood(todayEntry.mood);
+            setTodayStress(todayEntry.stress);
+          }
+        }
+      });
+  }, [user]);
 
   // Update elapsed time
   useEffect(() => {
@@ -406,8 +438,8 @@ const Lifestyle = () => {
               <input value={todayNote} onChange={(e) => setTodayNote(e.target.value)}
                 placeholder="Any notes for today..." className="w-full bg-secondary rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body" />
 
-              <button onClick={() => {
-                const today = new Date().toLocaleDateString("en-US", { weekday: "short" });
+              <button onClick={async () => {
+                const today = new Date().toISOString().slice(0, 10);
                 const newEntry: LifestyleEntry = {
                   id: Date.now().toString(),
                   date: today,
@@ -423,6 +455,20 @@ const Lifestyle = () => {
                 setTodaySleep("");
                 setTodayNote("");
                 setShowLog(false);
+                if (user) {
+                  const { data } = await supabase.from("lifestyle_logs").upsert({
+                    user_id: user.id,
+                    logged_date: today,
+                    sleep_hours: newEntry.sleepHours,
+                    sleep_quality: newEntry.sleepQuality,
+                    mood: newEntry.mood,
+                    stress: newEntry.stress,
+                    notes: newEntry.notes || null,
+                  }, { onConflict: "user_id,logged_date" }).select().single();
+                  if (data) {
+                    setEntries((prev) => prev.map((e) => e.date === today ? { ...e, id: data.id } : e));
+                  }
+                }
               }}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold font-display glow-primary">
                 Save Entry

@@ -15,6 +15,7 @@ interface OnboardingData {
   height: string;
   weight: string;
   goalWeight: string;
+  timelineMonths: string;
   goal: string;
   activityLevel: string;
   eatingHabit: string;
@@ -28,6 +29,7 @@ const initialData: OnboardingData = {
   height: "",
   weight: "",
   goalWeight: "",
+  timelineMonths: "",
   goal: "",
   activityLevel: "",
   eatingHabit: "",
@@ -52,9 +54,26 @@ function calcTDEE(bmr: number, activity: string) {
   return Math.round(bmr * (activityMultipliers[activity] || 1.55));
 }
 
-function calcTargetCalories(tdee: number, goal: string) {
-  if (goal === "lose") return Math.round(tdee - 500);
-  if (goal === "gain") return Math.round(tdee + 300);
+function calcTargetCalories(tdee: number, goal: string, currentWeight: number, goalWeight: number, timelineMonths: number) {
+  if (goal === "maintain") return tdee;
+  
+  const weightDiff = Math.abs(currentWeight - goalWeight);
+  const totalDays = timelineMonths * 30;
+  const dailyWeightChange = weightDiff / totalDays;
+  
+  // 1 kg fat = ~7700 kcal, so daily deficit/surplus needed
+  const dailyCalorieChange = Math.round(dailyWeightChange * 7700);
+  
+  if (goal === "lose") {
+    const deficit = Math.min(dailyCalorieChange, 1000); // Max 1000 kcal deficit for safety
+    return Math.max(Math.round(tdee - deficit), 1200); // Minimum 1200 kcal
+  }
+  
+  if (goal === "gain") {
+    const surplus = Math.min(dailyCalorieChange, 500); // Max 500 kcal surplus
+    return Math.round(tdee + surplus);
+  }
+  
   return tdee;
 }
 
@@ -280,6 +299,43 @@ function StepGoalWeight({ data, update }: { data: OnboardingData; update: (d: Pa
   );
 }
 
+// Step 5.5: Timeline
+function StepTimeline({ data, update }: { data: OnboardingData; update: (d: Partial<OnboardingData>) => void }) {
+  const weightDiff = Math.abs(Number(data.weight) - Number(data.goalWeight));
+  const recommendedMonths = data.goal === "lose" 
+    ? Math.ceil(weightDiff / 2) // ~0.5kg/week = 2kg/month
+    : Math.ceil(weightDiff / 1.2); // ~0.3kg/week for muscle gain
+  
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
+          <Target className="w-8 h-8 text-primary" />
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">Timeline</h2>
+        <p className="text-muted-foreground font-body text-sm">
+          In how many months do you want to reach {data.goalWeight}kg?
+        </p>
+      </div>
+      <input
+        type="number"
+        placeholder="e.g. 3"
+        value={data.timelineMonths}
+        onChange={(e) => update({ timelineMonths: e.target.value })}
+        className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border text-foreground text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all text-center"
+      />
+      <div className="glass-card p-4 space-y-2">
+        <p className="text-xs font-semibold text-primary font-display">💡 Recommended: {recommendedMonths} months</p>
+        <p className="text-xs text-muted-foreground font-body">
+          {data.goal === "lose" 
+            ? "Safe weight loss is 0.5-1kg per week. Too fast can be unhealthy!"
+            : "Healthy muscle gain is 0.25-0.5kg per week with proper training."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // Step 6: Activity & Exercise
 function StepActivity({ data, update }: { data: OnboardingData; update: (d: Partial<OnboardingData>) => void }) {
   const levels = [
@@ -417,7 +473,8 @@ function StepResults({ data }: { data: OnboardingData }) {
 
   const bmr = calcBMR(sex, w, h, a);
   const tdee = calcTDEE(bmr, activity);
-  const targetCal = calcTargetCalories(tdee, goal);
+  const timelineMonths = Number(data.timelineMonths) || 3;
+  const targetCal = calcTargetCalories(tdee, goal, w, gw, timelineMonths);
   const macros = calcMacros(targetCal, goal, sex);
   const weeks = weeksToGoal(w, gw, goal);
 
@@ -495,7 +552,7 @@ function StepResults({ data }: { data: OnboardingData }) {
 }
 
 // ── Steps config ──
-const TOTAL_STEPS = 9; // 0..7 = questions, 8 = results
+const TOTAL_STEPS = 10; // 0..8 = questions, 9 = results
 
 function canContinue(step: number, data: OnboardingData): boolean {
   switch (step) {
@@ -504,9 +561,10 @@ function canContinue(step: number, data: OnboardingData): boolean {
     case 2: return data.height !== "" && data.weight !== "";
     case 3: return data.goal !== "";
     case 4: return data.goalWeight !== "";
-    case 5: return data.activityLevel !== "";
-    case 6: return data.eatingHabit !== "";
-    case 7: return data.exerciseFrequency !== "";
+    case 5: return data.timelineMonths !== "" && Number(data.timelineMonths) > 0;
+    case 6: return data.activityLevel !== "";
+    case 7: return data.eatingHabit !== "";
+    case 8: return data.exerciseFrequency !== "";
     default: return true;
   }
 }
@@ -543,16 +601,17 @@ const Onboarding = () => {
       case 2: return <StepBody data={data} update={update} />;
       case 3: return <StepGoal data={data} update={update} />;
       case 4: return <StepGoalWeight data={data} update={update} />;
-      case 5: return <StepActivity data={data} update={update} />;
-      case 6: return <StepEating data={data} update={update} />;
-      case 7: return <StepExercise data={data} update={update} />;
-      case 8: return <StepResults data={data} />;
+      case 5: return <StepTimeline data={data} update={update} />;
+      case 6: return <StepActivity data={data} update={update} />;
+      case 7: return <StepEating data={data} update={update} />;
+      case 8: return <StepExercise data={data} update={update} />;
+      case 9: return <StepResults data={data} />;
       default: return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background orbs */}
       <div className="absolute top-20 left-1/4 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-20 right-1/4 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[100px] pointer-events-none" />
@@ -624,7 +683,8 @@ const Onboarding = () => {
                   const activity = data.activityLevel || "moderate";
                   const bmr = calcBMR(sex, w, Number(data.height) || 170, Number(data.age) || 25);
                   const tdee = calcTDEE(bmr, activity);
-                  const targetCal = calcTargetCalories(tdee, goal);
+                  const timelineMonths = Number(data.timelineMonths) || 3;
+                  const targetCal = calcTargetCalories(tdee, goal, w, gw, timelineMonths);
 
                   // Weight goal
                   if (w !== gw) {

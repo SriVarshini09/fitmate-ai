@@ -124,9 +124,25 @@ export function useCalorieTracker() {
       };
       const tdee = Math.round(bmr * (actMulti[data.activityLevel] || 1.55));
 
+      // Timeline-based calculation
+      const goalWeight = parseFloat(data.goalWeight) || weight;
+      const timelineMonths = parseFloat(data.timelineMonths) || 3;
+      
       let targetCalories = tdee;
-      if (data.goal === "lose") targetCalories = Math.round(tdee - 500);
-      if (data.goal === "gain") targetCalories = Math.round(tdee + 300);
+      if (data.goal === "lose" || data.goal === "gain") {
+        const weightDiff = Math.abs(weight - goalWeight);
+        const totalDays = timelineMonths * 30;
+        const dailyWeightChange = weightDiff / totalDays;
+        const dailyCalorieChange = Math.round(dailyWeightChange * 7700);
+        
+        if (data.goal === "lose") {
+          const deficit = Math.min(dailyCalorieChange, 1000);
+          targetCalories = Math.max(Math.round(tdee - deficit), 1200);
+        } else if (data.goal === "gain") {
+          const surplus = Math.min(dailyCalorieChange, 500);
+          targetCalories = Math.round(tdee + surplus);
+        }
+      }
 
       // Fiber recommendation: ~14g per 1000 kcal, min 25g women / 38g men
       const calcFiber = (cal: number, userSex: string) => {
@@ -174,8 +190,8 @@ export function useCalorieTracker() {
 
     // Re-read whenever FoodLog writes to localStorage
     window.addEventListener("storage", readEaten);
-    // Also poll every 2s in case same-tab writes don't fire storage events
-    const interval = setInterval(readEaten, 2000);
+    // Also poll every 10s in case same-tab writes don't fire storage events
+    const interval = setInterval(readEaten, 10000);
     return () => {
       window.removeEventListener("storage", readEaten);
       clearInterval(interval);

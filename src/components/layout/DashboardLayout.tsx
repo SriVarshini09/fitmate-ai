@@ -2,9 +2,14 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Activity } from "lucide-react";
+import { useCalorieTracker } from "@/hooks/useCalorieTracker";
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
+  const { profile } = useCalorieTracker();
+  const initials = profile?.name
+    ? profile.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "U";
 
   return (
     <SidebarProvider>
@@ -30,9 +35,13 @@ const DashboardLayout = () => {
               >
                 Home
               </button>
-              <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
-                <span className="text-xs font-bold text-primary font-display">JD</span>
-              </div>
+              <button
+                onClick={() => navigate("/dashboard/edit-profile")}
+                className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center hover:bg-primary/25 transition-colors"
+                title="Edit Profile"
+              >
+                <span className="text-xs font-bold text-primary font-display">{initials}</span>
+              </button>
             </div>
           </header>
 

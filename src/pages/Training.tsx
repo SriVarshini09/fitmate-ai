@@ -6,8 +6,11 @@ import {
   Dumbbell, Check, Timer, Zap
 } from "lucide-react";
 import WorkoutDetailCard from "@/components/workout/WorkoutDetailCard";
+import LiveSessionTracker, { WorkoutSession, ActivityType } from "@/components/workout/LiveSessionTracker";
 import { useCalorieTracker, estimateActivityCalories, estimateWeightExerciseCalories } from "@/hooks/useCalorieTracker";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // ── Types ──
 type SessionCategory = "cardio" | "strength";
@@ -114,16 +117,14 @@ const formatDuration = (mins: number) => {
 };
 
 const Training = () => {
+  const { user } = useAuth();
   const { logBurned, bodyWeight } = useCalorieTracker();
 
   // ── State ──
   const [showSessionPicker, setShowSessionPicker] = useState(false);
   const [activities] = useState(sampleActivities);
-  const [showTimer, setShowTimer] = useState(false);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(0);
-  const [timerType, setTimerType] = useState("run");
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showLiveSession, setShowLiveSession] = useState(false);
+  const [liveSessionType, setLiveSessionType] = useState<ActivityType>("running");
 
   const [workouts, setWorkouts] = useState<Workout[]>(loadWorkouts);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
@@ -142,12 +143,6 @@ const Training = () => {
   const [tab, setTab] = useState<"cardio" | "strength">("strength");
 
   // ── Effects ──
-  useEffect(() => {
-    if (timerRunning) {
-      timerRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
-    }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [timerRunning]);
 
   useEffect(() => {
     if (restRunning && restTimer > 0) {
@@ -173,24 +168,41 @@ const Training = () => {
     if (session.category === "strength") {
       setShowNewWorkout(true);
     } else {
-      setTimerType(key);
-      setTimerSeconds(0);
-      setTimerRunning(false);
-      setShowTimer(true);
+      // Map session key to ActivityType
+      const activityMap: Record<string, ActivityType> = {
+        run: "running",
+        walk: "walking",
+        ride: "cycling",
+        swim: "swimming",
+        hike: "hiking",
+        interval: "intervals",
+      };
+      setLiveSessionType(activityMap[key] || "running");
+      setShowLiveSession(true);
     }
   };
 
-  const stopCardioTimer = () => {
-    const durationMinutes = Math.round(timerSeconds / 60);
-    if (durationMinutes > 0) {
-      const calories = estimateActivityCalories(timerType, durationMinutes, bodyWeight);
-      const typeLabel = SESSION_TYPES.find(a => a.key === timerType)?.label || timerType;
-      logBurned({ source: "activity", name: typeLabel, calories, duration: durationMinutes });
-      toast.success(`${typeLabel} complete! ${calories} kcal burned 🔥`);
+  const handleSaveSession = async (session: WorkoutSession) => {
+    // Log calories burned
+    logBurned({
+      source: "activity",
+      name: session.type,
+      calories: session.calories,
+      duration: Math.round(session.duration / 60),
+    });
+
+    // Save to Supabase
+    if (user) {
+      await supabase.from("workout_logs").insert({
+        user_id: user.id,
+        name: session.type,
+        type: "cardio",
+        duration_minutes: Math.round(session.duration / 60),
+        calories_burned: session.calories,
+        distance: session.distance,
+        logged_date: new Date().toISOString().slice(0, 10),
+      });
     }
-    setTimerRunning(false);
-    setTimerSeconds(0);
-    setShowTimer(false);
   };
 
   const startFromTemplate = (template: typeof TEMPLATES[0]) => {
@@ -513,33 +525,14 @@ const Training = () => {
         )}
       </AnimatePresence>
 
-      {/* ── Cardio Timer Overlay ── */}
+      {/* ── Live Session Tracker ── */}
       <AnimatePresence>
-        {showTimer && (
-          <motion.div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <button onClick={stopCardioTimer} className="absolute top-6 right-6"><X className="w-6 h-6 text-muted-foreground" /></button>
-
-            <p className="text-sm text-muted-foreground font-body mb-4 capitalize">{SESSION_TYPES.find(s => s.key === timerType)?.label}</p>
-
-            <motion.p className="text-6xl font-bold font-display text-foreground mb-8 tabular-nums"
-              animate={{ scale: timerRunning ? [1, 1.02, 1] : 1 }}
-              transition={{ duration: 1, repeat: timerRunning ? Infinity : 0 }}>
-              {formatTimer(timerSeconds)}
-            </motion.p>
-
-            <div className="flex gap-6">
-              <button onClick={() => setTimerRunning(!timerRunning)}
-                className={`w-20 h-20 rounded-full flex items-center justify-center text-primary-foreground ${timerRunning ? "bg-warning" : "bg-primary glow-primary"}`}>
-                {timerRunning ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
-              </button>
-              {timerSeconds > 0 && (
-                <button onClick={stopCardioTimer} className="w-20 h-20 rounded-full bg-destructive flex items-center justify-center">
-                  <Square className="w-7 h-7 text-destructive-foreground" />
-                </button>
-              )}
-            </div>
-          </motion.div>
+        {showLiveSession && (
+          <LiveSessionTracker
+            initialActivity={liveSessionType}
+            onClose={() => setShowLiveSession(false)}
+            onSave={handleSaveSession}
+          />
         )}
       </AnimatePresence>
 

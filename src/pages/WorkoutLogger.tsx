@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import WorkoutDetailCard from "@/components/workout/WorkoutDetailCard";
 import { useCalorieTracker, estimateWeightExerciseCalories } from "@/hooks/useCalorieTracker";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface ExerciseSet {
@@ -90,7 +92,9 @@ const TEMPLATES = [
 ];
 
 const WorkoutLogger = () => {
+  const { user } = useAuth();
   const [workouts, setWorkouts] = useState<Workout[]>(loadWorkouts);
+  const [loading, setLoading] = useState(true);
   const [showNewWorkout, setShowNewWorkout] = useState(false);
   const [showExerciseLib, setShowExerciseLib] = useState(false);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
@@ -106,6 +110,32 @@ const WorkoutLogger = () => {
   const [activeWorkoutSeconds, setActiveWorkoutSeconds] = useState(0);
   const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const workoutTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load workouts from Supabase
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    supabase.from("workout_logs").select("*").eq("user_id", user.id)
+      .order("created_at", { ascending: false }).limit(50)
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const mapped: Workout[] = data.map((r) => ({
+            id: r.id,
+            name: r.name,
+            date: r.logged_date,
+            duration: r.duration_minutes,
+            exercises: r.exercises || [],
+            totalVolume: (r.exercises as any[])?.reduce((s: number, ex: any) =>
+              s + (ex.sets || []).filter((set: any) => set.completed)
+                .reduce((ss: number, set: any) => ss + set.weight * set.reps, 0), 0) || 0,
+            totalCalories: r.calories_burned,
+          }));
+          setWorkouts(mapped);
+          saveWorkouts(mapped);
+        }
+        setLoading(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     if (restRunning && restTimer > 0) {
@@ -313,7 +343,7 @@ const WorkoutLogger = () => {
             <h3 className="text-sm font-semibold font-display text-primary flex items-center gap-2">
               <Play className="w-4 h-4" /> {activeWorkout.name} — Active
             </h3>
-            <button onClick={() => {
+            <button onClick={async () => {
               const durationMins = Math.round(activeWorkoutSeconds / 60);
               const totalCals = activeWorkout.exercises.reduce((sum, ex) => {
                 const completedSets = ex.sets.filter(s => s.completed).map(s => ({ weight: s.weight, reps: s.reps }));
@@ -323,7 +353,7 @@ const WorkoutLogger = () => {
                 sum + ex.sets.filter(s => s.completed).reduce((s, set) => s + set.weight * set.reps, 0), 0);
               const finished = {
                 ...activeWorkout,
-                date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+                date: new Date().toISOString().slice(0, 10),
                 duration: durationMins,
                 totalVolume: totalVol,
                 totalCalories: totalCals,
@@ -342,10 +372,26 @@ const WorkoutLogger = () => {
               });
               toast.success(`${activeWorkout.name} complete! ${totalCals} kcal burned 🔥`);
               setActiveWorkout(null);
+              // Save to Supabase
+              if (user) {
+                const { data } = await supabase.from("workout_logs").insert({
+                  user_id: user.id,
+                  name: finished.name,
+                  type: "strength",
+                  duration_minutes: durationMins,
+                  calories_burned: totalCals,
+                  exercises: finished.exercises,
+                  logged_date: finished.date,
+                }).select().single();
+                if (data) {
+                  setWorkouts(prev => prev.map(w => w.id === finished.id ? { ...w, id: data.id } : w));
+                }
+              }
             }} className="text-xs text-primary font-body hover:underline">
               Finish
             </button>
           </div>
+          {/* Supabase save happens inside the Finish onClick above, wired below */}
 
           {/* Active workout live stats */}
           <div className="glass-card p-4 ring-1 ring-primary/20">

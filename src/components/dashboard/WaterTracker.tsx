@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Droplets, Plus, Minus, Bell, Target, User, Check, X, ChevronRight } from "lucide-react";
+import { Droplets, Plus, Minus, Bell, Target, User, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const GLASS_ML = 250; // each goal = 250ml (1/4 liter)
 
@@ -25,49 +27,83 @@ const calculateWaterGoal = (weight: number, activityLevel: string, climate: stri
   return Math.round(base / GLASS_ML) * GLASS_ML;
 };
 
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+function loadProfileDefaults() {
+  try {
+    const raw = localStorage.getItem("Cals Crumble Fit_onboarding");
+    if (!raw) return { weight: 70, activity: "moderate" };
+    const d = JSON.parse(raw);
+    return { weight: parseFloat(d.weight) || 70, activity: d.activityLevel || "moderate" };
+  } catch { return { weight: 70, activity: "moderate" }; }
+}
+
 const WaterTracker = () => {
-  // Body profile
+  const { user } = useAuth();
+  const profileDefaults = loadProfileDefaults();
+
   const [showSettings, setShowSettings] = useState(false);
-  const [weight, setWeight] = useState(70); // kg
-  const [activityLevel, setActivityLevel] = useState("moderate");
+  const [weight, setWeight] = useState(profileDefaults.weight);
+  const [activityLevel, setActivityLevel] = useState(profileDefaults.activity);
   const [climate, setClimate] = useState("normal");
 
   const dailyGoalMl = calculateWaterGoal(weight, activityLevel, climate);
   const totalGlasses = Math.round(dailyGoalMl / GLASS_ML);
 
-  // Water logs for today
   const [logs, setLogs] = useState<WaterLog[]>([]);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [customAmount, setCustomAmount] = useState(250);
+
+  // Load today's water logs from Supabase
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("water_logs").select("*")
+      .eq("user_id", user.id).eq("logged_date", todayISO())
+      .order("logged_at", { ascending: true })
+      .then(({ data }) => {
+        if (data) {
+          setLogs(data.map((r) => ({
+            id: r.id,
+            amount: r.amount_ml,
+            time: new Date(r.logged_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          })));
+        }
+      });
+  }, [user]);
 
   const totalConsumed = logs.reduce((sum, l) => sum + l.amount, 0);
   const consumedGlasses = Math.floor(totalConsumed / GLASS_ML);
   const progressPct = Math.min(100, (totalConsumed / dailyGoalMl) * 100);
   const remaining = Math.max(0, dailyGoalMl - totalConsumed);
 
-  const addWater = (ml: number) => {
+  const addWater = async (ml: number) => {
     const now = new Date();
     const time = `${now.getHours() % 12 || 12}:${now.getMinutes().toString().padStart(2, "0")} ${now.getHours() >= 12 ? "PM" : "AM"}`;
-    setLogs([...logs, { id: Date.now().toString(), amount: ml, time }]);
+    const tempId = Date.now().toString();
+    setLogs((prev) => [...prev, { id: tempId, amount: ml, time }]);
     setShowQuickAdd(false);
 
     const newTotal = totalConsumed + ml;
     if (newTotal >= dailyGoalMl && totalConsumed < dailyGoalMl) {
-      toast.success("🎉 Daily water goal reached!", {
-        description: `You drank ${(newTotal / 1000).toFixed(1)}L today!`,
-      });
+      toast.success("🎉 Daily water goal reached!", { description: `You drank ${(newTotal / 1000).toFixed(1)}L today!` });
     } else {
-      toast(`💧 +${ml}ml logged`, {
-        description: `${(newTotal / 1000).toFixed(1)}L / ${(dailyGoalMl / 1000).toFixed(1)}L`,
-      });
+      toast(`💧 +${ml}ml logged`, { description: `${(newTotal / 1000).toFixed(1)}L / ${(dailyGoalMl / 1000).toFixed(1)}L` });
+    }
+
+    if (user) {
+      const { data } = await supabase.from("water_logs").insert({
+        user_id: user.id, amount_ml: ml, logged_date: todayISO(),
+      }).select().single();
+      if (data) setLogs((prev) => prev.map((l) => l.id === tempId ? { ...l, id: data.id } : l));
     }
   };
 
-  const removeLastLog = () => {
-    if (logs.length > 0) {
-      setLogs(logs.slice(0, -1));
-      toast("Removed last water entry");
-    }
+  const removeLastLog = async () => {
+    if (logs.length === 0) return;
+    const last = logs[logs.length - 1];
+    setLogs((prev) => prev.slice(0, -1));
+    toast("Removed last water entry");
+    if (user) await supabase.from("water_logs").delete().eq("id", last.id).eq("user_id", user.id);
   };
 
   const QUICK_AMOUNTS = [

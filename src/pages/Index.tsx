@@ -7,6 +7,7 @@ import MacroBar from "@/components/dashboard/MacroBar";
 import QuickActions from "@/components/dashboard/QuickActions";
 import BadgePreview from "@/components/dashboard/BadgePreview";
 import TabletTracker from "@/components/dashboard/TabletTracker";
+import WorkoutQuickStart from "@/components/dashboard/WorkoutQuickStart";
 import { useCalorieTracker } from "@/hooks/useCalorieTracker";
 import { useStreak } from "@/hooks/useStreak";
 
@@ -85,6 +86,11 @@ const Index = () => {
       {/* Quick Actions */}
       <motion.div variants={item}>
         <QuickActions />
+      </motion.div>
+
+      {/* Workout Quick Start */}
+      <motion.div variants={item}>
+        <WorkoutQuickStart />
       </motion.div>
 
       {/* Steps & Streak */}

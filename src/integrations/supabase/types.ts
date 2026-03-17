@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      food_logs: {
+        Row: { id: string; user_id: string; name: string; meal: string; quantity: number; unit: string; calories: number; protein: number; carbs: number; fat: number; fiber: number; logged_date: string; created_at: string }
+        Insert: { id?: string; user_id: string; name: string; meal?: string; quantity?: number; unit?: string; calories?: number; protein?: number; carbs?: number; fat?: number; fiber?: number; logged_date?: string; created_at?: string }
+        Update: { id?: string; user_id?: string; name?: string; meal?: string; quantity?: number; unit?: string; calories?: number; protein?: number; carbs?: number; fat?: number; fiber?: number; logged_date?: string }
+        Relationships: []
+      }
+      workout_logs: {
+        Row: { id: string; user_id: string; name: string; type: string; duration_minutes: number; calories_burned: number; notes: string | null; exercises: any | null; logged_date: string; created_at: string }
+        Insert: { id?: string; user_id: string; name: string; type?: string; duration_minutes?: number; calories_burned?: number; notes?: string | null; exercises?: any | null; logged_date?: string; created_at?: string }
+        Update: { id?: string; user_id?: string; name?: string; type?: string; duration_minutes?: number; calories_burned?: number; notes?: string | null; exercises?: any | null; logged_date?: string }
+        Relationships: []
+      }
+      goals: {
+        Row: { id: string; user_id: string; title: string; categories: string[]; target: number; current_value: number; starting_value: number; unit: string; direction: string; deadline: string | null; created_at: string }
+        Insert: { id?: string; user_id: string; title: string; categories?: string[]; target?: number; current_value?: number; starting_value?: number; unit?: string; direction?: string; deadline?: string | null; created_at?: string }
+        Update: { id?: string; user_id?: string; title?: string; categories?: string[]; target?: number; current_value?: number; starting_value?: number; unit?: string; direction?: string; deadline?: string | null }
+        Relationships: []
+      }
+      lifestyle_logs: {
+        Row: { id: string; user_id: string; logged_date: string; sleep_hours: number; sleep_quality: number; mood: number; stress: number; notes: string | null; created_at: string }
+        Insert: { id?: string; user_id: string; logged_date?: string; sleep_hours?: number; sleep_quality?: number; mood?: number; stress?: number; notes?: string | null; created_at?: string }
+        Update: { id?: string; user_id?: string; logged_date?: string; sleep_hours?: number; sleep_quality?: number; mood?: number; stress?: number; notes?: string | null }
+        Relationships: []
+      }
+      water_logs: {
+        Row: { id: string; user_id: string; amount_ml: number; logged_date: string; logged_at: string }
+        Insert: { id?: string; user_id: string; amount_ml?: number; logged_date?: string; logged_at?: string }
+        Update: { id?: string; user_id?: string; amount_ml?: number; logged_date?: string; logged_at?: string }
+        Relationships: []
+      }
+      meal_plans: {
+        Row: { id: string; user_id: string; week_start: string; plan_data: any; created_at: string; updated_at: string }
+        Insert: { id?: string; user_id: string; week_start: string; plan_data?: any; created_at?: string; updated_at?: string }
+        Update: { id?: string; user_id?: string; week_start?: string; plan_data?: any; updated_at?: string }
+        Relationships: []
+      }
+      fasting_sessions: {
+        Row: { id: string; user_id: string; protocol: string; started_at: string; ended_at: string | null; target_hours: number; completed: boolean; created_at: string }
+        Insert: { id?: string; user_id: string; protocol?: string; started_at: string; ended_at?: string | null; target_hours?: number; completed?: boolean; created_at?: string }
+        Update: { id?: string; user_id?: string; protocol?: string; started_at?: string; ended_at?: string | null; target_hours?: number; completed?: boolean }
+        Relationships: []
+      }
+      steps_logs: {
+        Row: { id: string; user_id: string; steps: number; goal: number; logged_date: string; created_at: string }
+        Insert: { id?: string; user_id: string; steps?: number; goal?: number; logged_date?: string; created_at?: string }
+        Update: { id?: string; user_id?: string; steps?: number; goal?: number; logged_date?: string }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           id: string
