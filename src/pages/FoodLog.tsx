@@ -5,6 +5,10 @@ import { toast } from "sonner";
 import { useCalorieTracker } from "@/hooks/useCalorieTracker";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import VoiceButton from "@/components/voice/VoiceButton";
+import ConfirmationCard from "@/components/voice/ConfirmationCard";
+import { VoiceParsedData } from "@/lib/naturalLanguageParser";
 
 // Built-in nutrition table per 100g: [kcal, protein, carbs, fat, fiber]
 const NUTRITION_TABLE: Record<string, [number, number, number, number, number]> = {
@@ -119,6 +123,7 @@ function todayISO() { return new Date().toISOString().slice(0, 10); }
 const FoodLog = () => {
   const { logEaten, profile } = useCalorieTracker();
   const { user } = useAuth();
+  const voice = useVoiceInput();
   const [foods, setFoods] = useState<FoodEntry[]>(() => {
     try {
       const raw = localStorage.getItem(FOODS_KEY);
@@ -325,6 +330,45 @@ const FoodLog = () => {
     setFoodName("");
     setQuantity("");
     setAiResult(null);
+  };
+
+  const handleVoiceConfirm = async (data: VoiceParsedData) => {
+    voice.confirm();
+    if (data.type !== "food" || !data.foodItems?.length) return;
+    const today = todayISO();
+    const meal = data.meal || selectedMeal;
+
+    for (const item of data.foodItems) {
+      const fallback = lookupFallback(item.name, item.quantity, item.unit);
+      const nutrition = fallback || { calories: Math.round(item.quantity * 2), protein: 0, carbs: 0, fat: 0, fiber: 0 };
+      const tempId = Date.now().toString() + Math.random();
+      const entry: FoodEntry = {
+        id: tempId,
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        calories: nutrition.calories,
+        protein: nutrition.protein,
+        carbs: nutrition.carbs,
+        fat: nutrition.fat,
+        fiber: nutrition.fiber,
+        meal,
+      };
+      const updated = (prev: FoodEntry[]) => [...prev, entry];
+      setFoods(prev => { const u = updated(prev); saveAndSync(u); return u; });
+      toast.success(`🎤 Added ${entry.name} — ${entry.calories} kcal`);
+
+      if (user) {
+        const { data: saved } = await supabase.from("food_logs").insert({
+          user_id: user.id, name: entry.name, meal, quantity: entry.quantity,
+          unit: entry.unit, calories: entry.calories, protein: entry.protein,
+          carbs: entry.carbs, fat: entry.fat, fiber: entry.fiber, logged_date: today,
+        }).select().single();
+        if (saved) {
+          setFoods(prev => { const u = prev.map(f => f.id === tempId ? { ...f, id: saved.id } : f); saveAndSync(u); return u; });
+        }
+      }
+    }
   };
 
   if (loading) return (
@@ -536,6 +580,27 @@ const FoodLog = () => {
               </button>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Voice Button */}
+      <VoiceButton
+        state={voice.state}
+        interimTranscript={voice.interimTranscript}
+        isSupported={voice.isSupported}
+        onStart={voice.startListening}
+        onStop={voice.stopListening}
+        onDismiss={voice.dismiss}
+      />
+
+      {/* Voice Confirmation Card */}
+      <AnimatePresence>
+        {voice.state === "confirming" && voice.parsedData?.type === "food" && (
+          <ConfirmationCard
+            parsedData={voice.parsedData}
+            onConfirm={handleVoiceConfirm}
+            onDismiss={voice.dismiss}
+            onReRecord={() => { voice.dismiss(); setTimeout(voice.startListening, 200); }}
+          />
         )}
       </AnimatePresence>
     </div>

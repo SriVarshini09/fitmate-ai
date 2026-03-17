@@ -11,6 +11,10 @@ import { useCalorieTracker, estimateActivityCalories, estimateWeightExerciseCalo
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import VoiceButton from "@/components/voice/VoiceButton";
+import ConfirmationCard from "@/components/voice/ConfirmationCard";
+import { VoiceParsedData } from "@/lib/naturalLanguageParser";
 
 // ── Types ──
 type SessionCategory = "cardio" | "strength";
@@ -119,6 +123,7 @@ const formatDuration = (mins: number) => {
 const Training = () => {
   const { user } = useAuth();
   const { logBurned, bodyWeight } = useCalorieTracker();
+  const voice = useVoiceInput();
 
   // ── State ──
   const [showSessionPicker, setShowSessionPicker] = useState(false);
@@ -179,6 +184,23 @@ const Training = () => {
       };
       setLiveSessionType(activityMap[key] || "running");
       setShowLiveSession(true);
+    }
+  };
+
+  const handleVoiceConfirm = (data: VoiceParsedData) => {
+    voice.confirm();
+    if (data.type === "workout" && data.workoutActivity) {
+      const activityMap: Record<string, ActivityType> = {
+        running: "running", walking: "walking", cycling: "cycling",
+        swimming: "swimming", hiking: "hiking", intervals: "intervals", strength: "strength",
+      };
+      const activity = activityMap[data.workoutActivity] || "running";
+      if (activity === "strength") {
+        setShowNewWorkout(true);
+      } else {
+        setLiveSessionType(activity);
+        setShowLiveSession(true);
+      }
     }
   };
 
@@ -605,6 +627,28 @@ const Training = () => {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Voice Button ── */}
+      <VoiceButton
+        state={voice.state}
+        interimTranscript={voice.interimTranscript}
+        isSupported={voice.isSupported}
+        onStart={voice.startListening}
+        onStop={voice.stopListening}
+        onDismiss={voice.dismiss}
+      />
+
+      {/* ── Voice Confirmation Card ── */}
+      <AnimatePresence>
+        {voice.state === "confirming" && voice.parsedData?.type === "workout" && (
+          <ConfirmationCard
+            parsedData={voice.parsedData}
+            onConfirm={handleVoiceConfirm}
+            onDismiss={voice.dismiss}
+            onReRecord={() => { voice.dismiss(); setTimeout(voice.startListening, 200); }}
+          />
         )}
       </AnimatePresence>
     </div>

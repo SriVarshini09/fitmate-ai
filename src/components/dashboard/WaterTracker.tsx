@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Droplets, Plus, Minus, Bell, Target, User, Check, X } from "lucide-react";
+import { Droplets, Plus, Minus, Bell, Target, User, Check, X, Mic } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import VoiceButton from "@/components/voice/VoiceButton";
+import ConfirmationCard from "@/components/voice/ConfirmationCard";
+import { VoiceParsedData } from "@/lib/naturalLanguageParser";
 
 const GLASS_ML = 250; // each goal = 250ml (1/4 liter)
 
@@ -40,6 +44,7 @@ function loadProfileDefaults() {
 
 const WaterTracker = () => {
   const { user } = useAuth();
+  const voice = useVoiceInput();
   const profileDefaults = loadProfileDefaults();
 
   const [showSettings, setShowSettings] = useState(false);
@@ -106,6 +111,13 @@ const WaterTracker = () => {
     if (user) await supabase.from("water_logs").delete().eq("id", last.id).eq("user_id", user.id);
   };
 
+  const handleVoiceConfirm = async (data: VoiceParsedData) => {
+    voice.confirm();
+    if (data.type === "water" && data.waterAmount) {
+      await addWater(data.waterAmount);
+    }
+  };
+
   const QUICK_AMOUNTS = [
     { label: "1 Glass", ml: 250, emoji: "🥛" },
     { label: "Small Bottle", ml: 500, emoji: "💧" },
@@ -146,6 +158,19 @@ const WaterTracker = () => {
           <button onClick={() => setShowSettings(!showSettings)}
             className="w-9 h-9 rounded-xl bg-secondary/60 flex items-center justify-center">
             <User className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button
+            onClick={voice.state === "listening" ? voice.stopListening : voice.startListening}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors relative ${
+              voice.state === "listening" ? "bg-destructive" : "bg-info/15 hover:bg-info/25"
+            }`}
+          >
+            {voice.state === "listening" && (
+              <motion.span className="absolute inset-0 rounded-xl bg-destructive/40"
+                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }} />
+            )}
+            <Mic className={`w-4 h-4 relative z-10 ${voice.state === "listening" ? "text-white" : "text-info"}`} />
           </button>
           <button onClick={() => setShowQuickAdd(!showQuickAdd)}
             className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center hover:bg-primary/25 transition-colors">
@@ -354,6 +379,28 @@ const WaterTracker = () => {
         <Bell className="w-3 h-3 text-muted-foreground" />
         <p className="text-xs text-muted-foreground font-body">Hourly reminders active</p>
       </div>
+
+      {/* Voice interim transcript inside card */}
+      <AnimatePresence>
+        {voice.state === "listening" && voice.interimTranscript && (
+          <motion.div className="px-3 py-2 rounded-xl bg-info/10 border border-info/20"
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+            <p className="text-xs text-info font-body italic">"{voice.interimTranscript}"</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Voice Confirmation Card */}
+      <AnimatePresence>
+        {voice.state === "confirming" && voice.parsedData?.type === "water" && (
+          <ConfirmationCard
+            parsedData={voice.parsedData}
+            onConfirm={handleVoiceConfirm}
+            onDismiss={voice.dismiss}
+            onReRecord={() => { voice.dismiss(); setTimeout(voice.startListening, 200); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
