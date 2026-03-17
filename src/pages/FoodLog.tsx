@@ -115,7 +115,7 @@ const EATEN_KEY = "Cals Crumble Fit_eaten";
 function todayISO() { return new Date().toISOString().slice(0, 10); }
 
 const FoodLog = () => {
-  const { logEaten } = useCalorieTracker();
+  const { logEaten, profile } = useCalorieTracker();
   const [foods, setFoods] = useState<FoodEntry[]>(() => {
     try {
       const raw = localStorage.getItem(FOODS_KEY);
@@ -141,8 +141,7 @@ const FoodLog = () => {
   const totalFat = foods.reduce((s, f) => s + f.fat, 0);
   const totalFiber = foods.reduce((s, f) => s + f.fiber, 0);
 
-  // Default goals (can be user-customizable later)
-  const goals = { protein: 92, carbs: 92, fat: 35, fiber: 25 };
+  const goals = profile?.macros ?? { protein: 92, carbs: 92, fat: 35, fiber: 25 };
 
   // Nutrition lookup: built-in table first, then generic estimate
   const lookupNutrition = useCallback((name: string, qty: string, unit: string) => {

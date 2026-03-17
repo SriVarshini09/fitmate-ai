@@ -3,9 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Footprints, Pencil, Check } from "lucide-react";
 
 const STEPS_KEY = "Cals Crumble Fit_steps";
-const GOAL = 10000;
+const ONBOARDING_KEY = "Cals Crumble Fit_onboarding";
 
 function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+function loadStepsGoal(): number {
+  try {
+    const raw = localStorage.getItem(ONBOARDING_KEY);
+    if (!raw) return 10000;
+    const data = JSON.parse(raw);
+    return parseInt(data.stepsGoal) || 10000;
+  } catch { return 10000; }
+}
 
 function loadTodaySteps(): number {
   try {
@@ -27,10 +36,11 @@ function saveTodaySteps(steps: number) {
 
 const StepsCard = () => {
   const [steps, setSteps] = useState(() => loadTodaySteps());
+  const [goal] = useState(() => loadStepsGoal());
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState("");
 
-  const percentage = Math.min((steps / GOAL) * 100, 100);
+  const percentage = Math.min((steps / goal) * 100, 100);
 
   const confirm = () => {
     const val = parseInt(input);
@@ -87,7 +97,7 @@ const StepsCard = () => {
           transition={{ duration: 1, ease: "easeOut" }}
         />
       </div>
-      <p className="text-[10px] text-muted-foreground mt-2 font-body">{GOAL.toLocaleString()} goal</p>
+      <p className="text-[10px] text-muted-foreground mt-2 font-body">{goal.toLocaleString()} goal</p>
     </div>
   );
 };

@@ -23,19 +23,19 @@ const Index = () => {
   const { profile, totalBurnedToday, eatenToday } = useCalorieTracker();
   const { currentStreak, longestStreak } = useStreak();
 
-  const calorieGoal = profile?.targetCalories || 2100;
+  const calorieGoal = profile?.targetCalories ?? 0;
   const consumed = eatenToday || 0;
   const burned = totalBurnedToday || 0;
 
-  const macroGoals = profile?.macros || { protein: 150, carbs: 250, fat: 70, fiber: 30 };
+  const macroGoals = profile?.macros ?? { protein: 0, carbs: 0, fat: 0, fiber: 0 };
 
   // Scale current macros proportionally to consumed/goal ratio
-  const consumedRatio = consumed / calorieGoal;
+  const consumedRatio = calorieGoal > 0 ? consumed / calorieGoal : 0;
   const currentMacros = {
     protein: Math.round(macroGoals.protein * consumedRatio),
     carbs: Math.round(macroGoals.carbs * consumedRatio),
     fat: Math.round(macroGoals.fat * consumedRatio),
-    fiber: Math.round((macroGoals.fiber || 30) * consumedRatio),
+    fiber: Math.round(macroGoals.fiber * consumedRatio),
   };
 
   const hour = new Date().getHours();
