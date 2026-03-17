@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff, ArrowRight, ArrowLeft, Zap, User, Mail, Phone, Camera } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, ArrowLeft, User, Mail, Phone, Camera, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import AuthLayout from "@/components/auth/AuthLayout";
+import GlassInput from "@/components/auth/GlassInput";
+import GlassButton from "@/components/auth/GlassButton";
+import PasswordStrength from "@/components/auth/PasswordStrength";
 
 type Step = "credentials" | "profile";
 
@@ -13,6 +17,7 @@ const Signup = () => {
   const { session, loading: authLoading } = useAuth();
   const [step, setStep] = useState<Step>("credentials");
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
 
   if (!authLoading && session) return <Navigate to="/dashboard" replace />;
 
@@ -43,6 +48,7 @@ const Signup = () => {
     if (!username.trim()) return toast.error("Username is required");
     if (username.length < 3) return toast.error("Username must be at least 3 characters");
     if (!email.trim()) return toast.error("Email is required");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return toast.error("Enter a valid email address");
     if (!password) return toast.error("Password is required");
     if (password.length < 6) return toast.error("Password must be at least 6 characters");
     if (password !== confirmPassword) return toast.error("Passwords don't match");
@@ -51,8 +57,10 @@ const Signup = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     if (!displayName.trim()) return toast.error("Name is required");
 
+    submittingRef.current = true;
     setLoading(true);
 
     // 1. Sign up
@@ -66,12 +74,14 @@ const Signup = () => {
     });
 
     if (authError) {
+      submittingRef.current = false;
       setLoading(false);
       return toast.error(authError.message);
     }
 
     const userId = authData.user?.id;
     if (!userId) {
+      submittingRef.current = false;
       setLoading(false);
       return toast.error("Signup failed. Please try again.");
     }
@@ -103,6 +113,7 @@ const Signup = () => {
         avatar_url: avatarUrl,
       });
 
+    submittingRef.current = false;
     setLoading(false);
 
     if (profileError) {
@@ -114,227 +125,174 @@ const Signup = () => {
     navigate("/onboarding");
   };
 
-  const fadeVariants = {
-    hidden: { opacity: 0, x: 30 },
-    visible: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -30 },
-  };
-
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-48 h-48 rounded-full bg-accent/10 blur-3xl" />
-
+    <AuthLayout>
       <motion.div
-        className="w-full max-w-md space-y-8"
-        initial={{ opacity: 0, y: 30 }}
+        className="w-full max-w-sm"
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Logo */}
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold font-display text-foreground">Cals Crumble Fit</span>
-          </Link>
-          <h1 className="text-3xl font-bold font-display text-foreground">
+        {/* Header */}
+        <div className="mb-7">
+          <h1 className="text-3xl font-bold font-display text-white mb-1">
             {step === "credentials" ? "Create account" : "Your profile"}
           </h1>
-          <p className="text-muted-foreground font-body mt-2">
-            {step === "credentials" ? "Step 1 of 2 — Set up your credentials" : "Step 2 of 2 — Tell us about yourself"}
+          <p className="text-white/45 font-body text-sm">
+            {step === "credentials" ? "Step 1 of 2 — Credentials" : "Step 2 of 2 — About you"}
           </p>
         </div>
 
-        {/* Progress indicator */}
-        <div className="flex gap-2">
-          <div className={`h-1 flex-1 rounded-full ${step === "credentials" ? "bg-primary" : "bg-primary"}`} />
-          <div className={`h-1 flex-1 rounded-full ${step === "profile" ? "bg-primary" : "bg-secondary"}`} />
+        {/* Step progress */}
+        <div className="flex gap-2 mb-7">
+          <div className="h-1 flex-1 rounded-full bg-primary" />
+          <div className={`h-1 flex-1 rounded-full transition-colors duration-300 ${step === "profile" ? "bg-primary" : "bg-white/10"}`} />
         </div>
 
-        {step === "credentials" ? (
-          <motion.form
-            key="credentials"
-            onSubmit={handleCredentials}
-            className="space-y-4"
-            variants={fadeVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.3 }}
-          >
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground font-body">Username</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Choose a username"
-                  className="w-full bg-secondary rounded-xl pl-10 pr-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body focus:ring-2 focus:ring-primary/50 transition-all"
-                />
+        <AnimatePresence mode="wait">
+          {step === "credentials" ? (
+            <motion.form
+              key="credentials"
+              onSubmit={handleCredentials}
+              className="space-y-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25 }}
+            >
+              <GlassInput
+                label="Username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Choose a username"
+                icon={<User className="w-4 h-4" />}
+                autoComplete="username"
+              />
+              <GlassInput
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                icon={<Mail className="w-4 h-4" />}
+                autoComplete="email"
+              />
+              <div className="space-y-1.5">
+                <div className="relative">
+                  <GlassInput
+                    label="Password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    autoComplete="new-password"
+                    suffix={
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="hover:text-white/60 transition-colors">
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    }
+                  />
+                </div>
+                <PasswordStrength password={password} />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground font-body">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full bg-secondary rounded-xl pl-10 pr-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body focus:ring-2 focus:ring-primary/50 transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground font-body">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="w-full bg-secondary rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body focus:ring-2 focus:ring-primary/50 transition-all pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground font-body">Confirm Password</label>
-              <input
+              <GlassInput
+                label="Confirm Password"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter your password"
-                className="w-full bg-secondary rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body focus:ring-2 focus:ring-primary/50 transition-all"
+                autoComplete="new-password"
               />
-            </div>
 
-            <motion.button
-              type="submit"
-              className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold font-display flex items-center justify-center gap-2 glow-primary"
-              whileTap={{ scale: 0.98 }}
+              <GlassButton type="submit" className="mt-2">
+                Continue <ArrowRight className="w-4 h-4" />
+              </GlassButton>
+
+              <p className="text-center text-sm text-white/40 font-body pt-1">
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                  Sign in
+                </Link>
+              </p>
+            </motion.form>
+          ) : (
+            <motion.form
+              key="profile"
+              onSubmit={handleSignup}
+              className="space-y-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25 }}
             >
-              Continue <ArrowRight className="w-4 h-4" />
-            </motion.button>
-          </motion.form>
-        ) : (
-          <motion.form
-            key="profile"
-            onSubmit={handleSignup}
-            className="space-y-4"
-            variants={fadeVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.3 }}
-          >
-            {/* Avatar upload */}
-            <div className="flex justify-center">
-              <label className="relative cursor-pointer group">
-                <div className="w-24 h-24 rounded-2xl bg-secondary flex items-center justify-center overflow-hidden border-2 border-dashed border-border group-hover:border-primary transition-colors">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-center">
-                      <Camera className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
-                      <span className="text-[10px] text-muted-foreground font-body">Add photo</span>
-                    </div>
-                  )}
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                  <Camera className="w-3.5 h-3.5 text-primary-foreground" />
-                </div>
-                <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
-              </label>
-            </div>
+              {/* Avatar upload */}
+              <div className="flex justify-center mb-2">
+                <label className="relative cursor-pointer group">
+                  <div className="w-20 h-20 rounded-2xl bg-white/5 border-2 border-dashed border-white/10 group-hover:border-primary/50 flex items-center justify-center overflow-hidden transition-colors">
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center">
+                        <Camera className="w-5 h-5 text-white/30 mx-auto mb-1" />
+                        <span className="text-[9px] text-white/30 font-body">Photo</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-primary flex items-center justify-center shadow-lg">
+                    {avatarPreview
+                      ? <Check className="w-3 h-3 text-primary-foreground" />
+                      : <Camera className="w-3 h-3 text-primary-foreground" />}
+                  </div>
+                  <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                </label>
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground font-body">Full Name *</label>
-              <input
+              <GlassInput
+                label="Full Name *"
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Your name"
-                className="w-full bg-secondary rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body focus:ring-2 focus:ring-primary/50 transition-all"
+                icon={<User className="w-4 h-4" />}
+                autoComplete="name"
               />
-            </div>
+              <GlassInput
+                label="Phone (optional)"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 (555) 000-0000"
+                icon={<Phone className="w-4 h-4" />}
+                autoComplete="tel"
+              />
+              <GlassInput
+                label="Recovery Email (optional)"
+                type="email"
+                value={recoveryEmail}
+                onChange={(e) => setRecoveryEmail(e.target.value)}
+                placeholder="backup@example.com"
+                icon={<Mail className="w-4 h-4" />}
+              />
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground font-body">
-                Phone Number <span className="text-muted-foreground text-xs">(optional)</span>
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 (555) 000-0000"
-                  className="w-full bg-secondary rounded-xl pl-10 pr-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body focus:ring-2 focus:ring-primary/50 transition-all"
-                />
+              <div className="flex gap-3 mt-2">
+                <GlassButton
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setStep("credentials")}
+                  className="w-auto px-5 flex-shrink-0"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </GlassButton>
+                <GlassButton type="submit" loading={loading} className="flex-1">
+                  {!loading && <>Create Account <ArrowRight className="w-4 h-4" /></>}
+                </GlassButton>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground font-body">
-                Recovery Email <span className="text-muted-foreground text-xs">(optional, for account recovery)</span>
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="email"
-                  value={recoveryEmail}
-                  onChange={(e) => setRecoveryEmail(e.target.value)}
-                  placeholder="backup@example.com"
-                  className="w-full bg-secondary rounded-xl pl-10 pr-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground outline-none font-body focus:ring-2 focus:ring-primary/50 transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setStep("credentials")}
-                className="px-4 py-3.5 rounded-xl bg-secondary text-foreground font-medium font-body flex items-center gap-1"
-              >
-                <ArrowLeft className="w-4 h-4" /> Back
-              </button>
-              <motion.button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold font-display flex items-center justify-center gap-2 glow-primary disabled:opacity-50"
-                whileTap={{ scale: 0.98 }}
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                ) : (
-                  <>Create Account <ArrowRight className="w-4 h-4" /></>
-                )}
-              </motion.button>
-            </div>
-          </motion.form>
-        )}
-
-        <p className="text-center text-sm text-muted-foreground font-body">
-          Already have an account?{" "}
-          <Link to="/login" className="text-primary font-medium hover:underline">
-            Sign in
-          </Link>
-        </p>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </motion.div>
-    </div>
+    </AuthLayout>
   );
 };
 

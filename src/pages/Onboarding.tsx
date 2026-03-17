@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Ruler, Weight, Target, Dumbbell, UtensilsCrossed,
   ArrowRight, ArrowLeft, Activity, Sparkles, Check, Flame,
-  Heart, Brain, Zap, ChevronRight
+  Heart, Zap
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 // ── Types ──
 interface OnboardingData {
@@ -125,15 +128,15 @@ function StepName({ data, update }: { data: OnboardingData; update: (d: Partial<
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <User className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">What's your name?</h2>
-        <p className="text-muted-foreground font-body text-sm">Let's personalize your experience</p>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">What's your name?</h2>
+        <p className="text-white/45 font-body text-sm">Let's personalize your experience</p>
       </div>
       <input
         type="text"
         placeholder="Enter your name"
         value={data.name}
         onChange={(e) => update({ name: e.target.value })}
-        className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border text-foreground text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+        className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-lg font-body placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
         autoFocus
       />
     </div>
@@ -148,22 +151,22 @@ function StepAgeSex({ data, update }: { data: OnboardingData; update: (d: Partia
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Heart className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">About you</h2>
-        <p className="text-muted-foreground font-body text-sm">This helps us calculate your needs accurately</p>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">About you</h2>
+        <p className="text-white/45 font-body text-sm">This helps us calculate your needs accurately</p>
       </div>
       <div className="space-y-4">
         <div>
-          <label className="text-xs text-muted-foreground font-body mb-1.5 block">Age</label>
+          <label className="text-xs text-white/40 font-body mb-1.5 block">Age</label>
           <input
             type="number"
             placeholder="e.g. 25"
             value={data.age}
             onChange={(e) => update({ age: e.target.value })}
-            className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border text-foreground text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+            className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-lg font-body placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
           />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground font-body mb-2 block">Biological sex</label>
+          <label className="text-xs text-white/40 font-body mb-2 block">Biological sex</label>
           <div className="grid grid-cols-2 gap-3">
             {([["male", "Male"], ["female", "Female"]] as const).map(([val, label]) => (
               <button
@@ -171,8 +174,8 @@ function StepAgeSex({ data, update }: { data: OnboardingData; update: (d: Partia
                 onClick={() => update({ sex: val })}
                 className={`px-5 py-4 rounded-2xl font-body font-semibold text-sm transition-all border ${
                   data.sex === val
-                    ? "bg-primary/15 border-primary/40 text-primary ring-1 ring-primary/20"
-                    : "bg-secondary border-border text-foreground hover:bg-secondary/80"
+                    ? "bg-primary/15 border-primary/50 text-primary ring-1 ring-primary/20"
+                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/8 hover:text-white"
                 }`}
               >
                 {label}
@@ -193,28 +196,28 @@ function StepBody({ data, update }: { data: OnboardingData; update: (d: Partial<
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Ruler className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">Your measurements</h2>
-        <p className="text-muted-foreground font-body text-sm">We'll use this to calculate your daily needs</p>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">Your measurements</h2>
+        <p className="text-white/45 font-body text-sm">We'll use this to calculate your daily needs</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-xs text-muted-foreground font-body mb-1.5 block">Height (cm)</label>
+          <label className="text-xs text-white/40 font-body mb-1.5 block">Height (cm)</label>
           <input
             type="number"
             placeholder="e.g. 175"
             value={data.height}
             onChange={(e) => update({ height: e.target.value })}
-            className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border text-foreground text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+            className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-lg font-body placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
           />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground font-body mb-1.5 block">Weight (kg)</label>
+          <label className="text-xs text-white/40 font-body mb-1.5 block">Weight (kg)</label>
           <input
             type="number"
             placeholder="e.g. 70"
             value={data.weight}
             onChange={(e) => update({ weight: e.target.value })}
-            className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border text-foreground text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+            className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-lg font-body placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
           />
         </div>
       </div>
@@ -235,8 +238,8 @@ function StepGoal({ data, update }: { data: OnboardingData; update: (d: Partial<
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Target className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">What's your goal?</h2>
-        <p className="text-muted-foreground font-body text-sm">We'll customize your plan accordingly</p>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">What's your goal?</h2>
+        <p className="text-white/45 font-body text-sm">We'll customize your plan accordingly</p>
       </div>
       <div className="space-y-3">
         {goals.map((g) => (
@@ -245,16 +248,16 @@ function StepGoal({ data, update }: { data: OnboardingData; update: (d: Partial<
             onClick={() => update({ goal: g.key })}
             className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all text-left ${
               data.goal === g.key
-                ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
-                : "bg-secondary border-border hover:bg-secondary/80"
+                ? "bg-primary/10 border-primary/50 ring-1 ring-primary/20"
+                : "bg-white/5 border-white/10 hover:bg-white/8"
             }`}
           >
-            <div className={`w-12 h-12 rounded-xl bg-secondary flex items-center justify-center ${data.goal === g.key ? "bg-primary/15" : ""}`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${data.goal === g.key ? "bg-primary/15" : "bg-white/5"}`}>
               <g.icon className={`w-6 h-6 ${data.goal === g.key ? "text-primary" : g.color}`} />
             </div>
             <div>
-              <p className="font-semibold text-foreground font-display text-sm">{g.label}</p>
-              <p className="text-xs text-muted-foreground font-body">{g.desc}</p>
+              <p className={`font-semibold font-display text-sm ${data.goal === g.key ? "text-white" : "text-white/70"}`}>{g.label}</p>
+              <p className="text-xs text-white/40 font-body">{g.desc}</p>
             </div>
             {data.goal === g.key && <Check className="w-5 h-5 text-primary ml-auto" />}
           </button>
@@ -272,8 +275,8 @@ function StepGoalWeight({ data, update }: { data: OnboardingData; update: (d: Pa
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Weight className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">Goal weight</h2>
-        <p className="text-muted-foreground font-body text-sm">
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">Goal weight</h2>
+        <p className="text-white/45 font-body text-sm">
           {data.goal === "maintain" ? "Your target to maintain" : data.goal === "lose" ? "What weight do you want to reach?" : "What's your target weight?"}
         </p>
       </div>
@@ -282,11 +285,11 @@ function StepGoalWeight({ data, update }: { data: OnboardingData; update: (d: Pa
         placeholder="e.g. 65"
         value={data.goalWeight}
         onChange={(e) => update({ goalWeight: e.target.value })}
-        className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border text-foreground text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all text-center"
+        className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-lg font-body placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all text-center"
       />
       {data.weight && data.goalWeight && (
         <div className="text-center">
-          <p className="text-xs text-muted-foreground font-body">
+          <p className="text-xs text-white/40 font-body">
             {Number(data.goalWeight) < Number(data.weight)
               ? `You'll need to lose ${(Number(data.weight) - Number(data.goalWeight)).toFixed(1)} kg`
               : Number(data.goalWeight) > Number(data.weight)
@@ -312,8 +315,8 @@ function StepTimeline({ data, update }: { data: OnboardingData; update: (d: Part
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Target className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">Timeline</h2>
-        <p className="text-muted-foreground font-body text-sm">
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">Timeline</h2>
+        <p className="text-white/45 font-body text-sm">
           In how many months do you want to reach {data.goalWeight}kg?
         </p>
       </div>
@@ -322,11 +325,11 @@ function StepTimeline({ data, update }: { data: OnboardingData; update: (d: Part
         placeholder="e.g. 3"
         value={data.timelineMonths}
         onChange={(e) => update({ timelineMonths: e.target.value })}
-        className="w-full px-5 py-4 rounded-2xl bg-secondary border border-border text-foreground text-lg font-body placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all text-center"
+        className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-lg font-body placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all text-center"
       />
-      <div className="glass-card p-4 space-y-2">
+      <div className="rounded-2xl p-4 space-y-2" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
         <p className="text-xs font-semibold text-primary font-display">💡 Recommended: {recommendedMonths} months</p>
-        <p className="text-xs text-muted-foreground font-body">
+        <p className="text-xs text-white/40 font-body">
           {data.goal === "lose" 
             ? "Safe weight loss is 0.5-1kg per week. Too fast can be unhealthy!"
             : "Healthy muscle gain is 0.25-0.5kg per week with proper training."}
@@ -351,8 +354,8 @@ function StepActivity({ data, update }: { data: OnboardingData; update: (d: Part
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Dumbbell className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">Activity level</h2>
-        <p className="text-muted-foreground font-body text-sm">How active are you on a typical week?</p>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">Activity level</h2>
+        <p className="text-white/45 font-body text-sm">How active are you on a typical week?</p>
       </div>
       <div className="space-y-2">
         {levels.map((l) => (
@@ -361,14 +364,14 @@ function StepActivity({ data, update }: { data: OnboardingData; update: (d: Part
             onClick={() => update({ activityLevel: l.key })}
             className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all text-left ${
               data.activityLevel === l.key
-                ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
-                : "bg-secondary border-border hover:bg-secondary/80"
+                ? "bg-primary/10 border-primary/50 ring-1 ring-primary/20"
+                : "bg-white/5 border-white/10 hover:bg-white/8"
             }`}
           >
             <span className="text-xl">{l.emoji}</span>
             <div className="flex-1">
-              <p className="font-semibold text-foreground font-display text-sm">{l.label}</p>
-              <p className="text-[11px] text-muted-foreground font-body">{l.desc}</p>
+              <p className={`font-semibold font-display text-sm ${data.activityLevel === l.key ? "text-white" : "text-white/70"}`}>{l.label}</p>
+              <p className="text-[11px] text-white/35 font-body">{l.desc}</p>
             </div>
             {data.activityLevel === l.key && <Check className="w-4 h-4 text-primary" />}
           </button>
@@ -392,8 +395,8 @@ function StepEating({ data, update }: { data: OnboardingData; update: (d: Partia
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <UtensilsCrossed className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">Eating habits</h2>
-        <p className="text-muted-foreground font-body text-sm">How would you describe your current diet?</p>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">Eating habits</h2>
+        <p className="text-white/45 font-body text-sm">How would you describe your current diet?</p>
       </div>
       <div className="space-y-2">
         {habits.map((h) => (
@@ -402,14 +405,14 @@ function StepEating({ data, update }: { data: OnboardingData; update: (d: Partia
             onClick={() => update({ eatingHabit: h.key })}
             className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all text-left ${
               data.eatingHabit === h.key
-                ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
-                : "bg-secondary border-border hover:bg-secondary/80"
+                ? "bg-primary/10 border-primary/50 ring-1 ring-primary/20"
+                : "bg-white/5 border-white/10 hover:bg-white/8"
             }`}
           >
             <span className="text-xl">{h.emoji}</span>
             <div className="flex-1">
-              <p className="font-semibold text-foreground font-display text-sm">{h.label}</p>
-              <p className="text-[11px] text-muted-foreground font-body">{h.desc}</p>
+              <p className={`font-semibold font-display text-sm ${data.eatingHabit === h.key ? "text-white" : "text-white/70"}`}>{h.label}</p>
+              <p className="text-[11px] text-white/35 font-body">{h.desc}</p>
             </div>
             {data.eatingHabit === h.key && <Check className="w-4 h-4 text-primary" />}
           </button>
@@ -434,8 +437,8 @@ function StepExercise({ data, update }: { data: OnboardingData; update: (d: Part
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Zap className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">Exercise frequency</h2>
-        <p className="text-muted-foreground font-body text-sm">How often do you work out?</p>
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">Exercise frequency</h2>
+        <p className="text-white/45 font-body text-sm">How often do you work out?</p>
       </div>
       <div className="space-y-2">
         {freqs.map((f) => (
@@ -444,14 +447,14 @@ function StepExercise({ data, update }: { data: OnboardingData; update: (d: Part
             onClick={() => update({ exerciseFrequency: f.key })}
             className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all text-left ${
               data.exerciseFrequency === f.key
-                ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
-                : "bg-secondary border-border hover:bg-secondary/80"
+                ? "bg-primary/10 border-primary/50 ring-1 ring-primary/20"
+                : "bg-white/5 border-white/10 hover:bg-white/8"
             }`}
           >
             <span className="text-xl">{f.emoji}</span>
             <div className="flex-1">
-              <p className="font-semibold text-foreground font-display text-sm">{f.label}</p>
-              <p className="text-[11px] text-muted-foreground font-body">{f.desc}</p>
+              <p className={`font-semibold font-display text-sm ${data.exerciseFrequency === f.key ? "text-white" : "text-white/70"}`}>{f.label}</p>
+              <p className="text-[11px] text-white/35 font-body">{f.desc}</p>
             </div>
             {data.exerciseFrequency === f.key && <Check className="w-4 h-4 text-primary" />}
           </button>
@@ -486,50 +489,49 @@ function StepResults({ data }: { data: OnboardingData }) {
         <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
           <Sparkles className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground">
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-white">
           Your plan is ready, <span className="text-gradient-primary">{data.name || "champ"}</span>!
         </h2>
-        <p className="text-muted-foreground font-body text-sm">Here's your personalized daily target</p>
+        <p className="text-white/45 font-body text-sm">Here's your personalized daily target</p>
       </div>
 
       {/* Main calorie target */}
-      <div className="glass-card-accent p-6 text-center space-y-2">
-        <p className="text-xs text-muted-foreground font-body uppercase tracking-widest">Daily Calorie Target</p>
+      <div className="rounded-2xl p-6 text-center space-y-2" style={{background:'rgba(130,200,80,0.08)',border:'1px solid rgba(130,200,80,0.2)'}}>
+        <p className="text-xs text-white/40 font-body uppercase tracking-widest">Daily Calorie Target</p>
         <p className="text-5xl font-bold font-display text-gradient-primary">{targetCal}</p>
-        <p className="text-sm text-muted-foreground font-body">kcal / day</p>
+        <p className="text-sm text-white/40 font-body">kcal / day</p>
         {deficit > 0 && (
           <p className="text-xs text-primary font-body mt-1">
             {goal === "lose" ? `${deficit} kcal deficit from your TDEE of ${tdee}` : `${deficit} kcal surplus from your TDEE of ${tdee}`}
           </p>
         )}
       </div>
-
       {/* Macros */}
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: "Protein", value: macros.protein, unit: "g", color: "text-primary" },
-          { label: "Carbs", value: macros.carbs, unit: "g", color: "text-info" },
-          { label: "Fat", value: macros.fat, unit: "g", color: "text-peach" },
-          { label: "Fiber", value: macros.fiber, unit: "g", color: "text-success" },
+          { label: "Carbs", value: macros.carbs, unit: "g", color: "text-blue-400" },
+          { label: "Fat", value: macros.fat, unit: "g", color: "text-orange-400" },
+          { label: "Fiber", value: macros.fiber, unit: "g", color: "text-green-400" },
         ].map((m) => (
-          <div key={m.label} className="glass-card p-4 text-center">
+          <div key={m.label} className="rounded-2xl p-4 text-center" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
             <p className={`text-2xl font-bold font-display ${m.color}`}>{m.value}{m.unit}</p>
-            <p className="text-[10px] text-muted-foreground font-body mt-1">{m.label}</p>
+            <p className="text-[10px] text-white/40 font-body mt-1">{m.label}</p>
           </div>
         ))}
       </div>
 
       {/* Timeline */}
       {weeks > 0 && (
-        <div className="glass-card p-4 flex items-center gap-4">
+        <div className="rounded-2xl p-4 flex items-center gap-4" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
           <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
             <Target className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground font-display">
+            <p className="text-sm font-semibold text-white font-display">
               {w > gw ? `${(w - gw).toFixed(1)} kg to lose` : `${(gw - w).toFixed(1)} kg to gain`}
             </p>
-            <p className="text-xs text-muted-foreground font-body">
+            <p className="text-xs text-white/40 font-body">
               Estimated ~{weeks} weeks to reach {gw} kg
             </p>
           </div>
@@ -538,13 +540,13 @@ function StepResults({ data }: { data: OnboardingData }) {
 
       {/* Stats summary */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="glass-card p-3 text-center">
-          <p className="text-lg font-bold text-foreground font-display">{Math.round(bmr)}</p>
-          <p className="text-[10px] text-muted-foreground font-body">BMR (kcal)</p>
+        <div className="rounded-2xl p-3 text-center" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+          <p className="text-lg font-bold text-white font-display">{Math.round(bmr)}</p>
+          <p className="text-[10px] text-white/40 font-body">BMR (kcal)</p>
         </div>
-        <div className="glass-card p-3 text-center">
-          <p className="text-lg font-bold text-foreground font-display">{tdee}</p>
-          <p className="text-[10px] text-muted-foreground font-body">TDEE (kcal)</p>
+        <div className="rounded-2xl p-3 text-center" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+          <p className="text-lg font-bold text-white font-display">{tdee}</p>
+          <p className="text-[10px] text-white/40 font-body">TDEE (kcal)</p>
         </div>
       </div>
     </div>
@@ -552,7 +554,8 @@ function StepResults({ data }: { data: OnboardingData }) {
 }
 
 // ── Steps config ──
-const TOTAL_STEPS = 10; // 0..8 = questions, 9 = results
+const TOTAL_STEPS = 10;
+const SESSION_KEY = "vf_onboarding_progress";
 
 function canContinue(step: number, data: OnboardingData): boolean {
   switch (step) {
@@ -569,26 +572,123 @@ function canContinue(step: number, data: OnboardingData): boolean {
   }
 }
 
+function loadSavedProgress(): { step: number; data: OnboardingData } {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return { step: 0, data: initialData };
+}
+
 // ── Main component ──
 const Onboarding = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const { user } = useAuth();
+  const saved = loadSavedProgress();
+  const [step, setStep] = useState(saved.step);
   const [dir, setDir] = useState(1);
-  const [data, setData] = useState<OnboardingData>(initialData);
+  const [data, setData] = useState<OnboardingData>(saved.data);
+  const [saving, setSaving] = useState(false);
 
-  const update = (partial: Partial<OnboardingData>) => setData((prev) => ({ ...prev, ...partial }));
+  const update = useCallback((partial: Partial<OnboardingData>) => {
+    setData((prev) => {
+      const next = { ...prev, ...partial };
+      try { sessionStorage.setItem(SESSION_KEY, JSON.stringify({ step, data: next })); } catch { /* ignore */ }
+      return next;
+    });
+  }, [step]);
 
   const next = () => {
-    if (step < TOTAL_STEPS - 1) {
-      setDir(1);
-      setStep(step + 1);
-    }
+    const nextStep = Math.min(step + 1, TOTAL_STEPS - 1);
+    setDir(1);
+    setStep(nextStep);
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify({ step: nextStep, data })); } catch { /* ignore */ }
   };
+
   const prev = () => {
-    if (step > 0) {
-      setDir(-1);
-      setStep(step - 1);
+    const prevStep = Math.max(step - 1, 0);
+    setDir(-1);
+    setStep(prevStep);
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify({ step: prevStep, data })); } catch { /* ignore */ }
+  };
+
+  const handleLaunch = async () => {
+    setSaving(true);
+    const w = Number(data.weight) || 70;
+    const gw = Number(data.goalWeight) || w;
+    const h = Number(data.height) || 170;
+    const a = Number(data.age) || 25;
+    const sex = data.sex || "male";
+    const goal = data.goal || "maintain";
+    const activity = data.activityLevel || "moderate";
+    const timelineMonths = Number(data.timelineMonths) || 3;
+    const bmr = calcBMR(sex, w, h, a);
+    const tdee = calcTDEE(bmr, activity);
+    const targetCal = calcTargetCalories(tdee, goal, w, gw, timelineMonths);
+    const macros = calcMacros(targetCal, goal, sex);
+    const stepsGoal = activity === "sedentary" ? 6000 : activity === "light" ? 8000 : 10000;
+    const waterGoal = Math.round(w * 0.033 * 10) / 10;
+
+    const fitnessProfile = {
+      ...data,
+      bmr: Math.round(bmr),
+      tdee,
+      targetCalories: targetCal,
+      macros,
+      stepsGoal,
+      waterGoal,
+      onboardingComplete: true,
+    };
+
+    // 1. Save to localStorage (cache for fast reads)
+    localStorage.setItem("Cals Crumble Fit_onboarding", JSON.stringify(fitnessProfile));
+
+    // 2. Auto-generate initial goals
+    const now = new Date().toISOString();
+    const goals: any[] = [];
+    if (w !== gw) {
+      goals.push({
+        id: Date.now().toString(),
+        title: goal === "lose" ? `Lose ${(w - gw).toFixed(1)} kg` : `Gain ${(gw - w).toFixed(1)} kg`,
+        categories: ["weight"], target: gw, current: w, unit: "kg",
+        direction: goal === "lose" ? "decrease" : "increase", deadline: "", createdAt: now,
+      });
     }
+    goals.push({
+      id: (Date.now() + 1).toString(), title: `Hit ${targetCal} kcal daily`,
+      categories: ["nutrition"], target: targetCal, current: 0, unit: "kcal",
+      direction: "maintain", deadline: "", createdAt: now,
+    });
+    goals.push({
+      id: (Date.now() + 2).toString(), title: `Drink ${waterGoal}L water daily`,
+      categories: ["water"], target: waterGoal, current: 0, unit: "L",
+      direction: "increase", deadline: "", createdAt: now,
+    });
+    goals.push({
+      id: (Date.now() + 3).toString(), title: `Walk ${stepsGoal.toLocaleString()} steps daily`,
+      categories: ["steps"], target: stepsGoal, current: 0, unit: "steps",
+      direction: "increase", deadline: "", createdAt: now,
+    });
+    const existing = localStorage.getItem("Cals Crumble Fit_goals");
+    if (!existing || JSON.parse(existing).length === 0) {
+      localStorage.setItem("Cals Crumble Fit_goals", JSON.stringify(goals));
+    }
+
+    // 3. Sync to Supabase user_metadata (no schema change needed)
+    if (user) {
+      try {
+        await supabase.auth.updateUser({ data: fitnessProfile });
+        await supabase.from("profiles").update({ display_name: data.name || undefined })
+          .eq("user_id", user.id);
+      } catch { /* non-blocking — data is already in localStorage */ }
+    }
+
+    // 4. Clear sessionStorage draft
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+
+    setSaving(false);
+    toast.success(`Welcome to VitalFlow, ${data.name || "champ"}! 🎉`);
+    navigate("/dashboard");
   };
 
   const isResults = step === TOTAL_STEPS - 1;
@@ -611,24 +711,28 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background orbs */}
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%, hsl(82 60% 15% / 0.35), transparent), #0a0a0f" }}
+    >
       <div className="absolute top-20 left-1/4 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-20 right-1/4 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-20 right-1/4 w-[300px] h-[300px] rounded-full bg-blue-500/5 blur-[100px] pointer-events-none" />
 
       <div className="w-full max-w-lg relative z-10">
-        {/* Progress bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-primary" />
-              <span className="font-bold font-display text-gradient-primary text-sm">VitalFlow</span>
+              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                <Activity className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <span className="font-bold font-display text-white text-sm">VitalFlow</span>
             </div>
-            <span className="text-xs text-muted-foreground font-body">
+            <span className="text-xs text-white/30 font-body tabular-nums">
               {step + 1} / {TOTAL_STEPS}
             </span>
           </div>
-          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+          <div className="h-1 bg-white/8 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-primary rounded-full"
               animate={{ width: `${progress}%` }}
@@ -637,8 +741,11 @@ const Onboarding = () => {
           </div>
         </div>
 
-        {/* Step content */}
-        <div className="glass-card p-6 md:p-8 min-h-[420px] flex flex-col">
+        {/* Card */}
+        <div
+          className="rounded-3xl p-6 md:p-8 min-h-[460px] flex flex-col"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(24px)" }}
+        >
           <div className="flex-1">
             <AnimatePresence mode="wait" custom={dir}>
               <motion.div
@@ -648,7 +755,7 @@ const Onboarding = () => {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
               >
                 {renderStep()}
               </motion.div>
@@ -656,114 +763,39 @@ const Onboarding = () => {
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-4 border-t border-border/30">
+          <div className="flex items-center justify-between mt-8 pt-5 border-t border-white/8">
             {step > 0 ? (
               <button
                 onClick={prev}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors font-body"
+                disabled={saving}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm text-white/40 hover:text-white/70 transition-colors font-body disabled:opacity-30"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
-            ) : (
-              <div />
-            )}
+            ) : <div />}
 
             {isResults ? (
-              <button
-                onClick={() => {
-                  localStorage.setItem("Cals Crumble Fit_onboarding", JSON.stringify(data));
-
-                  // Auto-generate goals from onboarding data
-                  const goals: any[] = [];
-                  const now = new Date().toISOString();
-                  const w = Number(data.weight) || 70;
-                  const gw = Number(data.goalWeight) || w;
-                  const sex = data.sex || "male";
-                  const goal = data.goal || "maintain";
-                  const activity = data.activityLevel || "moderate";
-                  const bmr = calcBMR(sex, w, Number(data.height) || 170, Number(data.age) || 25);
-                  const tdee = calcTDEE(bmr, activity);
-                  const timelineMonths = Number(data.timelineMonths) || 3;
-                  const targetCal = calcTargetCalories(tdee, goal, w, gw, timelineMonths);
-
-                  // Weight goal
-                  if (w !== gw) {
-                    goals.push({
-                      id: Date.now().toString(),
-                      title: goal === "lose" ? `Lose ${(w - gw).toFixed(1)} kg` : `Gain ${(gw - w).toFixed(1)} kg`,
-                      categories: ["weight"],
-                      target: gw,
-                      current: w,
-                      unit: "kg",
-                      direction: goal === "lose" ? "decrease" : goal === "gain" ? "increase" : "maintain",
-                      deadline: "",
-                      createdAt: now,
-                    });
-                  }
-
-                  // Calorie target goal
-                  goals.push({
-                    id: (Date.now() + 1).toString(),
-                    title: `Hit ${targetCal} kcal daily`,
-                    categories: ["nutrition"],
-                    target: targetCal,
-                    current: 0,
-                    unit: "kcal",
-                    direction: "maintain",
-                    deadline: "",
-                    createdAt: now,
-                  });
-
-                  // Water goal
-                  const waterTarget = Math.round(w * 0.033 * 10) / 10;
-                  goals.push({
-                    id: (Date.now() + 2).toString(),
-                    title: `Drink ${waterTarget}L water daily`,
-                    categories: ["water"],
-                    target: waterTarget,
-                    current: 0,
-                    unit: "L",
-                    direction: "increase",
-                    deadline: "",
-                    createdAt: now,
-                  });
-
-                  // Steps goal
-                  const stepsTarget = activity === "sedentary" ? 6000 : activity === "light" ? 8000 : 10000;
-                  goals.push({
-                    id: (Date.now() + 3).toString(),
-                    title: `Walk ${stepsTarget.toLocaleString()} steps daily`,
-                    categories: ["steps"],
-                    target: stepsTarget,
-                    current: 0,
-                    unit: "steps",
-                    direction: "increase",
-                    deadline: "",
-                    createdAt: now,
-                  });
-
-                  // Only save if no existing goals (don't overwrite)
-                  const existing = localStorage.getItem("Cals Crumble Fit_goals");
-                  if (!existing || JSON.parse(existing).length === 0) {
-                    localStorage.setItem("Cals Crumble Fit_goals", JSON.stringify(goals));
-                  }
-
-                  navigate("/dashboard");
-                }}
-                className="group px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 glow-primary"
+              <motion.button
+                onClick={handleLaunch}
+                disabled={saving}
+                className="group px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-60 disabled:cursor-not-allowed"
+                whileTap={{ scale: saving ? 1 : 0.97 }}
               >
-                Let's Train Now
-                <Dumbbell className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-              </button>
+                {saving ? (
+                  <><div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" /> Saving...</>
+                ) : (
+                  <>Let's Train Now <Dumbbell className="w-4 h-4 group-hover:rotate-12 transition-transform" /></>
+                )}
+              </motion.button>
             ) : (
-              <button
+              <motion.button
                 onClick={next}
                 disabled={!canContinue(step, data)}
-                className="group px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:brightness-100"
+                className="group px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
+                whileTap={{ scale: canContinue(step, data) ? 0.97 : 1 }}
               >
-                Continue
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </button>
+                Continue <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </motion.button>
             )}
           </div>
         </div>
