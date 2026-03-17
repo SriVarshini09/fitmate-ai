@@ -48,7 +48,12 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/onboarding" element={<Onboarding />} />
+            {/* Onboarding requires auth - user must have signed up first */}
+            <Route path="/onboarding" element={
+              <ProtectedRoute onboardingBypass>
+                <Onboarding />
+              </ProtectedRoute>
+            } />
 
             {/* Protected routes */}
             <Route path="/dashboard" element={
