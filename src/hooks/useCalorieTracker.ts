@@ -155,17 +155,31 @@ export function useCalorieTracker() {
     } catch { /* ignore */ }
   }, []);
 
-  // Load today's burned & eaten
+  // Load today's burned & eaten, and listen for cross-component updates
   useEffect(() => {
     const today = todayISO();
     setBurnedToday(getEntries(BURNED_KEY, today));
-    const eatenRaw = localStorage.getItem(EATEN_KEY);
-    try {
-      const eatenData = eatenRaw ? JSON.parse(eatenRaw) : {};
-      setEatenToday(eatenData[today] || 0);
-    } catch {
-      setEatenToday(0);
-    }
+
+    const readEaten = () => {
+      try {
+        const eatenRaw = localStorage.getItem(EATEN_KEY);
+        const eatenData = eatenRaw ? JSON.parse(eatenRaw) : {};
+        setEatenToday(eatenData[today] || 0);
+      } catch {
+        setEatenToday(0);
+      }
+    };
+
+    readEaten();
+
+    // Re-read whenever FoodLog writes to localStorage
+    window.addEventListener("storage", readEaten);
+    // Also poll every 2s in case same-tab writes don't fire storage events
+    const interval = setInterval(readEaten, 2000);
+    return () => {
+      window.removeEventListener("storage", readEaten);
+      clearInterval(interval);
+    };
   }, []);
 
   const totalBurnedToday = burnedToday.reduce((sum, e) => sum + e.calories, 0);

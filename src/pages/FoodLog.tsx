@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Plus, X, Apple, Coffee, UtensilsCrossed, Moon } from "lucide-react";
 import { toast } from "sonner";
+import { useCalorieTracker } from "@/hooks/useCalorieTracker";
 
 // Built-in nutrition table per 100g: [kcal, protein, carbs, fat, fiber]
 const NUTRITION_TABLE: Record<string, [number, number, number, number, number]> = {
@@ -108,9 +109,21 @@ const MEALS = [
 ];
 
 const UNITS = ["g", "ml", "L", "pcs", "cup", "tbsp", "tsp"] as const;
+const FOODS_KEY = "Cals Crumble Fit_foods";
+const EATEN_KEY = "Cals Crumble Fit_eaten";
+
+function todayISO() { return new Date().toISOString().slice(0, 10); }
 
 const FoodLog = () => {
-  const [foods, setFoods] = useState<FoodEntry[]>([]);
+  const { logEaten } = useCalorieTracker();
+  const [foods, setFoods] = useState<FoodEntry[]>(() => {
+    try {
+      const raw = localStorage.getItem(FOODS_KEY);
+      if (!raw) return [];
+      const all = JSON.parse(raw) as (FoodEntry & { date: string })[];
+      return all.filter((f) => f.date === todayISO());
+    } catch { return []; }
+  });
   const [showAdd, setShowAdd] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState("breakfast");
   const [searchQuery, setSearchQuery] = useState("");
@@ -173,6 +186,26 @@ const FoodLog = () => {
     };
   }, [foodName, quantity, selectedUnit, showAdd, lookupNutrition]);
 
+  const saveAndSync = useCallback((updated: FoodEntry[]) => {
+    const today = todayISO();
+    // Persist today's foods
+    try {
+      const raw = localStorage.getItem(FOODS_KEY);
+      const all: (FoodEntry & { date: string })[] = raw ? JSON.parse(raw) : [];
+      const otherDays = all.filter((f) => f.date !== today);
+      const withDate = updated.map((f) => ({ ...f, date: today }));
+      localStorage.setItem(FOODS_KEY, JSON.stringify([...otherDays, ...withDate]));
+    } catch {}
+    // Sync total calories eaten today
+    try {
+      const total = updated.reduce((s, f) => s + f.calories, 0);
+      const eatenRaw = localStorage.getItem(EATEN_KEY);
+      const eatenData = eatenRaw ? JSON.parse(eatenRaw) : {};
+      eatenData[today] = total;
+      localStorage.setItem(EATEN_KEY, JSON.stringify(eatenData));
+    } catch {}
+  }, []);
+
   const addFood = () => {
     if (!foodName.trim()) return;
     const qty = parseFloat(quantity) || 1;
@@ -189,15 +222,23 @@ const FoodLog = () => {
       fiber: nutrition.fiber,
       meal: selectedMeal,
     };
-    setFoods([...foods, entry]);
+    const updated = [...foods, entry];
+    setFoods(updated);
+    saveAndSync(updated);
+    if (nutrition.calories > 0) logEaten(0); // trigger re-read via saveAndSync
     setFoodName("");
     setQuantity("");
     setSelectedUnit("g");
     setAiResult(null);
     setShowAdd(false);
+    toast.success(`Added ${entry.name} — ${entry.calories} kcal`);
   };
 
-  const removeFood = (id: string) => setFoods(foods.filter((f) => f.id !== id));
+  const removeFood = (id: string) => {
+    const updated = foods.filter((f) => f.id !== id);
+    setFoods(updated);
+    saveAndSync(updated);
+  };
 
   const closeModal = () => {
     setShowAdd(false);
