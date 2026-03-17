@@ -89,7 +89,7 @@ const Index = () => {
 
       {/* Steps & Streak */}
       <motion.div className="grid grid-cols-2 gap-4" variants={item}>
-        <StepsCard steps={0} goal={10000} />
+        <StepsCard />
         <StreakCard currentStreak={currentStreak} longestStreak={longestStreak} />
       </motion.div>
 

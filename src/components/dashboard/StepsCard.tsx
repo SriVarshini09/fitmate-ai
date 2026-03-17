@@ -1,13 +1,46 @@
-import { motion } from "framer-motion";
-import { Footprints } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Footprints, Pencil, Check } from "lucide-react";
 
-interface StepsCardProps {
-  steps: number;
-  goal: number;
+const STEPS_KEY = "Cals Crumble Fit_steps";
+const GOAL = 10000;
+
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+function loadTodaySteps(): number {
+  try {
+    const raw = localStorage.getItem(STEPS_KEY);
+    if (!raw) return 0;
+    const data: Record<string, number> = JSON.parse(raw);
+    return data[todayISO()] || 0;
+  } catch { return 0; }
 }
 
-const StepsCard = ({ steps, goal }: StepsCardProps) => {
-  const percentage = Math.min((steps / goal) * 100, 100);
+function saveTodaySteps(steps: number) {
+  try {
+    const raw = localStorage.getItem(STEPS_KEY);
+    const data: Record<string, number> = raw ? JSON.parse(raw) : {};
+    data[todayISO()] = steps;
+    localStorage.setItem(STEPS_KEY, JSON.stringify(data));
+  } catch {}
+}
+
+const StepsCard = () => {
+  const [steps, setSteps] = useState(() => loadTodaySteps());
+  const [editing, setEditing] = useState(false);
+  const [input, setInput] = useState("");
+
+  const percentage = Math.min((steps / GOAL) * 100, 100);
+
+  const confirm = () => {
+    const val = parseInt(input);
+    if (!isNaN(val) && val >= 0) {
+      setSteps(val);
+      saveTodaySteps(val);
+    }
+    setEditing(false);
+    setInput("");
+  };
 
   return (
     <div className="glass-card p-5 gradient-border relative overflow-hidden">
@@ -16,9 +49,33 @@ const StepsCard = ({ steps, goal }: StepsCardProps) => {
         <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
           <Footprints className="w-5 h-5 text-primary" />
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wider">Steps</p>
-          <p className="text-xl font-bold font-display text-foreground">{steps.toLocaleString()}</p>
+          <AnimatePresence mode="wait">
+            {editing ? (
+              <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1 mt-0.5">
+                <input
+                  autoFocus
+                  type="number"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && confirm()}
+                  placeholder={steps.toString()}
+                  className="w-24 bg-secondary/60 text-foreground text-sm font-bold font-display rounded-lg px-2 py-0.5 outline-none border border-primary/40"
+                />
+                <button onClick={confirm} className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center">
+                  <Check className="w-3 h-3 text-primary-foreground" />
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div key="display" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                <p className="text-xl font-bold font-display text-foreground">{steps.toLocaleString()}</p>
+                <button onClick={() => setEditing(true)} className="text-muted-foreground hover:text-primary transition-colors">
+                  <Pencil className="w-3 h-3" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
@@ -30,7 +87,7 @@ const StepsCard = ({ steps, goal }: StepsCardProps) => {
           transition={{ duration: 1, ease: "easeOut" }}
         />
       </div>
-      <p className="text-[10px] text-muted-foreground mt-2 font-body">{goal.toLocaleString()} goal</p>
+      <p className="text-[10px] text-muted-foreground mt-2 font-body">{GOAL.toLocaleString()} goal</p>
     </div>
   );
 };

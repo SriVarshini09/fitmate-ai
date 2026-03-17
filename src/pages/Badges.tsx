@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Medal, Award, Star, Flame, Footprints, Droplets, UtensilsCrossed, Dumbbell, Target } from "lucide-react";
+import { Trophy, Flame, Footprints, Droplets, UtensilsCrossed, Dumbbell, Target } from "lucide-react";
 
 interface BadgeInfo {
   icon: React.ElementType;
@@ -11,20 +12,54 @@ interface BadgeInfo {
   requirement: string;
 }
 
-const allBadges: BadgeInfo[] = [
-  { icon: Flame, title: "Streak Master", description: "Maintain a daily streak", tier: "platinum", earned: false, progress: 0, requirement: "60-day streak" },
-  { icon: Flame, title: "Streak Pro", description: "30-day streak", tier: "gold", earned: false, progress: 0, requirement: "30-day streak" },
-  { icon: Flame, title: "Streak Builder", description: "14-day streak", tier: "silver", earned: false, progress: 0, requirement: "14-day streak" },
-  { icon: Flame, title: "Getting Started", description: "7-day streak", tier: "bronze", earned: false, progress: 0, requirement: "7-day streak" },
-  { icon: UtensilsCrossed, title: "Nutrition Guru", description: "Log meals for 60 days", tier: "platinum", earned: false, progress: 0, requirement: "60 days of logging" },
-  { icon: UtensilsCrossed, title: "Meal Tracker", description: "Log meals for 30 days", tier: "gold", earned: false, progress: 0, requirement: "30 days of logging" },
-  { icon: Footprints, title: "Marathon Walker", description: "Walk 1M steps total", tier: "platinum", earned: false, progress: 0, requirement: "1,000,000 total steps" },
-  { icon: Footprints, title: "Step Champion", description: "10K steps for 30 days", tier: "gold", earned: false, progress: 0, requirement: "30 days of 10K steps" },
-  { icon: Droplets, title: "Hydration Hero", description: "Hit water goal 60 days", tier: "gold", earned: false, progress: 0, requirement: "60 days of water goal" },
-  { icon: Droplets, title: "Water Warrior", description: "Hit water goal 14 days", tier: "silver", earned: false, progress: 0, requirement: "14 days of water goal" },
-  { icon: Dumbbell, title: "Gym Rat", description: "Log 100 workouts", tier: "platinum", earned: false, progress: 0, requirement: "100 workouts logged" },
-  { icon: Target, title: "Calorie Counter", description: "Stay within calorie goal 30 days", tier: "gold", earned: false, progress: 0, requirement: "30 days within goal" },
-];
+function calcBadges(): BadgeInfo[] {
+  const APP = "Cals Crumble Fit";
+  try {
+    // Streak
+    const streakRaw = localStorage.getItem(`${APP}_streak`);
+    const streak = streakRaw ? (JSON.parse(streakRaw).current || 0) : 0;
+
+    // Workouts
+    const workoutsRaw = localStorage.getItem(`${APP}_workouts`);
+    const workouts: any[] = workoutsRaw ? JSON.parse(workoutsRaw) : [];
+    const workoutCount = workouts.length;
+
+    // Food log days (unique dates with at least 1 entry)
+    const foodsRaw = localStorage.getItem(`${APP}_foods`);
+    const foods: any[] = foodsRaw ? JSON.parse(foodsRaw) : [];
+    const foodDays = new Set(foods.map((f: any) => f.date)).size;
+
+    // Steps data
+    const stepsRaw = localStorage.getItem(`${APP}_steps`);
+    const stepsData: Record<string, number> = stepsRaw ? JSON.parse(stepsRaw) : {};
+    const totalSteps = Object.values(stepsData).reduce((s, v) => s + v, 0);
+    const stepDays10k = Object.values(stepsData).filter((v) => v >= 10000).length;
+
+    // Water goal days
+    const waterRaw = localStorage.getItem(`${APP}_water`);
+    const waterData: Record<string, number> = waterRaw ? JSON.parse(waterRaw) : {};
+    const waterGoalDays = Object.values(waterData).filter((v) => v >= 2000).length;
+
+    const pct = (val: number, max: number) => Math.min(Math.round((val / max) * 100), 100);
+
+    return [
+      { icon: Flame, title: "Streak Master", description: "60-day streak", tier: "platinum", earned: streak >= 60, progress: pct(streak, 60), requirement: `${streak}/60 days` },
+      { icon: Flame, title: "Streak Pro", description: "30-day streak", tier: "gold", earned: streak >= 30, progress: pct(streak, 30), requirement: `${streak}/30 days` },
+      { icon: Flame, title: "Streak Builder", description: "14-day streak", tier: "silver", earned: streak >= 14, progress: pct(streak, 14), requirement: `${streak}/14 days` },
+      { icon: Flame, title: "Getting Started", description: "7-day streak", tier: "bronze", earned: streak >= 7, progress: pct(streak, 7), requirement: `${streak}/7 days` },
+      { icon: UtensilsCrossed, title: "Nutrition Guru", description: "Log meals for 60 days", tier: "platinum", earned: foodDays >= 60, progress: pct(foodDays, 60), requirement: `${foodDays}/60 days` },
+      { icon: UtensilsCrossed, title: "Meal Tracker", description: "Log meals for 30 days", tier: "gold", earned: foodDays >= 30, progress: pct(foodDays, 30), requirement: `${foodDays}/30 days` },
+      { icon: Footprints, title: "Marathon Walker", description: "1M total steps", tier: "platinum", earned: totalSteps >= 1000000, progress: pct(totalSteps, 1000000), requirement: `${totalSteps.toLocaleString()}/1,000,000` },
+      { icon: Footprints, title: "Step Champion", description: "10K steps × 30 days", tier: "gold", earned: stepDays10k >= 30, progress: pct(stepDays10k, 30), requirement: `${stepDays10k}/30 days` },
+      { icon: Droplets, title: "Hydration Hero", description: "Hit water goal 60 days", tier: "gold", earned: waterGoalDays >= 60, progress: pct(waterGoalDays, 60), requirement: `${waterGoalDays}/60 days` },
+      { icon: Droplets, title: "Water Warrior", description: "Hit water goal 14 days", tier: "silver", earned: waterGoalDays >= 14, progress: pct(waterGoalDays, 14), requirement: `${waterGoalDays}/14 days` },
+      { icon: Dumbbell, title: "Gym Rat", description: "Log 100 workouts", tier: "platinum", earned: workoutCount >= 100, progress: pct(workoutCount, 100), requirement: `${workoutCount}/100 workouts` },
+      { icon: Target, title: "Calorie Counter", description: "Log food for 30 days", tier: "gold", earned: foodDays >= 30, progress: pct(foodDays, 30), requirement: `${foodDays}/30 days logged` },
+    ];
+  } catch {
+    return [];
+  }
+}
 
 const tierColors: Record<string, { text: string; bg: string; border: string }> = {
   platinum: { text: "text-badge-platinum", bg: "bg-badge-platinum/10", border: "border-badge-platinum/30" },
@@ -34,6 +69,7 @@ const tierColors: Record<string, { text: string; bg: string; border: string }> =
 };
 
 const Badges = () => {
+  const allBadges = useMemo(() => calcBadges(), []);
   const earned = allBadges.filter((b) => b.earned).length;
 
   return (
