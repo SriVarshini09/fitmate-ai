@@ -69,7 +69,6 @@ const AiMealPlanner = ({ profile, onApplyPlan }: AiMealPlannerProps) => {
       });
 
       if (error) {
-        console.warn("AI meal plan error:", error.message);
         toast.error("Failed to generate meal plan. Please try again.");
         return;
       }
@@ -86,8 +85,7 @@ const AiMealPlanner = ({ profile, onApplyPlan }: AiMealPlannerProps) => {
       } else {
         toast.error("Invalid meal plan format. Please try again.");
       }
-    } catch (e) {
-      console.warn("Meal plan generation failed:", e);
+    } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

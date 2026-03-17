@@ -170,7 +170,7 @@ const FoodLog = () => {
           .order("created_at", { ascending: true });
         
         clearTimeout(timeout);
-        if (error) { console.error(error); setLoading(false); return; }
+        if (error) { setLoading(false); return; }
         if (data && data.length > 0) {
           const mapped: FoodEntry[] = data.map((r) => ({
             id: r.id,
@@ -188,9 +188,8 @@ const FoodLog = () => {
           saveAndSync(mapped);
         }
         setLoading(false);
-      } catch (err) {
+      } catch {
         clearTimeout(timeout);
-        console.error(err);
         setLoading(false);
       }
     })();

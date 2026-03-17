@@ -126,8 +126,7 @@ export async function requestMotionPermission(): Promise<boolean> {
     try {
       const permission = await (DeviceMotionEvent as any).requestPermission();
       return permission === 'granted';
-    } catch (error) {
-      console.error('Error requesting motion permission:', error);
+    } catch {
       return false;
     }
   }

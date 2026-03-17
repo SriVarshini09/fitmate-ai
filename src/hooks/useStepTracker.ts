@@ -56,8 +56,8 @@ export function useStepTracker(userWeight: number = 70, userHeight: number = 170
           detectorRef.current.setStepCount(data[today].steps);
         }
       }
-    } catch (error) {
-      console.error('Error loading steps:', error);
+    } catch {
+      // ignore localStorage read errors
     }
   }, []);
 
@@ -84,8 +84,8 @@ export function useStepTracker(userWeight: number = 70, userHeight: number = 170
       setSteps(stepCount);
       setDistance(dist);
       setCalories(cals);
-    } catch (error) {
-      console.error('Error saving steps:', error);
+    } catch {
+      // ignore localStorage write errors
     }
   }, [userWeight, userHeight]);
 
@@ -103,10 +103,16 @@ export function useStepTracker(userWeight: number = 70, userHeight: number = 170
       
       if (!todayData || todayData.synced) return;
       
+      const stepsGoal = (() => {
+        try {
+          const ob = JSON.parse(localStorage.getItem('Cals Crumble Fit_onboarding') || '{}');
+          return parseInt(ob.stepsGoal) || 10000;
+        } catch { return 10000; }
+      })();
       await supabase.from('steps_logs').upsert({
         user_id: user.id,
         steps: todayData.steps,
-        goal: 10000, // TODO: Get from user profile
+        goal: stepsGoal,
         logged_date: today,
       }, { onConflict: 'user_id,logged_date' });
       
@@ -114,15 +120,14 @@ export function useStepTracker(userWeight: number = 70, userHeight: number = 170
       todayData.synced = true;
       localStorage.setItem(STEPS_KEY, JSON.stringify(data));
       lastSyncRef.current = Date.now();
-    } catch (error) {
-      console.error('Error syncing steps:', error);
+    } catch {
+      // ignore sync errors - will retry on next sync
     }
   }, [user]);
 
   // Request permission and start tracking
   const startTracking = useCallback(async () => {
     if (!isSupported) {
-      console.warn('Motion sensors not supported on this device');
       return false;
     }
 
@@ -130,7 +135,6 @@ export function useStepTracker(userWeight: number = 70, userHeight: number = 170
     setHasPermission(granted);
     
     if (!granted) {
-      console.warn('Motion permission denied');
       return false;
     }
 

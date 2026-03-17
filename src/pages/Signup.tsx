@@ -106,7 +106,6 @@ const Signup = () => {
     setLoading(false);
 
     if (profileError) {
-      console.error("Profile update error:", profileError);
       toast.error("Account created but profile update failed. You can update it later.");
     } else {
       toast.success("Account created! 🎉");

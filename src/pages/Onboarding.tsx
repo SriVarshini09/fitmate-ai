@@ -622,7 +622,7 @@ const Onboarding = () => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
-              <span className="font-bold font-display text-gradient-primary text-sm">Cals Crumble Fit</span>
+              <span className="font-bold font-display text-gradient-primary text-sm">VitalFlow</span>
             </div>
             <span className="text-xs text-muted-foreground font-body">
               {step + 1} / {TOTAL_STEPS}

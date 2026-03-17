@@ -88,9 +88,8 @@ const Goals = () => {
           saveGoals(mapped);
         }
         setLoading(false);
-      } catch (err) {
+      } catch {
         clearTimeout(timeout);
-        console.error(err);
         setLoading(false);
       }
     })();

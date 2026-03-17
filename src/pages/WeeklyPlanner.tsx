@@ -88,7 +88,6 @@ const WeeklyPlanner = () => {
         body: { foodName: name.trim(), quantity: qty || "1", unit },
       });
       if (error) {
-        console.warn("Nutrition lookup error (non-critical):", error.message);
         setAiResult(null);
         return;
       }
@@ -100,9 +99,7 @@ const WeeklyPlanner = () => {
         return;
       }
       setAiResult(data as NutritionResult);
-    } catch (e) {
-      // Silently handle - likely a cancelled request from debounce
-      console.warn("Nutrition lookup failed (non-critical):", e);
+    } catch {
       setAiResult(null);
     } finally {
       setAiLoading(false);
