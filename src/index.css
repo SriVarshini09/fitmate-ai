@@ -235,4 +235,27 @@
     z-index: -1;
     opacity: 0.2;
   }
+
+  /* Thin frosted overlay — used for cards/sections inside dark auth pages */
+  .glass-surface {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Accent-tinted variant — highlights the primary action area (e.g. calorie target) */
+  .glass-surface-accent {
+    background: rgba(130, 200, 80, 0.08);
+    border: 1px solid rgba(130, 200, 80, 0.2);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Full-page dark radial gradient background for auth / onboarding screens */
+  .auth-bg {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, hsl(82 60% 15% / 0.35), transparent),
+      #0a0a0f;
+  }
 }

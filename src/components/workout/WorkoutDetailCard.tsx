@@ -65,7 +65,8 @@ const WorkoutDetailCard = ({ workout, isExpanded, onToggle, onRepeat, index }: P
   const totalReps = workout.exercises.reduce(
     (sum, ex) => sum + ex.sets.reduce((s, set) => s + set.reps, 0), 0
   );
-  const calories = workout.totalCalories || Math.round(workout.duration * 6.5);
+  const DEFAULT_KCAL_PER_MIN = 6.5; // moderate-intensity MET estimate at ~70 kg
+  const calories = workout.totalCalories || Math.round(workout.duration * DEFAULT_KCAL_PER_MIN);
   const muscleGroups = workout.muscleGroupsHit || [...new Set(workout.exercises.map((e) => e.muscleGroup))];
   const intensity = workout.intensity || (workout.duration > 60 ? "Intense" : "Moderate");
 

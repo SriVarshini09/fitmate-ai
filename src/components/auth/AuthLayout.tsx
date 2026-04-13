@@ -18,12 +18,7 @@ const stats = [
 
 const AuthLayout = ({ children, splitLayout = false }: AuthLayoutProps) => {
   return (
-    <div
-      className="min-h-screen flex"
-      style={{
-        background: "radial-gradient(ellipse 80% 60% at 50% -10%, hsl(82 60% 15% / 0.35), transparent), #0a0a0f",
-      }}
-    >
+    <div className="auth-bg min-h-screen flex">
       {/* Left decorative panel — only on split layout (login) */}
       {splitLayout && (
         <motion.div

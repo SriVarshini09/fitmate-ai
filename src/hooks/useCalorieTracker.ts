@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { STORAGE_KEYS, DEFAULTS, EXERCISE_METS } from "@/lib/constants";
+import { calcBMR, calcTDEE, calcTargetCalories, calcMacros } from "@/lib/fitnessCalc";
 
 // ── Types ──
 export interface BurnedEntry {
@@ -24,26 +26,11 @@ export interface UserProfile {
   macros: { protein: number; carbs: number; fat: number; fiber: number };
 }
 
-const BURNED_KEY = "Cals Crumble Fit_burned";
-const EATEN_KEY = "Cals Crumble Fit_eaten";
-const ONBOARDING_KEY = "Cals Crumble Fit_onboarding";
+const DEFAULT_MET = 5.0;
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
-
-// ── MET values for calorie estimation ──
-const EXERCISE_METS: Record<string, number> = {
-  // Weights
-  "Bench Press": 6.0, "Incline Dumbbell Press": 5.5, "Cable Flyes": 4.0,
-  "Squat": 6.0, "Leg Press": 5.5, "Lunges": 5.0, "Leg Curl": 4.0, "Calf Raises": 3.5,
-  "Deadlift": 6.5, "Barbell Row": 5.5, "Pull-ups": 8.0, "Lat Pulldown": 5.0,
-  "Overhead Press": 5.5, "Shoulder Lateral Raise": 3.5, "Face Pulls": 3.5,
-  "Bicep Curls": 3.5, "Hammer Curls": 3.5, "Tricep Dips": 5.0, "Tricep Pushdown": 3.5,
-  "Plank": 3.8, "Russian Twist": 4.0, "Cable Crunch": 3.5,
-  // Cardio
-  run: 9.8, ride: 7.5, swim: 8.0, walk: 3.8, hike: 6.0,
-};
 
 /** Estimate calories burned using MET formula: Cal = MET × weight(kg) × duration(hours) */
 export function estimateCalories(
@@ -51,7 +38,7 @@ export function estimateCalories(
   durationMinutes: number,
   bodyWeightKg: number
 ): number {
-  const met = EXERCISE_METS[exerciseName] || 5.0;
+  const met = EXERCISE_METS[exerciseName] ?? DEFAULT_MET;
   return Math.round(met * bodyWeightKg * (durationMinutes / 60));
 }
 
@@ -61,12 +48,10 @@ export function estimateWeightExerciseCalories(
   sets: { weight: number; reps: number }[],
   bodyWeightKg: number
 ): number {
-  // Estimate ~30s per rep + 60s rest per set
   const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
-  const estimatedMinutes = (totalReps * 0.5 + sets.length * 1) / 60 * 10; // rough
-  const met = EXERCISE_METS[exerciseName] || 5.0;
+  const estimatedMinutes = (totalReps * 0.5 + sets.length * 1) / 60 * 10;
+  const met = EXERCISE_METS[exerciseName] ?? DEFAULT_MET;
   const volume = sets.reduce((sum, s) => sum + s.weight * s.reps, 0);
-  // Blend MET-based and volume-based estimate
   const metCals = met * bodyWeightKg * (estimatedMinutes / 60);
   const volCals = volume * 0.015 + sets.length * 8;
   return Math.round((metCals + volCals) / 2);
@@ -77,11 +62,15 @@ export function estimateActivityCalories(
   durationMinutes: number,
   bodyWeightKg: number
 ): number {
-  const met = EXERCISE_METS[type] || 5.0;
+  const met = EXERCISE_METS[type] ?? DEFAULT_MET;
   return Math.round(met * bodyWeightKg * (durationMinutes / 60));
 }
 
 // ── LocalStorage helpers ──
+const BURNED_KEY = STORAGE_KEYS.BURNED;
+const EATEN_KEY = STORAGE_KEYS.EATEN;
+const ONBOARDING_KEY = STORAGE_KEYS.ONBOARDING;
+
 function getEntries(key: string, date?: string): BurnedEntry[] {
   try {
     const raw = localStorage.getItem(key);
@@ -110,63 +99,28 @@ export function useCalorieTracker() {
       const raw = localStorage.getItem(ONBOARDING_KEY);
       if (!raw) return;
       const data = JSON.parse(raw);
-      const weight = parseFloat(data.weight) || 70;
-      const height = parseFloat(data.height) || 170;
-      const age = parseInt(data.age) || 25;
-      const sex = data.sex || "male";
-
-      const bmr = sex === "female"
-        ? 10 * weight + 6.25 * height - 5 * age - 161
-        : 10 * weight + 6.25 * height - 5 * age + 5;
-
-      const actMulti: Record<string, number> = {
-        sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9,
-      };
-      const tdee = Math.round(bmr * (actMulti[data.activityLevel] || 1.55));
-
-      // Timeline-based calculation
+      const weight = parseFloat(data.weight) || DEFAULTS.WEIGHT_KG;
+      const height = parseFloat(data.height) || DEFAULTS.HEIGHT_CM;
+      const age = parseInt(data.age) || DEFAULTS.AGE;
+      const sex = data.sex || DEFAULTS.SEX;
+      const goal = data.goal || DEFAULTS.GOAL;
+      const activityLevel = data.activityLevel || DEFAULTS.ACTIVITY_LEVEL;
       const goalWeight = parseFloat(data.goalWeight) || weight;
-      const timelineMonths = parseFloat(data.timelineMonths) || 3;
-      
-      let targetCalories = tdee;
-      if (data.goal === "lose" || data.goal === "gain") {
-        const weightDiff = Math.abs(weight - goalWeight);
-        const totalDays = timelineMonths * 30;
-        const dailyWeightChange = weightDiff / totalDays;
-        const dailyCalorieChange = Math.round(dailyWeightChange * 7700);
-        
-        if (data.goal === "lose") {
-          const deficit = Math.min(dailyCalorieChange, 1000);
-          targetCalories = Math.max(Math.round(tdee - deficit), 1200);
-        } else if (data.goal === "gain") {
-          const surplus = Math.min(dailyCalorieChange, 500);
-          targetCalories = Math.round(tdee + surplus);
-        }
-      }
+      const timelineMonths = parseFloat(data.timelineMonths) || DEFAULTS.TIMELINE_MONTHS;
 
-      // Fiber recommendation: ~14g per 1000 kcal, min 25g women / 38g men
-      const calcFiber = (cal: number, userSex: string) => {
-        const byCalorie = Math.round((cal / 1000) * 14);
-        const minimum = userSex === "female" ? 25 : 38;
-        return Math.max(byCalorie, minimum);
-      };
-
-      const calcMacros = (cal: number, goal: string, userSex: string) => {
-        const fiber = calcFiber(cal, userSex);
-        if (goal === "lose") return { protein: Math.round((cal * 0.35) / 4), carbs: Math.round((cal * 0.35) / 4), fat: Math.round((cal * 0.3) / 9), fiber };
-        if (goal === "gain") return { protein: Math.round((cal * 0.3) / 4), carbs: Math.round((cal * 0.45) / 4), fat: Math.round((cal * 0.25) / 9), fiber };
-        return { protein: Math.round((cal * 0.25) / 4), carbs: Math.round((cal * 0.45) / 4), fat: Math.round((cal * 0.3) / 9), fiber };
-      };
+      const bmr = calcBMR(sex, weight, height, age);
+      const tdee = calcTDEE(bmr, activityLevel);
+      const targetCalories = calcTargetCalories(tdee, goal, weight, goalWeight, timelineMonths);
 
       setProfile({
         name: data.name || "User",
         sex, weight, height, age,
-        goal: data.goal || "maintain",
-        goalWeight: parseFloat(data.goalWeight) || weight,
-        activityLevel: data.activityLevel || "moderate",
+        goal,
+        goalWeight,
+        activityLevel,
         tdee,
         targetCalories,
-        macros: calcMacros(targetCalories, data.goal, sex),
+        macros: calcMacros(targetCalories, goal, sex),
       });
     } catch { /* ignore */ }
   }, []);
@@ -225,6 +179,6 @@ export function useCalorieTracker() {
     eatenToday,
     logBurned,
     logEaten,
-    bodyWeight: profile?.weight || 70,
+    bodyWeight: profile?.weight ?? DEFAULTS.WEIGHT_KG,
   };
 }

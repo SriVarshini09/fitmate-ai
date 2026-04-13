@@ -9,6 +9,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { STORAGE_KEYS, DEFAULTS } from "@/lib/constants";
+import {
+  calcBMR, calcTDEE, calcTargetCalories, calcMacros, weeksToGoal, calcWaterGoal, calcStepsGoal,
+} from "@/lib/fitnessCalc";
 
 // ── Types ──
 interface OnboardingData {
@@ -39,79 +43,6 @@ const initialData: OnboardingData = {
   exerciseFrequency: "",
 };
 
-// ── Calculation helpers ──
-function calcBMR(sex: string, weight: number, height: number, age: number) {
-  if (sex === "female") return 10 * weight + 6.25 * height - 5 * age - 161;
-  return 10 * weight + 6.25 * height - 5 * age + 5;
-}
-
-const activityMultipliers: Record<string, number> = {
-  sedentary: 1.2,
-  light: 1.375,
-  moderate: 1.55,
-  active: 1.725,
-  very_active: 1.9,
-};
-
-function calcTDEE(bmr: number, activity: string) {
-  return Math.round(bmr * (activityMultipliers[activity] || 1.55));
-}
-
-function calcTargetCalories(tdee: number, goal: string, currentWeight: number, goalWeight: number, timelineMonths: number) {
-  if (goal === "maintain") return tdee;
-  
-  const weightDiff = Math.abs(currentWeight - goalWeight);
-  const totalDays = timelineMonths * 30;
-  const dailyWeightChange = weightDiff / totalDays;
-  
-  // 1 kg fat = ~7700 kcal, so daily deficit/surplus needed
-  const dailyCalorieChange = Math.round(dailyWeightChange * 7700);
-  
-  if (goal === "lose") {
-    const deficit = Math.min(dailyCalorieChange, 1000); // Max 1000 kcal deficit for safety
-    return Math.max(Math.round(tdee - deficit), 1200); // Minimum 1200 kcal
-  }
-  
-  if (goal === "gain") {
-    const surplus = Math.min(dailyCalorieChange, 500); // Max 500 kcal surplus
-    return Math.round(tdee + surplus);
-  }
-  
-  return tdee;
-}
-
-function calcFiber(calories: number, sex: string) {
-  const byCalorie = Math.round((calories / 1000) * 14);
-  const minimum = sex === "female" ? 25 : 38;
-  return Math.max(byCalorie, minimum);
-}
-
-function calcMacros(calories: number, goal: string, sex: string = "male") {
-  const fiber = calcFiber(calories, sex);
-  if (goal === "lose") {
-    const protein = Math.round((calories * 0.35) / 4);
-    const fat = Math.round((calories * 0.3) / 9);
-    const carbs = Math.round((calories * 0.35) / 4);
-    return { protein, fat, carbs, fiber };
-  }
-  if (goal === "gain") {
-    const protein = Math.round((calories * 0.3) / 4);
-    const fat = Math.round((calories * 0.25) / 9);
-    const carbs = Math.round((calories * 0.45) / 4);
-    return { protein, fat, carbs, fiber };
-  }
-  const protein = Math.round((calories * 0.25) / 4);
-  const fat = Math.round((calories * 0.3) / 9);
-  const carbs = Math.round((calories * 0.45) / 4);
-  return { protein, fat, carbs, fiber };
-}
-
-function weeksToGoal(currentWeight: number, goalWeight: number, goal: string) {
-  const diff = Math.abs(currentWeight - goalWeight);
-  const ratePerWeek = goal === "lose" ? 0.5 : goal === "gain" ? 0.3 : 0;
-  if (ratePerWeek === 0) return 0;
-  return Math.ceil(diff / ratePerWeek);
-}
 
 // ── Step components ──
 const slideVariants = {
@@ -304,10 +235,10 @@ function StepGoalWeight({ data, update }: { data: OnboardingData; update: (d: Pa
 
 // Step 5.5: Timeline
 function StepTimeline({ data, update }: { data: OnboardingData; update: (d: Partial<OnboardingData>) => void }) {
-  const weightDiff = Math.abs(Number(data.weight) - Number(data.goalWeight));
-  const recommendedMonths = data.goal === "lose" 
-    ? Math.ceil(weightDiff / 2) // ~0.5kg/week = 2kg/month
-    : Math.ceil(weightDiff / 1.2); // ~0.3kg/week for muscle gain
+  const w = Number(data.weight) || DEFAULTS.WEIGHT_KG;
+  const gw = Number(data.goalWeight) || w;
+  const weeks = weeksToGoal(w, gw, data.goal);
+  const recommendedMonths = Math.max(1, Math.ceil(weeks / 4.33));
   
   return (
     <div className="space-y-6">
@@ -327,7 +258,7 @@ function StepTimeline({ data, update }: { data: OnboardingData; update: (d: Part
         onChange={(e) => update({ timelineMonths: e.target.value })}
         className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-lg font-body placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all text-center"
       />
-      <div className="rounded-2xl p-4 space-y-2" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+      <div className="glass-surface rounded-2xl p-4 space-y-2">
         <p className="text-xs font-semibold text-primary font-display">💡 Recommended: {recommendedMonths} months</p>
         <p className="text-xs text-white/40 font-body">
           {data.goal === "lose" 
@@ -496,7 +427,7 @@ function StepResults({ data }: { data: OnboardingData }) {
       </div>
 
       {/* Main calorie target */}
-      <div className="rounded-2xl p-6 text-center space-y-2" style={{background:'rgba(130,200,80,0.08)',border:'1px solid rgba(130,200,80,0.2)'}}>
+      <div className="glass-surface-accent rounded-2xl p-6 text-center space-y-2">
         <p className="text-xs text-white/40 font-body uppercase tracking-widest">Daily Calorie Target</p>
         <p className="text-5xl font-bold font-display text-gradient-primary">{targetCal}</p>
         <p className="text-sm text-white/40 font-body">kcal / day</p>
@@ -514,7 +445,7 @@ function StepResults({ data }: { data: OnboardingData }) {
           { label: "Fat", value: macros.fat, unit: "g", color: "text-orange-400" },
           { label: "Fiber", value: macros.fiber, unit: "g", color: "text-green-400" },
         ].map((m) => (
-          <div key={m.label} className="rounded-2xl p-4 text-center" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+          <div key={m.label} className="glass-surface rounded-2xl p-4 text-center">
             <p className={`text-2xl font-bold font-display ${m.color}`}>{m.value}{m.unit}</p>
             <p className="text-[10px] text-white/40 font-body mt-1">{m.label}</p>
           </div>
@@ -523,7 +454,7 @@ function StepResults({ data }: { data: OnboardingData }) {
 
       {/* Timeline */}
       {weeks > 0 && (
-        <div className="rounded-2xl p-4 flex items-center gap-4" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+        <div className="glass-surface rounded-2xl p-4 flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
             <Target className="w-6 h-6 text-primary" />
           </div>
@@ -540,11 +471,11 @@ function StepResults({ data }: { data: OnboardingData }) {
 
       {/* Stats summary */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl p-3 text-center" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+        <div className="glass-surface rounded-2xl p-3 text-center">
           <p className="text-lg font-bold text-white font-display">{Math.round(bmr)}</p>
           <p className="text-[10px] text-white/40 font-body">BMR (kcal)</p>
         </div>
-        <div className="rounded-2xl p-3 text-center" style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)'}}>
+        <div className="glass-surface rounded-2xl p-3 text-center">
           <p className="text-lg font-bold text-white font-display">{tdee}</p>
           <p className="text-[10px] text-white/40 font-body">TDEE (kcal)</p>
         </div>
@@ -555,7 +486,7 @@ function StepResults({ data }: { data: OnboardingData }) {
 
 // ── Steps config ──
 const TOTAL_STEPS = 10;
-const SESSION_KEY = "vf_onboarding_progress";
+const SESSION_KEY = STORAGE_KEYS.ONBOARDING_SESSION;
 
 function canContinue(step: number, data: OnboardingData): boolean {
   switch (step) {
@@ -577,7 +508,7 @@ function loadSavedProgress(): { step: number; data: OnboardingData } {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
-  return { step: 0, data: initialData };
+  return { step: 0, data: { ...initialData } };
 }
 
 // ── Main component ──
@@ -614,20 +545,20 @@ const Onboarding = () => {
 
   const handleLaunch = async () => {
     setSaving(true);
-    const w = Number(data.weight) || 70;
+    const w = Number(data.weight) || DEFAULTS.WEIGHT_KG;
     const gw = Number(data.goalWeight) || w;
-    const h = Number(data.height) || 170;
-    const a = Number(data.age) || 25;
-    const sex = data.sex || "male";
-    const goal = data.goal || "maintain";
-    const activity = data.activityLevel || "moderate";
-    const timelineMonths = Number(data.timelineMonths) || 3;
+    const h = Number(data.height) || DEFAULTS.HEIGHT_CM;
+    const a = Number(data.age) || DEFAULTS.AGE;
+    const sex = data.sex || DEFAULTS.SEX;
+    const goal = data.goal || DEFAULTS.GOAL;
+    const activity = data.activityLevel || DEFAULTS.ACTIVITY_LEVEL;
+    const timelineMonths = Number(data.timelineMonths) || DEFAULTS.TIMELINE_MONTHS;
     const bmr = calcBMR(sex, w, h, a);
     const tdee = calcTDEE(bmr, activity);
     const targetCal = calcTargetCalories(tdee, goal, w, gw, timelineMonths);
     const macros = calcMacros(targetCal, goal, sex);
-    const stepsGoal = activity === "sedentary" ? 6000 : activity === "light" ? 8000 : 10000;
-    const waterGoal = Math.round(w * 0.033 * 10) / 10;
+    const stepsGoal = calcStepsGoal(activity);
+    const waterGoal = calcWaterGoal(w);
 
     const fitnessProfile = {
       ...data,
@@ -641,7 +572,7 @@ const Onboarding = () => {
     };
 
     // 1. Save to localStorage (cache for fast reads)
-    localStorage.setItem("Cals Crumble Fit_onboarding", JSON.stringify(fitnessProfile));
+    localStorage.setItem(STORAGE_KEYS.ONBOARDING, JSON.stringify(fitnessProfile));
 
     // 2. Auto-generate initial goals
     const now = new Date().toISOString();
@@ -669,9 +600,9 @@ const Onboarding = () => {
       categories: ["steps"], target: stepsGoal, current: 0, unit: "steps",
       direction: "increase", deadline: "", createdAt: now,
     });
-    const existing = localStorage.getItem("Cals Crumble Fit_goals");
+    const existing = localStorage.getItem(STORAGE_KEYS.GOALS);
     if (!existing || JSON.parse(existing).length === 0) {
-      localStorage.setItem("Cals Crumble Fit_goals", JSON.stringify(goals));
+      localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals));
     }
 
     // 3. Sync to Supabase user_metadata (no schema change needed)
@@ -711,10 +642,7 @@ const Onboarding = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%, hsl(82 60% 15% / 0.35), transparent), #0a0a0f" }}
-    >
+    <div className="auth-bg min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-20 left-1/4 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-20 right-1/4 w-[300px] h-[300px] rounded-full bg-blue-500/5 blur-[100px] pointer-events-none" />
 
@@ -742,10 +670,7 @@ const Onboarding = () => {
         </div>
 
         {/* Card */}
-        <div
-          className="rounded-3xl p-6 md:p-8 min-h-[460px] flex flex-col"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(24px)" }}
-        >
+        <div className="glass-surface rounded-3xl p-6 md:p-8 min-h-[460px] flex flex-col">
           <div className="flex-1">
             <AnimatePresence mode="wait" custom={dir}>
               <motion.div

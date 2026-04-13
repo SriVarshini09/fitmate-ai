@@ -8,10 +8,11 @@ import { useAuth } from "@/hooks/useAuth";
 import AuthLayout from "@/components/auth/AuthLayout";
 import GlassInput from "@/components/auth/GlassInput";
 import GlassButton from "@/components/auth/GlassButton";
+import { AUTH, STORAGE_KEYS } from "@/lib/constants";
 
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_SECONDS = 60;
-const ATTEMPT_KEY = "vf_login_attempts";
+const MAX_ATTEMPTS = AUTH.MAX_LOGIN_ATTEMPTS;
+const LOCKOUT_SECONDS = AUTH.LOCKOUT_SECONDS;
+const ATTEMPT_KEY = STORAGE_KEYS.LOGIN_ATTEMPTS;
 
 interface AttemptData {
   count: number;

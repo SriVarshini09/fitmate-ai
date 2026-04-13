@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { StepDetector, requestMotionPermission, isMotionSensorSupported, estimateDistance, estimateCaloriesFromSteps } from '@/lib/stepDetection';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { STORAGE_KEYS, DEFAULTS, STEP_SYNC_INTERVAL_MS } from '@/lib/constants';
 
-const STEPS_KEY = 'Cals Crumble Fit_steps';
-const SYNC_INTERVAL = 5 * 60 * 1000; // Sync every 5 minutes
+const STEPS_KEY = STORAGE_KEYS.STEPS;
+const SYNC_INTERVAL = STEP_SYNC_INTERVAL_MS;
 
 interface StepData {
   date: string;
@@ -19,7 +20,7 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function useStepTracker(userWeight: number = 70, userHeight: number = 170) {
+export function useStepTracker(userWeight: number = DEFAULTS.WEIGHT_KG, userHeight: number = DEFAULTS.HEIGHT_CM) {
   const { user } = useAuth();
   const [isTracking, setIsTracking] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
@@ -105,9 +106,9 @@ export function useStepTracker(userWeight: number = 70, userHeight: number = 170
       
       const stepsGoal = (() => {
         try {
-          const ob = JSON.parse(localStorage.getItem('Cals Crumble Fit_onboarding') || '{}');
-          return parseInt(ob.stepsGoal) || 10000;
-        } catch { return 10000; }
+          const ob = JSON.parse(localStorage.getItem(STORAGE_KEYS.ONBOARDING) || '{}');
+          return parseInt(ob.stepsGoal) || DEFAULTS.STEPS_GOAL;
+        } catch { return DEFAULTS.STEPS_GOAL; }
       })();
       await supabase.from('steps_logs').upsert({
         user_id: user.id,
